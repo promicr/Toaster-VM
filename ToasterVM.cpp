@@ -21,8 +21,7 @@ void free()
 {
     Heap::free();
 }
-#include <iostream>
-using namespace std;
+
 int main(int argc, char * argv[])
 {
     init(0);
