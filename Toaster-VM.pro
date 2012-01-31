@@ -1,0 +1,2 @@
+SOURCES += \
+    ToasterVM.cpp
