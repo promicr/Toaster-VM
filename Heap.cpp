@@ -5,7 +5,6 @@
  *      Author: Max Foster
  */
 
-#include <iostream>
 #include <stdexcept>
 #include <limits.h>
 
@@ -27,7 +26,6 @@ Heap::~Heap()
 
 Block & Heap::blockAt(const unsigned index)
 {
-    if (instance == NULL) throw(std::runtime_error("Heap not initialised"));
-    if (index >= instance->size) throw(std::out_of_range("Block index out of range"));
-    return instance->data[index];
+    if (index >= size) throw(std::out_of_range("Block index out of range"));
+    return data[index];
 }

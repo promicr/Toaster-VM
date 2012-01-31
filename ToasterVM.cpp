@@ -5,27 +5,47 @@
  *      Author: Max Foster
  */
 
+#include <iostream>
+#include <exception>
+
 #include "Flags.hpp"
-#include "Block.hpp"
+#include "Stack.hpp"
 #include "Heap.hpp"
 
-bool init(const unsigned heapSize)
+void init()
 {
     Flags::init();
-    if (!Heap::init(heapSize)) return false;
-
-    return true;
-}
-
-void free()
-{
-    Heap::free();
 }
 
 int main(int argc, char * argv[])
 {
-    init(0);
-    free();
+    init();
+
+    Stack * stack;
+    try
+    {
+        stack = new Stack(0);
+    }
+    catch (const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return 0;
+    }
+
+    Heap * heap;
+    try
+    {
+        heap = new Heap(0);
+    }
+    catch (const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        delete stack;
+        return 0;
+    }
+
+    delete stack;
+    delete heap;
 
     return 0;
 }
