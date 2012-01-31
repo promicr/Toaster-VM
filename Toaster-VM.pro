@@ -1,2 +1,6 @@
 SOURCES += \
-    ToasterVM.cpp
+    ToasterVM.cpp \
+    Flags.cpp
+
+HEADERS += \
+    Flags.hpp
