@@ -7,7 +7,7 @@
 
 #include "Flags.hpp"
 
-bool flags[Flags::FLAG_COUNT];
+static bool flags[Flags::FLAG_COUNT];
 
 void Flags::init()
 {
@@ -26,5 +26,5 @@ void Flags::setValue(const Flags::Id flagId, const bool value)
 
 void Flags::Toggle(const Flags::Id flagId)
 {
-    flags[flagId] = !flags[flagName];
+    flags[flagId] = !flags[flagId];
 }
