@@ -23,7 +23,7 @@ bool Heap::init(const unsigned size)
     {
         instance = new Heap(size == 0 ? defaultSize : size);
     }
-    catch (std::exception exception)
+    catch (const std::exception & exception)
     {
         std::cout << exception.what() << std::endl;
         instance = NULL; // just in case

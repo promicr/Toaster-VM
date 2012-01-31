@@ -6,15 +6,27 @@
  */
 
 #include "Flags.hpp"
+#include "Block.hpp"
+#include "Heap.hpp"
 
-void init()
+bool init(const unsigned heapSize)
 {
     Flags::init();
+    if (!Heap::init(heapSize)) return false;
+
+    return true;
 }
 
+void free()
+{
+    Heap::free();
+}
+#include <iostream>
+using namespace std;
 int main(int argc, char * argv[])
 {
-    init();
+    init(0);
+    free();
 
     return 0;
 }

@@ -12,9 +12,10 @@
 
 struct Block
 {
+    bool inUse;
+
     enum DataType
     {
-        DT_NULL,
         DT_INTEGER,
         DT_REAL,
         DT_CHAR,
@@ -47,7 +48,7 @@ struct Block
 
     Block();
 
-    void setToNull();
+    void setUnused();
     void setToInteger(long data);
     void setToReal(double data);
     void setToChar(char data);
