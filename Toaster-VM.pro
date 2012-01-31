@@ -1,8 +1,10 @@
 SOURCES += \
     ToasterVM.cpp \
     Flags.cpp \
-    Block.cpp
+    Block.cpp \
+    Heap.cpp
 
 HEADERS += \
     Flags.hpp \
-    Block.hpp
+    Block.hpp \
+    Heap.hpp
