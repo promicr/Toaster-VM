@@ -23,7 +23,7 @@ public:
     void pop();
     Block & peek();
 
-    unsigned size();
+    unsigned size() const;
 
 private:
     unsigned size_, pointer;

@@ -26,47 +26,47 @@ Block::~Block()
     nullifyPointer();
 }
 
-bool Block::inUse()
+bool Block::inUse() const
 {
     return inUse_;
 }
 
-Block::DataType Block::dataType()
+Block::DataType Block::dataType() const
 {
     return dataType_;
 }
 
-long Block::integerData()
+long Block::integerData() const
 {
     return integerData_;
 }
 
-double Block::realData()
+double Block::realData() const
 {
     return realData_;
 }
 
-char Block::charData()
+char Block::charData() const
 {
     return charData_;
 }
 
-bool Block::booleanData()
+bool Block::booleanData() const
 {
     return booleanData_;
 }
 
-int Block::pointerAddress()
+int Block::pointerAddress() const
 {
     return pointerData.address;
 }
 
-Heap & Block::pointerHeap()
+Heap & Block::pointerHeap() const
 {
     return *pointerData.heap;
 }
 
-bool Block::pointerIsNull()
+bool Block::pointerIsNull() const
 {
     return (pointerData.address < 0) || (pointerData.heap == NULL);
 }
@@ -176,7 +176,7 @@ Block & Block::operator =(const Block & rhs)
     return *this;
 }
 
-bool Block::operator ==(const Block & rhs)
+bool Block::operator ==(const Block & rhs) const
 {
     if (dataType_ != rhs.dataType_) return false;
     switch (dataType_)
@@ -196,7 +196,7 @@ bool Block::operator ==(const Block & rhs)
     }
 }
 
-bool Block::operator !=(const Block & rhs)
+bool Block::operator !=(const Block & rhs) const
 {
     return !(*this == rhs);
 }

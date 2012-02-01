@@ -12,7 +12,7 @@ FlagRegister::FlagRegister()
     for (int i = 0; i < FLAG_COUNT; ++i) flags[i] = false;
 }
 
-bool FlagRegister::getValue(const FlagRegister::FlagId id)
+bool FlagRegister::getValue(const FlagRegister::FlagId id) const
 {
     return flags[id];
 }

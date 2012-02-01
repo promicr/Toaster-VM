@@ -37,7 +37,7 @@ Block & Stack::peek()
     return data[pointer - 1];
 }
 
-unsigned Stack::size()
+unsigned Stack::size() const
 {
     return size_;
 }

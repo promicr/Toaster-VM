@@ -29,15 +29,15 @@ public:
     Block(const Block & other);
     ~Block();
 
-    bool inUse();
-    DataType dataType();
-    long integerData();
-    double realData();
-    char charData();
-    bool booleanData();
-    int pointerAddress();
-    Heap & pointerHeap();
-    bool pointerIsNull();
+    bool inUse() const;
+    DataType dataType() const;
+    long integerData() const;
+    double realData() const;
+    char charData() const;
+    bool booleanData() const;
+    int pointerAddress() const;
+    Heap & pointerHeap() const;
+    bool pointerIsNull() const;
 
     void setUnused();
     void setToInteger(long data = 0u);
@@ -49,8 +49,8 @@ public:
     void setTo(DataType dataType); // Sets the block to the specified datatype with it's default value (i.e. 0)
 
     Block & operator =(const Block & rhs);
-    bool operator ==(const Block & rhs);
-    bool operator !=(const Block & rhs);
+    bool operator ==(const Block & rhs) const;
+    bool operator !=(const Block & rhs) const;
 
 private:
     bool inUse_;

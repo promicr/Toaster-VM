@@ -26,7 +26,7 @@ public:
 
     FlagRegister();
 
-    bool getValue(FlagId id);
+    bool getValue(FlagId id) const;
     void setValue(FlagId id, bool value);
 
     void Toggle(FlagId id);

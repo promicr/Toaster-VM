@@ -22,7 +22,7 @@ Block & Heap::blockAt(const unsigned index)
     return data[index];
 }
 
-unsigned Heap::size()
+unsigned Heap::size() const
 {
     return size_;
 }
@@ -47,7 +47,7 @@ void Heap::decReferenceCountAt(unsigned index)
     referenceCountChangeCallback(index);
 }
 
-unsigned short Heap::referenceCountAt(unsigned index)
+unsigned short Heap::referenceCountAt(unsigned index) const
 {
     if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
     return referenceCount[index];
