@@ -17,8 +17,11 @@ Block::Block()
 
 Block::Block(const Block & other)
 {
-    setUnused();
-    *this = other;
+    if (other.dataType_ != DATA_TYPE_COUNT)
+    {
+        setUnused();
+        *this = other;
+    }
 }
 
 Block::~Block()
@@ -36,27 +39,27 @@ Block::DataType Block::dataType() const
     return dataType_;
 }
 
-long Block::integerData() const
+long & Block::integerData()
 {
     return integerData_;
 }
 
-double Block::realData() const
+double & Block::realData()
 {
     return realData_;
 }
 
-char Block::charData() const
+char & Block::charData()
 {
     return charData_;
 }
 
-bool Block::booleanData() const
+bool & Block::booleanData()
 {
     return booleanData_;
 }
 
-int Block::pointerAddress() const
+int & Block::pointerAddress()
 {
     return pointerData.address;
 }
@@ -74,6 +77,7 @@ bool Block::pointerIsNull() const
 void Block::setUnused()
 {
     nullifyPointer();
+    dataType_ = DT_INTEGER;
     inUse_ = false;
 }
 
@@ -131,8 +135,8 @@ void Block::setTo(DataType dataType)
     switch (dataType)
     {
     case DT_INTEGER: setToInteger(); break;
-    case DT_REAL: setToReal(); break;
-    case DT_CHAR: setToChar(); break;
+    case DT_REAL:    setToReal(); break;
+    case DT_CHAR:    setToChar(); break;
     case DT_BOOLEAN: setToBoolean(); break;
     case DT_POINTER: setToPointer(); break;
     default: throw(std::runtime_error("Unknown block data type"));
@@ -207,4 +211,19 @@ void Block::nullifyPointer()
         pointerData.heap->decReferenceCountAt(pointerData.address);
     pointerData.address = -1;
     pointerData.heap = NULL;
+}
+
+std::ostream & operator <<(std::ostream & stream, Block & block)
+{
+    switch (block.dataType())
+    {
+    case Block::DT_INTEGER: stream << block.integerData(); break;
+    case Block::DT_REAL:    stream << block.realData(); break;
+    case Block::DT_CHAR:    stream << block.charData(); break;
+    case Block::DT_BOOLEAN: stream << block.booleanData(); break;
+    case Block::DT_POINTER: stream << block.pointerAddress(); break;
+    default: break;
+    }
+
+    return stream;
 }

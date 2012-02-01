@@ -8,39 +8,31 @@
 #include <iostream>
 #include <exception>
 
-#include "Flags.hpp"
-#include "Stack.hpp"
-#include "Heap.hpp"
+#include "Machine.hpp"
 
 int main(int argc, char * argv[])
 {
-    FlagRegister flags;
+    Machine machine;
 
-    Stack * stack;
-    try
-    {
-        stack = new Stack(0);
-    }
-    catch (const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return 0;
-    }
+    Block a, b;
+    a.setToInteger(10u);
+    b.setToInteger(15u);
 
-    Heap * heap;
-    try
-    {
-        heap = new Heap(0);
-    }
-    catch (const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        delete stack;
-        return 0;
-    }
+    machine.set(a, Machine::L_PRIMARY_REGISTER);
+    machine.push(Machine::L_PRIMARY_REGISTER);
+    machine.set(b, Machine::L_PRIMARY_REGISTER);
+    machine.add(Machine::L_PRIMARY_REGISTER, Machine::L_STACK);
 
-    delete stack;
-    delete heap;
+    machine.write(Machine::L_PRIMARY_REGISTER);
+    machine.write(Machine::L_STACK);
+
+    machine.push(Machine::L_PRIMARY_REGISTER);
+    machine.set(a, Machine::L_PRIMARY_REGISTER);
+    machine.multiply(Machine::L_PRIMARY_REGISTER, Machine::L_STACK);
+    machine.pop(Machine::L_PRIMARY_REGISTER);
+
+    machine.write(Machine::L_PRIMARY_REGISTER);
+    machine.write(Machine::L_STACK);
 
     return 0;
 }

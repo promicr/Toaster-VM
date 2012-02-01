@@ -4,11 +4,13 @@ SOURCES += \
     Block.cpp \
     Heap.cpp \
     Stack.cpp \
-    ManagedHeap.cpp
+    ManagedHeap.cpp \
+    Machine.cpp
 
 HEADERS += \
     Flags.hpp \
     Block.hpp \
     Heap.hpp \
     Stack.hpp \
-    ManagedHeap.hpp
+    ManagedHeap.hpp \
+    Machine.hpp

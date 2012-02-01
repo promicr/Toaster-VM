@@ -8,6 +8,8 @@
 #ifndef BLOCK_HPP
 #define BLOCK_HPP
 
+#include <iostream>
+
 // A class for a single block of data in memory
 
 class Heap;
@@ -31,11 +33,11 @@ public:
 
     bool inUse() const;
     DataType dataType() const;
-    long integerData() const;
-    double realData() const;
-    char charData() const;
-    bool booleanData() const;
-    int pointerAddress() const;
+    long & integerData();
+    double & realData();
+    char & charData();
+    bool & booleanData();
+    int & pointerAddress();
     Heap & pointerHeap() const;
     bool pointerIsNull() const;
 
@@ -72,5 +74,7 @@ private:
 
     void nullifyPointer(); // Cleans the pointer data of a block, decrementing a heap reference count if necessary
 };
+
+std::ostream & operator <<(std::ostream & stream, Block & block);
 
 #endif // BLOCK_HPP
