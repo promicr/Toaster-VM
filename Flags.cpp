@@ -7,24 +7,22 @@
 
 #include "Flags.hpp"
 
-static bool flags[Flags::FLAG_COUNT];
-
-void Flags::init()
+FlagRegister::FlagRegister()
 {
-    for (int i = 0; i < Flags::FLAG_COUNT; ++i) flags[i] = false;
+    for (int i = 0; i < FLAG_COUNT; ++i) flags[i] = false;
 }
 
-bool Flags::getValue(const Flags::Id flagId)
+bool FlagRegister::getValue(const FlagRegister::FlagId id)
 {
-    return flags[flagId];
+    return flags[id];
 }
 
-void Flags::setValue(const Flags::Id flagId, const bool value)
+void FlagRegister::setValue(const FlagRegister::FlagId id, const bool value)
 {
-    flags[flagId] = value;
+    flags[id] = value;
 }
 
-void Flags::Toggle(const Flags::Id flagId)
+void FlagRegister::Toggle(const FlagRegister::FlagId id)
 {
-    flags[flagId] = !flags[flagId];
+    flags[id] = !flags[id];
 }

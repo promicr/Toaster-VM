@@ -8,29 +8,31 @@
 #ifndef FLAGS_HPP
 #define FLAGS_HPP
 
-// Flags which are used for storing the results of comparison operations
+// A class sotring flags which are used for storing the results of comparison operations
 
-namespace Flags
+class FlagRegister
 {
+public:
+    enum FlagId
+    {
+        F_EQUAL = 0,
+        F_NOT_EQUAL,
+        F_LESS,
+        F_GREATER,
+        F_LESS_EQUAL,
+        F_GREATER_EQUAL,
+        FLAG_COUNT
+    };
 
-enum Id
-{
-    F_EQUAL = 0,
-    F_NOT_EQUAL,
-    F_LESS,
-    F_GREATER,
-    F_LESS_EQUAL,
-    F_GREATER_EQUAL,
-    FLAG_COUNT
+    FlagRegister();
+
+    bool getValue(FlagId id);
+    void setValue(FlagId id, bool value);
+
+    void Toggle(FlagId id);
+
+private:
+    bool flags[FLAG_COUNT];
 };
-
-void init();
-
-bool getValue(Flags::Id flagId);
-void setValue(Flags::Id flagId, bool value);
-
-void Toggle(Flags::Id flagId);
-
-}
 
 #endif // FLAGS_HPP
