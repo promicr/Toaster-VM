@@ -8,9 +8,9 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 
-#include <memory>
+#include <vector>
 
-class Block;
+#include "Block.hpp"
 
 class Stack
 {
@@ -23,9 +23,11 @@ public:
     void pop();
     Block & peek();
 
+    unsigned size();
+
 private:
-    unsigned size, pointer;
-    std::auto_ptr<Block> data;
+    unsigned size_, pointer;
+    std::vector<Block> data;
 };
 
 #endif // STACK_HPP

@@ -8,6 +8,8 @@
 #ifndef MANAGEDHEAP_HPP
 #define MANAGEDHEAP_HPP
 
+#include <vector>
+
 #include "Heap.hpp"
 #include "Block.hpp"
 
@@ -23,6 +25,9 @@ public:
 
 protected:
     void referenceCountChangeCallback(unsigned index);
+
+private:
+    std::vector<unsigned> arraySize; // The sizes of each array of data allocated
 };
 
 #endif // MANAGEDHEAP_HPP

@@ -11,11 +11,15 @@
 #include "Block.hpp"
 
 ManagedHeap::ManagedHeap(const unsigned size)
-    : Heap(size) {}
+    : Heap(size), arraySize(size, 0) {}
 
 void ManagedHeap::referenceCountChangeCallback(const unsigned index)
 {
-    if (referenceCountAt(index) == 0) blockAt(index).setUnused();
+    if (referenceCountAt(index) == 0)
+    {
+        for (unsigned i = 0; i < arraySize[index]; ++i) blockAt(index + i).setUnused();
+        arraySize[index] = 0;
+    }
 }
 
 void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount, Block & pointerDestination)
@@ -44,6 +48,7 @@ void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount
 
     if (success)
     {
+        arraySize[index] = amount;
         for (unsigned i = 0; i < amount; ++i) blockAt(index + i).setTo(dataType);
         pointerDestination.setToPointer(index, *this);
     }

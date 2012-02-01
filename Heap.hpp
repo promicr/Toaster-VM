@@ -8,7 +8,7 @@
 #ifndef HEAP_HPP
 #define HEAP_HPP
 
-#include <memory>
+#include <vector>
 
 // The unmanaged heap
 
@@ -36,8 +36,8 @@ protected:
 
 private:
     unsigned size_;
-    std::auto_ptr<Block> data;
-    std::auto_ptr<unsigned short> referenceCount;
+    std::vector<Block> data;
+    std::vector<unsigned short> referenceCount;
 };
 
 #endif // HEAP_HPP
