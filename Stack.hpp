@@ -8,7 +8,9 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 
-struct Block;
+#include <memory>
+
+class Block;
 
 class Stack
 {
@@ -16,17 +18,14 @@ public:
     static const unsigned defaultSize;
 
     Stack(unsigned size);
-    ~Stack();
 
     void push(const Block &data);
     void pop();
     Block & peek();
 
 private:
-    static Stack * instance;
-
     unsigned size, pointer;
-    Block * data;
+    std::auto_ptr<Block> data;
 };
 
 #endif // STACK_HPP

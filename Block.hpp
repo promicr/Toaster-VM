@@ -8,12 +8,13 @@
 #ifndef BLOCK_HPP
 #define BLOCK_HPP
 
-// A struct for a single block of data in memory
+// A class for a single block of data in memory
 
-struct Block
+class Heap;
+
+class Block
 {
-    bool inUse;
-
+public:
     enum DataType
     {
         DT_INTEGER,
@@ -22,38 +23,50 @@ struct Block
         DT_BOOLEAN,
         DT_POINTER,
         DATA_TYPE_COUNT
-    } dataType;
-
-    union
-    {
-        long integerData;
-        double realData;
-        char charData;
-        bool booleanData;
-
-        struct // pointer struct
-        {
-            struct // address struct
-            {
-                int value; // The array index of a block in one of the heaps
-                bool inManagedHeap; // Need to differentiate between two heaps
-            } address;
-
-            DataType dataType; // Datatype of the block being pointed to
-            int elementCount; // 1 for a pointer to single block of data, or > 1 for arrays
-
-        } pointerData;
-
-    } data;
+    };
 
     Block();
+    Block(const Block & other);
+
+    bool inUse();
+    DataType dataType();
+    long integerData();
+    double realData();
+    char charData();
+    bool booleanData();
+    int pointerAddress();
+    Heap * pointerHeap();
 
     void setUnused();
     void setToInteger(long data);
     void setToReal(double data);
     void setToChar(char data);
     void setToBoolean(bool data);
-    void setToPointer(int address, bool inManagedHeap, DataType dataType, int elementCount);
+    void setToPointer(int address, Heap * heap);
+
+    Block & operator =(const Block & rhs);
+    bool operator ==(const Block & rhs);
+    bool operator !=(const Block & rhs);
+
+private:
+    bool inUse_;
+    DataType dataType_;
+
+    union
+    {
+        long integerData_;
+        double realData_;
+        char charData_;
+        bool booleanData_;
+
+        struct // pointer struct
+        {
+            int address; // The array index of a block in one of the heaps
+            Heap * heap; // The heap that the address is associated with
+        } pointerData;
+    };
+
+    void cleanPointer(); // Cleans the pointer data of a block, decrementing a heap reference count if necessary
 };
 
 #endif // BLOCK_HPP

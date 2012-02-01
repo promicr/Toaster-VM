@@ -8,9 +8,11 @@
 #ifndef HEAP_HPP
 #define HEAP_HPP
 
+#include <memory>
+
 // The unmanaged heap
 
-struct Block;
+class Block;
 
 class Heap
 {
@@ -18,13 +20,19 @@ public:
     static const unsigned defaultSize;
 
     Heap(unsigned size);
-    ~Heap();
 
     Block & blockAt(unsigned index); // Access by an 'address', i.e. an array index
 
+    // References counts are simply conveniences in a regular heap.
+    // In a managed heap, they are used for garbage collection
+    void incReferenceCountAt(unsigned index);
+    void decReferenceCountAt(unsigned index);
+    unsigned short referenceCountAt(unsigned index);
+
 private:
-    Block * data;
     unsigned size;
+    std::auto_ptr<Block> data;
+    std::auto_ptr<unsigned short> referenceCount;
 };
 
 #endif // HEAP_HPP

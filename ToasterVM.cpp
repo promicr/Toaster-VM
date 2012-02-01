@@ -12,14 +12,9 @@
 #include "Stack.hpp"
 #include "Heap.hpp"
 
-void init()
-{
-    Flags::init();
-}
-
 int main(int argc, char * argv[])
 {
-    init();
+    FlagRegister flags;
 
     Stack * stack;
     try

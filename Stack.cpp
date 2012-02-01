@@ -16,20 +16,12 @@
 const unsigned Stack::defaultSize = USHRT_MAX + 1;
 
 Stack::Stack(const unsigned size_)
-    : size(size_ == 0 ? defaultSize : size_), pointer(0)
-{
-    data = new Block[size];
-}
-
-Stack::~Stack()
-{
-    delete data;
-}
+    : size(size_ == 0 ? defaultSize : size_), pointer(0), data(new Block[size]) {}
 
 void Stack::push(const Block & data_)
 {
     if (pointer >= size) throw(std::runtime_error("Stack overflow"));
-    data[pointer] = data_;
+    data.get()[pointer] = data_;
     ++pointer;
 }
 
@@ -42,5 +34,5 @@ void Stack::pop()
 Block & Stack::peek()
 {
     if (pointer == 0) throw(std::runtime_error("No items on the stack"));
-    return data[pointer - 1];
+    return data.get()[pointer - 1];
 }
