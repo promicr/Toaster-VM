@@ -10,7 +10,7 @@
 #include "Machine.hpp"
 
 Machine::Machine(const unsigned stackSize, const unsigned heapSize)
-    : stack(stackSize), unmanagedHeap(heapSize), managedHeap(heapSize) {}
+    : stack_(stackSize), unmanagedHeap_(heapSize), managedHeap_(heapSize) {}
 
 void Machine::clear(const locationId location)
 {
@@ -130,7 +130,7 @@ void Machine::push(const Block & pointerToSource)
 
 void Machine::push(Block * sourceBlock)
 {
-    stack.push(*sourceBlock);
+    stack_.push(*sourceBlock);
 }
 
 void Machine::pop(const locationId destination)
@@ -147,8 +147,8 @@ void Machine::pop(const Block & pointerToDest)
 
 void Machine::pop(Block * destBlock)
 {
-    *destBlock = stack.peek();
-    stack.pop();
+    *destBlock = stack_.peek();
+    stack_.pop();
 }
 
 void Machine::add(const locationId source, const locationId destination)
@@ -367,13 +367,43 @@ void Machine::divide(Block * sourceBlock, Block * destBlock)
     }
 }
 
+Stack & Machine::stack()
+{
+    return stack_;
+}
+
+Heap & Machine::unmanagedHeap()
+{
+    return unmanagedHeap_;
+}
+
+ManagedHeap & Machine::managedHeap()
+{
+    return managedHeap_;
+}
+
+FlagRegister & Machine::flagRegister()
+{
+    return flagRegister_;
+}
+
+Block & Machine::primaryRegister()
+{
+    return primaryRegister_;
+}
+
+Block & Machine::allocOutRegister()
+{
+    return allocOutRegister_;
+}
+
 Block * Machine::getBlockFrom(const locationId location)
 {
     switch (location)
     {
-    case L_STACK:              return &stack.peek();
-    case L_PRIMARY_REGISTER:   return &primaryRegister;
-    case L_ALLOC_OUT_REGISTER: return &allocOutRegister;
+    case L_STACK:              return &stack_.peek();
+    case L_PRIMARY_REGISTER:   return &primaryRegister_;
+    case L_ALLOC_OUT_REGISTER: return &allocOutRegister_;
     default:                   return NULL;
     }
 }

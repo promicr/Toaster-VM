@@ -70,13 +70,20 @@ public:
     void divide(const Block & pointerToSource, locationId destination);
     void divide(const Block & pointerToSource, const Block & pointerToDest);
 
+    Stack & stack();
+    Heap & unmanagedHeap();
+    ManagedHeap & managedHeap();
+    FlagRegister & flagRegister();
+    Block & primaryRegister();
+    Block & allocOutRegister();
+
 private:
-    Stack stack;
-    Heap unmanagedHeap;
-    ManagedHeap managedHeap;
-    FlagRegister flagRegister;
-    Block primaryRegister,
-    allocOutRegister; // a register for storing the pointer output of managed heap allocations
+    Stack stack_;
+    Heap unmanagedHeap_;
+    ManagedHeap managedHeap_;
+    FlagRegister flagRegister_;
+    Block primaryRegister_,
+    allocOutRegister_; // a register for storing the pointer output of managed heap allocations
 
     /* Functions handling the operations shared by many other functions.
      * Even if operations are trivial, these functions should be used so that the operation can be changed with ease

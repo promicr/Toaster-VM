@@ -24,6 +24,36 @@ Block::Block(const Block & other)
     }
 }
 
+Block::Block(const long data)
+{
+    setToInteger(data);
+}
+
+Block::Block(const double data)
+{
+    setToReal(data);
+}
+
+Block::Block(const char data)
+{
+    setToChar(data);
+}
+
+Block::Block(const bool data)
+{
+    setToBoolean(data);
+}
+
+Block::Block(const int address, Heap & heap)
+{
+    setToPointer(address, heap);
+}
+
+Block::Block(const DataType dataType)
+{
+    setTo(dataType);
+}
+
 Block::~Block()
 {
     nullifyPointer();

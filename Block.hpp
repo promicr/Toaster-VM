@@ -29,6 +29,14 @@ public:
 
     Block();
     Block(const Block & other);
+
+    explicit Block(long data);
+    explicit Block(double data);
+    explicit Block(char data);
+    explicit Block(bool data);
+    explicit Block(int address, Heap & heap);
+    explicit Block(DataType dataType);
+
     ~Block();
 
     bool inUse() const;
