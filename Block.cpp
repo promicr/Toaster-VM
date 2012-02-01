@@ -39,9 +39,19 @@ Block::DataType Block::dataType() const
     return dataType_;
 }
 
+long Block::integerData() const
+{
+    return integerData_;
+}
+
 long & Block::integerData()
 {
     return integerData_;
+}
+
+double Block::realData() const
+{
+    return realData_;
 }
 
 double & Block::realData()
@@ -49,14 +59,29 @@ double & Block::realData()
     return realData_;
 }
 
+char Block::charData() const
+{
+    return charData_;
+}
+
 char & Block::charData()
 {
     return charData_;
 }
 
+bool Block::booleanData() const
+{
+    return booleanData_;
+}
+
 bool & Block::booleanData()
 {
     return booleanData_;
+}
+
+int Block::pointerAddress() const
+{
+    return pointerData.address;
 }
 
 int & Block::pointerAddress()

@@ -33,11 +33,22 @@ public:
 
     bool inUse() const;
     DataType dataType() const;
+
+    long integerData() const;
     long & integerData();
+
+    double realData() const;
     double & realData();
+
+    char charData() const;
     char & charData();
+
+    bool booleanData() const;
     bool & booleanData();
+
+    int pointerAddress() const;
     int & pointerAddress();
+
     Heap & pointerHeap() const;
     bool pointerIsNull() const;
 

@@ -34,5 +34,8 @@ int main(int argc, char * argv[])
     machine.write(Machine::L_PRIMARY_REGISTER);
     machine.write(Machine::L_STACK);
 
+    machine.read(Machine::L_PRIMARY_REGISTER);
+    machine.write(Machine::L_PRIMARY_REGISTER);
+
     return 0;
 }
