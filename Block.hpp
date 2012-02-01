@@ -27,6 +27,7 @@ public:
 
     Block();
     Block(const Block & other);
+    ~Block();
 
     bool inUse();
     DataType dataType();
@@ -35,14 +36,17 @@ public:
     char charData();
     bool booleanData();
     int pointerAddress();
-    Heap * pointerHeap();
+    Heap & pointerHeap();
+    bool pointerIsNull();
 
     void setUnused();
-    void setToInteger(long data);
-    void setToReal(double data);
-    void setToChar(char data);
-    void setToBoolean(bool data);
-    void setToPointer(int address, Heap * heap);
+    void setToInteger(long data = 0u);
+    void setToReal(double data = 0.0);
+    void setToChar(char data = '\0');
+    void setToBoolean(bool data = false);
+    void setToPointer(int address, Heap & heap);
+    void setToPointer(); // set to null pointer
+    void setTo(DataType dataType); // Sets the block to the specified datatype with it's default value (i.e. 0)
 
     Block & operator =(const Block & rhs);
     bool operator ==(const Block & rhs);
@@ -66,7 +70,7 @@ private:
         } pointerData;
     };
 
-    void cleanPointer(); // Cleans the pointer data of a block, decrementing a heap reference count if necessary
+    void nullifyPointer(); // Cleans the pointer data of a block, decrementing a heap reference count if necessary
 };
 
 #endif // BLOCK_HPP

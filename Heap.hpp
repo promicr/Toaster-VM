@@ -22,15 +22,20 @@ public:
     Heap(unsigned size);
 
     Block & blockAt(unsigned index); // Access by an 'address', i.e. an array index
+    unsigned size();
 
+protected:
     // References counts are simply conveniences in a regular heap.
     // In a managed heap, they are used for garbage collection
     void incReferenceCountAt(unsigned index);
     void decReferenceCountAt(unsigned index);
     unsigned short referenceCountAt(unsigned index);
+    virtual void referenceCountChangeCallback(unsigned index);
+
+    friend class Block;
 
 private:
-    unsigned size;
+    unsigned size_;
     std::auto_ptr<Block> data;
     std::auto_ptr<unsigned short> referenceCount;
 };
