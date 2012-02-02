@@ -22,6 +22,7 @@ public:
     ManagedHeap(unsigned size);
 
     void allocate(Block::DataType dataType, unsigned amount, Block & pointerDestination);
+    unsigned arraySizeAt(unsigned index);
 
 protected:
     void referenceCountChangeCallback(unsigned index);

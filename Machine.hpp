@@ -20,7 +20,10 @@ public:
         L_STACK,
         L_PRIMARY_REGISTER,
         L_ALLOC_OUT_REGISTER,
-        L_TRASH
+        L_TRASH,
+        L_ADDR_STACK,
+        L_ADDR_PRIMARY_REGISTER,
+        L_ADDR_ALLOC_OUT_REGISTER
     };
 
     Machine(unsigned stackSize = 0, unsigned heapSize = 0);

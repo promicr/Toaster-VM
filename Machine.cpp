@@ -15,7 +15,7 @@ Machine::Machine(const unsigned stackSize, const unsigned heapSize)
 void Machine::clear(const locationId location)
 {
     Block * block = getBlockFrom(location);
-    if (block != NULL) block->setUnused();
+    if (block != NULL) block->clear();
 }
 
 void Machine::set(const Block & value, const locationId destination)
@@ -407,15 +407,18 @@ Block * Machine::getBlockFrom(const locationId location)
 {
     switch (location)
     {
-    case L_STACK:              return &stack_.peek();
-    case L_PRIMARY_REGISTER:   return &primaryRegister_;
-    case L_ALLOC_OUT_REGISTER: return &allocOutRegister_;
-    default:                   return NULL;
+    case L_STACK:                   return &stack_.peek();
+    case L_PRIMARY_REGISTER:        return &primaryRegister_;
+    case L_ALLOC_OUT_REGISTER:      return &allocOutRegister_;
+    case L_ADDR_STACK:              return getBlockFrom(stack_.peek());
+    case L_ADDR_PRIMARY_REGISTER:   return getBlockFrom(primaryRegister_);
+    case L_ADDR_ALLOC_OUT_REGISTER: return getBlockFrom(allocOutRegister_);
+    default:                        return NULL;
     }
 }
 
 Block * Machine::getBlockFrom(const Block & pointer)
 {
     if (pointer.dataType() != Block::DT_POINTER) return NULL;
-    return &pointer.pointerHeap().blockAt(pointer.pointerAddress());
+    return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
 }

@@ -13,15 +13,6 @@
 ManagedHeap::ManagedHeap(const unsigned size)
     : Heap(size), arraySize(size, 0) {}
 
-void ManagedHeap::referenceCountChangeCallback(const unsigned index)
-{
-    if (referenceCountAt(index) == 0)
-    {
-        for (unsigned i = 0; i < arraySize[index]; ++i) blockAt(index + i).setUnused(false);
-        arraySize[index] = 0;
-    }
-}
-
 void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount, Block & pointerDestination)
 {
     unsigned size_ = size(), index;
@@ -29,19 +20,25 @@ void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount
     // First search for an empty space
     for (index = 0; index < size_; ++index)
     {
-        if (!blockAt(index).inUse())
+        if (referenceCountAt(index) == 0)
         {
             success = true;
             // When a space is found, make sure all blocks ahead that are required are free
             for (unsigned j = 1; j < amount; ++j)
             {
-                if (blockAt(index + j).inUse())
+                if (index + j >= size_)
+                {
+                    success = false;
+                    break;
+                }
+                if (referenceCountAt(index + j) != 0)
                 {
                     success = false;
                     index += amount - 1; // No point looking at blocks before the used block, so jump to space after it.
                     break;               // Add amount - 1 (as apposed to just amount) to negate +1 of outer loop
                 }
             }
+
         }
         if (success) break;
     }
@@ -56,4 +53,15 @@ void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount
     {
         pointerDestination.setToPointer();
     }
+}
+
+unsigned ManagedHeap::arraySizeAt(const unsigned index)
+{
+    if (index >= size()) throw(std::out_of_range("Array size index out of range"));
+    return arraySize[index];
+}
+
+void ManagedHeap::referenceCountChangeCallback(const unsigned index)
+{
+    if (referenceCountAt(index) == 0) arraySize[index] = 0;
 }

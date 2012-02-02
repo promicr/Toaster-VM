@@ -35,7 +35,6 @@ public:
 
     ~Block();
 
-    bool inUse() const;
     DataType dataType() const;
 
     long integerData() const;
@@ -53,10 +52,12 @@ public:
     int pointerAddress() const;
     int & pointerAddress();
 
-    Heap & pointerHeap() const;
+    Heap * pointerHeap() const;
     bool pointerIsNull() const;
+    int pointerArraySize() const;
+    // Cleans the pointer data of a block, decrementing a heap reference count if necessary
+    void nullifyPointerData(bool decReference = true);
 
-    void setUnused(bool decReference = true);
     void setToInteger(long data = 0u);
     void setToReal(double data = 0.0);
     void setToChar(char data = '\0');
@@ -65,12 +66,13 @@ public:
     void setToPointer(); // set to null pointer
     void setTo(DataType dataType); // Sets the block to the specified datatype with it's default value (i.e. 0)
 
+    void clear();
+
     Block & operator =(const Block & rhs);
     bool operator ==(const Block & rhs) const;
     bool operator !=(const Block & rhs) const;
 
 private:
-    bool inUse_;
     DataType dataType_;
 
     union
@@ -86,9 +88,6 @@ private:
             Heap * heap; // The heap that the address is associated with
         } pointerData;
     };
-
-    // Cleans the pointer data of a block, decrementing a heap reference count if necessary
-    void nullifyPointer(bool decReference = true);
 };
 
 std::ostream & operator <<(std::ostream & stream, const Block & block);

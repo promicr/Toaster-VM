@@ -8,22 +8,17 @@
 #include <stdexcept>
 
 #include "Block.hpp"
-#include "Heap.hpp"
+#include "ManagedHeap.hpp"
 
 Block::Block()
 {
     pointerData.heap = NULL;
-    setUnused();
 }
 
 Block::Block(const Block & other)
 {
     pointerData.heap = NULL;
-    if (other.dataType_ != DATA_TYPE_COUNT)
-    {
-        setUnused();
-        *this = other;
-    }
+    if (other.dataType_ != DATA_TYPE_COUNT) *this = other;
 }
 
 Block::Block(const int address, Heap & heap)
@@ -40,12 +35,7 @@ Block::Block(const DataType dataType)
 
 Block::~Block()
 {
-    nullifyPointer();
-}
-
-bool Block::inUse() const
-{
-    return inUse_;
+    nullifyPointerData();
 }
 
 Block::DataType Block::dataType() const
@@ -103,59 +93,65 @@ int & Block::pointerAddress()
     return pointerData.address;
 }
 
-Heap & Block::pointerHeap() const
+Heap * Block::pointerHeap() const
 {
-    return *pointerData.heap;
+    if (dataType_ != DT_POINTER) return NULL;
+    return pointerData.heap;
 }
 
 bool Block::pointerIsNull() const
 {
+    if (dataType_ != DT_POINTER) return false;
     return (pointerData.address < 0) || (pointerData.heap == NULL);
 }
 
-void Block::setUnused(const bool decReference)
+int Block::pointerArraySize() const
 {
-    nullifyPointer(decReference);
-    dataType_ = DT_INTEGER;
-    inUse_ = false;
+    if (pointerIsNull()) return 0;
+    ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
+    if (managedHeap == NULL) return 0;
+    return managedHeap->arraySizeAt(pointerData.address);
+}
+
+void Block::nullifyPointerData(const bool decReference)
+{
+    if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL) && decReference)
+        pointerData.heap->decReferenceCountAt(pointerData.address);
+    pointerData.address = -1;
+    pointerData.heap = NULL;
 }
 
 void Block::setToInteger(const long data_)
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_INTEGER;
     integerData_ = data_;
 }
 
 void Block::setToReal(const double data_)
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_REAL;
     realData_ = data_;
 }
 
 void Block::setToChar(const char data_)
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_CHAR;
     charData_ = data_;
 }
 
 void Block::setToBoolean(const bool data_)
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_BOOLEAN;
     booleanData_ = data_;
 }
 
 void Block::setToPointer(const int address, Heap & heap)
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_POINTER;
     pointerData.address = address;
     pointerData.heap = &heap;
@@ -164,8 +160,7 @@ void Block::setToPointer(const int address, Heap & heap)
 
 void Block::setToPointer()
 {
-    nullifyPointer();
-    inUse_ = true;
+    nullifyPointerData();
     dataType_ = DT_POINTER;
 }
 
@@ -182,24 +177,17 @@ void Block::setTo(DataType dataType)
     }
 }
 
+void Block::clear()
+{
+    setTo(dataType_);
+}
+
 Block & Block::operator =(const Block & rhs)
-{    
-    if ((dataType_ != rhs.dataType_) && inUse_)
-        throw(std::runtime_error("Cannot assign data of block to a different type of block"));
-
-    inUse_ = rhs.inUse_;
-    if (!inUse_) return *this;
-
-    switch (rhs.dataType_)
-    {
-    case DT_INTEGER: integerData_ = rhs.integerData_; break;
-    case DT_REAL:    realData_ = rhs.realData_; break;
-    case DT_CHAR:    charData_ = rhs.charData_; break;
-    case DT_BOOLEAN: booleanData_ = rhs.booleanData_; break;
-    case DT_POINTER: setToPointer(rhs.pointerData.address, *rhs.pointerData.heap); break;
-    default: throw(std::runtime_error("Unknown type handled in assignment"));
-    }
-
+{
+    nullifyPointerData();
+    dataType_ = rhs.dataType_;
+    if (dataType_ == DT_POINTER) setToPointer(rhs.pointerData.address, *rhs.pointerData.heap);
+    else pointerData = rhs.pointerData; // pointerData is takes up most space in the union
     return *this;
 }
 
@@ -226,14 +214,6 @@ bool Block::operator ==(const Block & rhs) const
 bool Block::operator !=(const Block & rhs) const
 {
     return !(*this == rhs);
-}
-
-void Block::nullifyPointer(const bool decReference)
-{
-    if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL) && decReference)
-        pointerData.heap->decReferenceCountAt(pointerData.address);
-    pointerData.address = -1;
-    pointerData.heap = NULL;
 }
 
 std::ostream & operator <<(std::ostream & stream, const Block & block)
