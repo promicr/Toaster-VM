@@ -10,7 +10,7 @@
 
 #include "Stack.hpp"
 #include "ManagedHeap.hpp"
-#include "Flags.hpp"
+#include "ComparisonFlagRegister.hpp"
 
 class Machine
 {
@@ -26,7 +26,7 @@ public:
         L_ADDR_ALLOC_OUT_REGISTER
     };
 
-    Machine(unsigned stackSize = 0, unsigned heapSize = 0);
+    Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
 
     // Member functions relating to the bytecode
     void clear(locationId location);
@@ -53,6 +53,12 @@ public:
     void pop(locationId destination);
     void pop(const Block & pointerToDest);
 
+    void increment(locationId destination);
+    void increment(const Block & pointerToDestination);
+
+    void decrement(locationId destination);
+    void decrement(const Block & pointerToDestination);
+
     void add(locationId source, locationId destination);
     void add(locationId source, const Block & pointerToDest);
     void add(const Block & pointerToSource, locationId destination);
@@ -75,10 +81,18 @@ public:
 
     void allocate(Block::DataType dataType, unsigned count);
 
+    void compare(locationId lhs, locationId rhs);
+    void compare(locationId lhs, const Block & pointerToRhs);
+    void compare(const Block & pointerToLhs, locationId rhs);
+    void compare(const Block & pointerToLhs, const Block & pointerToRhs);
+
+    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, locationId destination);
+    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const Block & pointerToDest);
+
     Stack & stack();
     Heap & unmanagedHeap();
     ManagedHeap & managedHeap();
-    FlagRegister & flagRegister();
+    ComparisonFlagRegister & comparisonFlagRegister();
     Block & primaryRegister();
     Block & allocOutRegister();
 
@@ -86,7 +100,7 @@ private:
     Stack stack_;
     Heap unmanagedHeap_;
     ManagedHeap managedHeap_;
-    FlagRegister flagRegister_;
+    ComparisonFlagRegister comparisonFlagRegister_;
     Block primaryRegister_,
     allocOutRegister_; // a register for storing the pointer output of managed heap allocations
 
@@ -101,10 +115,13 @@ private:
     void write(Block * sourceBlock);
     void push(Block * sourceBlock);
     void pop(Block * destBlock);
+    void increment(Block * destBlock);
+    void decrement(Block * destBlock);
     void add(Block * sourceBlock, Block * destBlock);
     void subtract(Block * sourceBlock, Block * destBlock);
     void multiply(Block * sourceBlock, Block * destBlock);
     void divide(Block * sourceBlock, Block * destBlock);
+    void compare(Block * lhsBlock, Block * rhsBlock);
 
     Block * getBlockFrom(locationId location);
     Block * getBlockFrom(const Block & pointer);

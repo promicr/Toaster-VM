@@ -223,7 +223,7 @@ std::ostream & operator <<(std::ostream & stream, const Block & block)
     case Block::DT_INTEGER: stream << block.integerData(); break;
     case Block::DT_REAL:    stream << block.realData(); break;
     case Block::DT_CHAR:    stream << block.charData(); break;
-    case Block::DT_BOOLEAN: stream << block.booleanData(); break;
+    case Block::DT_BOOLEAN: stream << (block.booleanData() ? "true" : "false"); break;
     case Block::DT_POINTER: stream << block.pointerAddress(); break;
     default: break;
     }

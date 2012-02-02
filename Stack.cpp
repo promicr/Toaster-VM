@@ -37,6 +37,18 @@ Block & Stack::peek()
     return data[pointer - 1];
 }
 
+Block & Stack::at(unsigned index)
+{
+    if (index >= pointer) throw(std::out_of_range("Stack block index out of range"));
+    return data[index];
+}
+
+Block & Stack::fromTop(unsigned index)
+{
+    if (index >= pointer) throw(std::out_of_range("Stack block index out of range"));
+    return data[pointer - 1 - index];
+}
+
 unsigned Stack::size() const
 {
     return size_;

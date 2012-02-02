@@ -21,7 +21,10 @@ public:
 
     void push(const Block &data);
     void pop();
+
     Block & peek();
+    Block & at(unsigned index);
+    Block & fromTop(unsigned index);
 
     unsigned size() const;
 

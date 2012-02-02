@@ -5,15 +5,15 @@
  *      Author: Max Foster
  */
 
-#ifndef FLAGS_HPP
-#define FLAGS_HPP
+#ifndef COMPARISONFLAGREGISTER_HPP
+#define COMPARISONFLAGREGISTER_HPP
 
 // A class sotring flags which are used for storing the results of comparison operations
 
-class FlagRegister
+class ComparisonFlagRegister
 {
 public:
-    enum FlagId
+    enum ComparisonFlagId
     {
         F_EQUAL = 0,
         F_NOT_EQUAL,
@@ -24,15 +24,16 @@ public:
         FLAG_COUNT
     };
 
-    FlagRegister();
+    ComparisonFlagRegister();
 
-    bool getValue(FlagId id) const;
-    void setValue(FlagId id, bool value);
+    bool getValue(ComparisonFlagId id) const;
+    void setValue(ComparisonFlagId id, bool value);
 
-    void Toggle(FlagId id);
+    void toggle(ComparisonFlagId id);
+    void reset();
 
 private:
     bool flags[FLAG_COUNT];
 };
 
-#endif // FLAGS_HPP
+#endif // COMPARISONFLAGREGISTER_HPP
