@@ -70,6 +70,8 @@ public:
     void divide(const Block & pointerToSource, locationId destination);
     void divide(const Block & pointerToSource, const Block & pointerToDest);
 
+    void allocate(Block::DataType dataType, unsigned count);
+
     Stack & stack();
     Heap & unmanagedHeap();
     ManagedHeap & managedHeap();

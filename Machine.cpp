@@ -367,6 +367,12 @@ void Machine::divide(Block * sourceBlock, Block * destBlock)
     }
 }
 
+void Machine::allocate(const Block::DataType dataType, const unsigned count)
+{
+    if (dataType == Block::DATA_TYPE_COUNT) return;
+    managedHeap_.allocate(dataType, count, allocOutRegister_);
+}
+
 Stack & Machine::stack()
 {
     return stack_;

@@ -17,7 +17,7 @@ void ManagedHeap::referenceCountChangeCallback(const unsigned index)
 {
     if (referenceCountAt(index) == 0)
     {
-        for (unsigned i = 0; i < arraySize[index]; ++i) blockAt(index + i).setUnused();
+        for (unsigned i = 0; i < arraySize[index]; ++i) blockAt(index + i).setUnused(false);
         arraySize[index] = 0;
     }
 }

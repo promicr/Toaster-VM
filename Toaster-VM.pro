@@ -14,3 +14,6 @@ HEADERS += \
     Stack.hpp \
     ManagedHeap.hpp \
     Machine.hpp
+
+QMAKE_CXXFLAGS_DEBUG += -ansi -pedantic
+QMAKE_CXXFLAGS_RELEASE += -ansi -pedantic

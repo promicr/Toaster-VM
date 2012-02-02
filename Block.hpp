@@ -30,10 +30,6 @@ public:
     Block();
     Block(const Block & other);
 
-    explicit Block(long data);
-    explicit Block(double data);
-    explicit Block(char data);
-    explicit Block(bool data);
     explicit Block(int address, Heap & heap);
     explicit Block(DataType dataType);
 
@@ -60,7 +56,7 @@ public:
     Heap & pointerHeap() const;
     bool pointerIsNull() const;
 
-    void setUnused();
+    void setUnused(bool decReference = true);
     void setToInteger(long data = 0u);
     void setToReal(double data = 0.0);
     void setToChar(char data = '\0');
@@ -91,9 +87,10 @@ private:
         } pointerData;
     };
 
-    void nullifyPointer(); // Cleans the pointer data of a block, decrementing a heap reference count if necessary
+    // Cleans the pointer data of a block, decrementing a heap reference count if necessary
+    void nullifyPointer(bool decReference = true);
 };
 
-std::ostream & operator <<(std::ostream & stream, Block & block);
+std::ostream & operator <<(std::ostream & stream, const Block & block);
 
 #endif // BLOCK_HPP

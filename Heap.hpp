@@ -30,7 +30,7 @@ protected:
     void incReferenceCountAt(unsigned index);
     void decReferenceCountAt(unsigned index);
     unsigned short referenceCountAt(unsigned index) const;
-    virtual void referenceCountChangeCallback(unsigned index);
+    virtual void referenceCountChangeCallback(unsigned);
 
     friend class Block;
 

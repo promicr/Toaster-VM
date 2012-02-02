@@ -12,11 +12,13 @@
 
 Block::Block()
 {
+    pointerData.heap = NULL;
     setUnused();
 }
 
 Block::Block(const Block & other)
 {
+    pointerData.heap = NULL;
     if (other.dataType_ != DATA_TYPE_COUNT)
     {
         setUnused();
@@ -24,33 +26,15 @@ Block::Block(const Block & other)
     }
 }
 
-Block::Block(const long data)
-{
-    setToInteger(data);
-}
-
-Block::Block(const double data)
-{
-    setToReal(data);
-}
-
-Block::Block(const char data)
-{
-    setToChar(data);
-}
-
-Block::Block(const bool data)
-{
-    setToBoolean(data);
-}
-
 Block::Block(const int address, Heap & heap)
 {
+    pointerData.heap = NULL;
     setToPointer(address, heap);
 }
 
 Block::Block(const DataType dataType)
 {
+    pointerData.heap = NULL;
     setTo(dataType);
 }
 
@@ -129,9 +113,9 @@ bool Block::pointerIsNull() const
     return (pointerData.address < 0) || (pointerData.heap == NULL);
 }
 
-void Block::setUnused()
+void Block::setUnused(const bool decReference)
 {
-    nullifyPointer();
+    nullifyPointer(decReference);
     dataType_ = DT_INTEGER;
     inUse_ = false;
 }
@@ -199,36 +183,20 @@ void Block::setTo(DataType dataType)
 }
 
 Block & Block::operator =(const Block & rhs)
-{
+{    
     if ((dataType_ != rhs.dataType_) && inUse_)
         throw(std::runtime_error("Cannot assign data of block to a different type of block"));
 
+    inUse_ = rhs.inUse_;
+    if (!inUse_) return *this;
+
     switch (rhs.dataType_)
     {
-    case DT_INTEGER:
-        if (inUse_) integerData_ = rhs.integerData_;
-        else setToInteger(rhs.integerData_);
-        break;
-
-    case DT_REAL:
-        if (inUse_) realData_ = rhs.realData_;
-        else setToReal(rhs.realData_);
-        break;
-
-    case DT_CHAR:
-        if (inUse_) charData_ = rhs.charData_;
-        else setToChar(rhs.charData_);
-        break;
-
-    case DT_BOOLEAN:
-        if (inUse_) booleanData_ = rhs.booleanData_;
-        else setToBoolean(rhs.booleanData_);
-        break;
-
-    case DT_POINTER:
-        setToPointer(rhs.pointerData.address, *rhs.pointerData.heap);
-        break;
-
+    case DT_INTEGER: integerData_ = rhs.integerData_; break;
+    case DT_REAL:    realData_ = rhs.realData_; break;
+    case DT_CHAR:    charData_ = rhs.charData_; break;
+    case DT_BOOLEAN: booleanData_ = rhs.booleanData_; break;
+    case DT_POINTER: setToPointer(rhs.pointerData.address, *rhs.pointerData.heap); break;
     default: throw(std::runtime_error("Unknown type handled in assignment"));
     }
 
@@ -260,15 +228,15 @@ bool Block::operator !=(const Block & rhs) const
     return !(*this == rhs);
 }
 
-void Block::nullifyPointer()
+void Block::nullifyPointer(const bool decReference)
 {
-    if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL))
+    if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL) && decReference)
         pointerData.heap->decReferenceCountAt(pointerData.address);
     pointerData.address = -1;
     pointerData.heap = NULL;
 }
 
-std::ostream & operator <<(std::ostream & stream, Block & block)
+std::ostream & operator <<(std::ostream & stream, const Block & block)
 {
     switch (block.dataType())
     {

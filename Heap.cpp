@@ -27,7 +27,7 @@ unsigned Heap::size() const
     return size_;
 }
 
-void Heap::incReferenceCountAt(unsigned index)
+void Heap::incReferenceCountAt(const unsigned index)
 {
     if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
     if (referenceCount[index] == USHRT_MAX)
@@ -37,7 +37,7 @@ void Heap::incReferenceCountAt(unsigned index)
     referenceCountChangeCallback(index);
 }
 
-void Heap::decReferenceCountAt(unsigned index)
+void Heap::decReferenceCountAt(const unsigned index)
 {
     if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
     if (referenceCount[index] == 0)
@@ -47,10 +47,10 @@ void Heap::decReferenceCountAt(unsigned index)
     referenceCountChangeCallback(index);
 }
 
-unsigned short Heap::referenceCountAt(unsigned index) const
+unsigned short Heap::referenceCountAt(const unsigned index) const
 {
     if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
     return referenceCount[index];
 }
 
-void Heap::referenceCountChangeCallback(unsigned index) {}
+void Heap::referenceCountChangeCallback(unsigned) {}

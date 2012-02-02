@@ -12,30 +12,24 @@
 
 int main(int argc, char * argv[])
 {
-    Machine machine;
+    Machine machine(50, 50);
 
-    Block a, b;
-    a.setToInteger(10u);
-    b.setToInteger(15u);
+    machine.allocate(Block::DT_INTEGER, 1);
+    machine.write(Machine::L_ALLOC_OUT_REGISTER);
+    machine.move(Machine::L_ALLOC_OUT_REGISTER, Machine::L_PRIMARY_REGISTER);
+    machine.clear(Machine::L_ALLOC_OUT_REGISTER);
 
-    machine.set(a, Machine::L_PRIMARY_REGISTER);
-    machine.push(Machine::L_PRIMARY_REGISTER);
-    machine.set(b, Machine::L_PRIMARY_REGISTER);
-    machine.add(Machine::L_PRIMARY_REGISTER, Machine::L_STACK);
+    Block pointer(machine.primaryRegister());
+    machine.set(Block(Block::DT_INTEGER), pointer);
 
-    machine.write(Machine::L_PRIMARY_REGISTER);
-    machine.write(Machine::L_STACK);
+    machine.clear(Machine::L_PRIMARY_REGISTER);
 
-    machine.push(Machine::L_PRIMARY_REGISTER);
-    machine.set(a, Machine::L_PRIMARY_REGISTER);
-    machine.multiply(Machine::L_PRIMARY_REGISTER, Machine::L_STACK);
-    machine.pop(Machine::L_PRIMARY_REGISTER);
+    machine.write(pointer);
 
-    machine.write(Machine::L_PRIMARY_REGISTER);
-    machine.write(Machine::L_STACK);
+    Block * block = &machine.managedHeap().blockAt(pointer.pointerAddress());
+    std::cout << "IN USE? " << block->inUse() << std::endl << "..." << std::endl;
+    pointer.setUnused();
 
-    machine.read(Machine::L_PRIMARY_REGISTER);
-    machine.write(Machine::L_PRIMARY_REGISTER);
-
+    std::cout << "IN USE NOW? " << block->inUse() << std::endl;
     return 0;
 }
