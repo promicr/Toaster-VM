@@ -14,13 +14,14 @@ Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, con
 
 void Machine::clear(const locationId location)
 {
-    Block * block = getBlockFrom(location);
-    if (block != NULL) clear(block);
+    Block * block = getBlockFrom(location, 1);
+    if (block == NULL) return;
+    clear(block);
 }
 
-void Machine::clear(Block & location, const bool locationIsPointer)
+void Machine::clear(Block & location)
 {
-    Block * block = locationIsPointer ? getBlockFrom(location) : &location;
+    Block * block = getBlockFrom(location, 1);
     if (block != NULL) clear(block);
 }
 
@@ -33,57 +34,62 @@ void Machine::clear(Block * locationBlock)
 
 void Machine::set(const Block & value, const locationId destination)
 {
-    Block * block = getBlockFrom(destination);
-    if (block != NULL) set(value, block);
+    const Block * valueBlock = getBlockFrom(value, 1);
+    if (valueBlock == NULL) return;
+    Block * destBlock = getBlockFrom(destination, 2);
+    if (destBlock == NULL) return;
+    set(valueBlock, destBlock);
 }
 
-void Machine::set(const Block & value, Block & destination, const bool destIsPointer)
+void Machine::set(const Block & value, Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
-    if (block != NULL) set(value, block);
+    const Block * valueBlock = getBlockFrom(value, 1);
+    if (valueBlock == NULL) return;
+    Block * destBlock = getBlockFrom(destination, 2);
+    if (destBlock == NULL) return;
+    set(valueBlock, destBlock);
 }
 
-void Machine::set(const Block & value, Block * destBlock)
+void Machine::set(const Block * value, Block * destBlock)
 {
-    *destBlock = value;
+    *destBlock = *value;
 }
 
 ////////////////////////////////////////////////////////////
 
 void Machine::move(const locationId source, const locationId destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     move(sourceBlock, destBlock);
 }
 
-void Machine::move(const locationId source, Block & destination, const bool destIsPointer)
+void Machine::move(const locationId source, Block & destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     move(sourceBlock, destBlock);
 }
 
-void Machine::move(const Block & source, const bool sourceIsPointer, const locationId destination)
+void Machine::move(const Block & source, const locationId destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     move(sourceBlock, destBlock);
 }
 
-void Machine::move(const Block & source, const bool sourceIsPointer, Block & destination, const bool destIsPointer)
+void Machine::move(const Block & source, Block & destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
-
     move(sourceBlock, destBlock);
 }
 
@@ -96,7 +102,7 @@ void Machine::move(const Block * sourceBlock, Block * destBlock)
 
 void Machine::read(const locationId destination)
 {
-    Block * block = getBlockFrom(destination);
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL)
     {
         char c;
@@ -104,9 +110,9 @@ void Machine::read(const locationId destination)
     }
 }
 
-void Machine::read(Block & destination, const bool destIsPointer)
+void Machine::read(Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) read(block);
 }
 
@@ -120,13 +126,13 @@ void Machine::read(Block * destBlock)
 
 void Machine::write(const locationId source)
 {
-    const Block * block = getBlockFrom(source);
+    const Block * block = getBlockFrom(source, 1);
     if (block != NULL) write(block);
 }
 
-void Machine::write(const Block & source, const bool sourceIsPointer)
+void Machine::write(const Block & source)
 {
-    const Block * block = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * block = getBlockFrom(source, 1);
     if (block != NULL) write(block);
 }
 
@@ -139,13 +145,13 @@ void Machine::write(const Block * sourceBlock)
 
 void Machine::push(const locationId source)
 {
-    const Block * block = getBlockFrom(source);
+    const Block * block = getBlockFrom(source, 1);
     if (block != NULL) push(block);
 }
 
-void Machine::push(const Block & source, const bool sourceIsPointer)
+void Machine::push(const Block & source)
 {
-    const Block * block = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * block = getBlockFrom(source, 1);
     if (block != NULL) push(block);
 }
 
@@ -158,13 +164,13 @@ void Machine::push(const Block * sourceBlock)
 
 void Machine::pop(const locationId destination)
 {
-    Block * block = getBlockFrom(destination);
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) pop(block);
 }
 
-void Machine::pop(Block & destination, const bool destIsPointer)
+void Machine::pop(Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) pop(block);
 }
 
@@ -178,13 +184,13 @@ void Machine::pop(Block * destBlock)
 
 void Machine::increment(const locationId destination)
 {
-    Block * block = getBlockFrom(destination);
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) increment(block);
 }
 
-void Machine::increment(Block & destination, const bool destIsPointer)
+void Machine::increment(Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) increment(block);
 }
 
@@ -208,13 +214,13 @@ void Machine::increment(Block * destBlock)
 
 void Machine::decrement(const locationId destination)
 {
-    Block * block = getBlockFrom(destination);
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) decrement(block);
 }
 
-void Machine::decrement(Block & destination, const bool destIsPointer)
+void Machine::decrement(Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * block = getBlockFrom(destination, 1);
     if (block != NULL) decrement(block);
 }
 
@@ -238,36 +244,36 @@ void Machine::decrement(Block * destBlock)
 
 void Machine::add(const locationId source, const locationId destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     add(sourceBlock, destBlock);
 }
 
-void Machine::add(const locationId source, Block & destination, const bool destIsPointer)
+void Machine::add(const locationId source, Block & destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     add(sourceBlock, destBlock);
 }
 
-void Machine::add(const Block & source, const bool sourceIsPointer, const locationId destination)
+void Machine::add(const Block & source, const locationId destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     add(sourceBlock, destBlock);
 }
 
-void Machine::add(const Block & source, const bool sourceIsPointer, Block & destination, const bool destIsPointer)
+void Machine::add(const Block & source, Block & destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     add(sourceBlock, destBlock);
 }
@@ -294,36 +300,36 @@ void Machine::add(const Block * sourceBlock, Block * destBlock)
 
 void Machine::subtract(const locationId source, const locationId destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     subtract(sourceBlock, destBlock);
 }
 
-void Machine::subtract(const locationId source, Block & destination, const bool destIsPointer)
+void Machine::subtract(const locationId source, Block & destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     subtract(sourceBlock, destBlock);
 }
 
-void Machine::subtract(const Block & source, const bool sourceIsPointer, const locationId destination)
+void Machine::subtract(const Block & source, const locationId destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     subtract(sourceBlock, destBlock);
 }
 
-void Machine::subtract(const Block & source, const bool sourceIsPointer, Block & destination, const bool destIsPointer)
+void Machine::subtract(const Block & source, Block & destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     subtract(sourceBlock, destBlock);
 }
@@ -350,36 +356,36 @@ void Machine::subtract(const Block * sourceBlock, Block * destBlock)
 
 void Machine::multiply(const locationId source, const locationId destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     multiply(sourceBlock, destBlock);
 }
 
-void Machine::multiply(const locationId source, Block & destination, const bool destIsPointer)
+void Machine::multiply(const locationId source, Block & destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     multiply(sourceBlock, destBlock);
 }
 
-void Machine::multiply(const Block & source, const bool sourceIsPointer, const locationId destination)
+void Machine::multiply(const Block & source, const locationId destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     multiply(sourceBlock, destBlock);
 }
 
-void Machine::multiply(const Block & source, const bool sourceIsPointer, Block & destination, const bool destIsPointer)
+void Machine::multiply(const Block & source, Block & destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     multiply(sourceBlock, destBlock);
 }
@@ -406,36 +412,36 @@ void Machine::multiply(const Block * sourceBlock, Block * destBlock)
 
 void Machine::divide(const locationId source, const locationId destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     divide(sourceBlock, destBlock);
 }
 
-void Machine::divide(const locationId source, Block & destination, const bool destIsPointer)
+void Machine::divide(const locationId source, Block & destination)
 {
-    const Block * sourceBlock = getBlockFrom(source);
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     divide(sourceBlock, destBlock);
 }
 
-void Machine::divide(const Block & source, const bool sourceIsPointer, const locationId destination)
+void Machine::divide(const Block & source, const locationId destination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     divide(sourceBlock, destBlock);
 }
 
-void Machine::divide(const Block & source, const bool sourceIsPointer, Block & desination, const bool destIsPointer)
+void Machine::divide(const Block & source, Block & desination)
 {
-    const Block * sourceBlock = sourceIsPointer ? getBlockFrom(source) : &source;
+    const Block * sourceBlock = getBlockFrom(source, 1);
     if (sourceBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(desination) : &desination;
+    Block * destBlock = getBlockFrom(desination, 2);
     if (destBlock == NULL) return;
     divide(sourceBlock, destBlock);
 }
@@ -468,13 +474,13 @@ void Machine::allocate(const Block::DataType dataType, const unsigned count)
 
 void Machine::allocate(const Block::DataType dataType, const locationId count)
 {
-    const Block * block = getBlockFrom(count);
+    const Block * block = getBlockFrom(count, 2);
     if ((block != NULL) && (block->dataType() == Block::DT_INTEGER)) allocate(dataType, block->integerData());
 }
 
-void Machine::allocate(Block::DataType dataType, const Block & count, bool countIsPointer)
+void Machine::allocate(Block::DataType dataType, const Block & count)
 {
-    const Block * block = countIsPointer ? getBlockFrom(count) : &count;
+    const Block * block = getBlockFrom(count, 2);
     if ((block != NULL) && (block->dataType() == Block::DT_INTEGER)) allocate(dataType, block->integerData());
 }
 
@@ -482,43 +488,42 @@ void Machine::allocate(Block::DataType dataType, const Block & count, bool count
 
 void Machine::getArrayElement(const locationId arrayPointer, const unsigned index)
 {
-    const Block * block = getBlockFrom(arrayPointer);
+    const Block * block = getBlockFrom(arrayPointer, 1);
     if (block != NULL) getArrayElement(block, index);
 }
 
 void Machine::getArrayElement(const locationId arrayPointer, const locationId index)
 {
-    const Block * indexBlock = getBlockFrom(index);
+    const Block * indexBlock = getBlockFrom(index, 2);
     if ((indexBlock != NULL) && (indexBlock->dataType() == Block::DT_INTEGER))
         getArrayElement(arrayPointer, indexBlock->integerData());
 }
 
-void Machine::getArrayElement(locationId arrayPointer, const Block & index, const bool indexIsPointer)
+void Machine::getArrayElement(locationId arrayPointer, const Block & index)
 {
-    const Block * indexBlock = indexIsPointer ? getBlockFrom(index) : &index;
+    const Block * indexBlock = getBlockFrom(index, 2);
     if ((indexBlock != NULL) && (indexBlock->dataType() == Block::DT_INTEGER))
         getArrayElement(arrayPointer, indexBlock->integerData());
 }
 
-void Machine::getArrayElement(const Block & arrayPointer, const bool arrayPointerIsPointer, const unsigned index)
+void Machine::getArrayElement(const Block & arrayPointer, const unsigned index)
 {
-    const Block * block = arrayPointerIsPointer ? getBlockFrom(arrayPointer) : &arrayPointer;
+    const Block * block = getBlockFrom(arrayPointer, 1);
     if (block != NULL) getArrayElement(block, index);
 }
 
-void Machine::getArrayElement(const Block & arrayPointer, const bool arrayPointerIsPointer, const locationId index)
+void Machine::getArrayElement(const Block & arrayPointer, const locationId index)
 {
-    const Block * indexBlock = getBlockFrom(index);
+    const Block * indexBlock = getBlockFrom(index, 2);
     if ((indexBlock != NULL) && (indexBlock->dataType() == Block::DT_INTEGER))
-        getArrayElement(arrayPointer, arrayPointerIsPointer, indexBlock->integerData());
+        getArrayElement(arrayPointer, indexBlock->integerData());
 }
 
-void Machine::getArrayElement(const Block & arrayPointer, const bool arrayPointerIsPointer, const Block & index,
-                              const bool indexIsPointer)
+void Machine::getArrayElement(const Block & arrayPointer, const Block & index)
 {
-    const Block * indexBlock = indexIsPointer ? getBlockFrom(index) : &index;
+    const Block * indexBlock = getBlockFrom(index, 2);
     if ((indexBlock != NULL) && (indexBlock->dataType() == Block::DT_INTEGER))
-        getArrayElement(arrayPointer, arrayPointerIsPointer, indexBlock->integerData());
+        getArrayElement(arrayPointer, indexBlock->integerData());
 }
 
 void Machine::getArrayElement(const Block * pointerBlock, const unsigned index)
@@ -532,37 +537,36 @@ void Machine::getArrayElement(const Block * pointerBlock, const unsigned index)
 
 void Machine::getArrayLength(locationId arrayPointer, locationId destination)
 {
-    const Block * pointerBlock = getBlockFrom(arrayPointer);
+    const Block * pointerBlock = getBlockFrom(arrayPointer, 1);
     if (pointerBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     getArrayLength(pointerBlock, destBlock);
 }
 
-void Machine::getArrayLength(locationId arrayPointer, Block & destination, bool destIsPointer)
+void Machine::getArrayLength(locationId arrayPointer, Block & destination)
 {
-    const Block * pointerBlock = getBlockFrom(arrayPointer);
+    const Block * pointerBlock = getBlockFrom(arrayPointer, 1);
     if (pointerBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     getArrayLength(pointerBlock, destBlock);
 }
 
-void Machine::getArrayLength(const Block & arrayPointer, bool arrayPointerIsPointer, locationId destination)
+void Machine::getArrayLength(const Block & arrayPointer, locationId destination)
 {
-    const Block * pointerBlock = arrayPointerIsPointer ? getBlockFrom(arrayPointer) : &arrayPointer;
+    const Block * pointerBlock = getBlockFrom(arrayPointer, 1);
     if (pointerBlock == NULL) return;
-    Block * destBlock = getBlockFrom(destination);
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     getArrayLength(pointerBlock, destBlock);
 }
 
-void Machine::getArrayLength(const Block & arrayPointer, bool arrayPointerIsPointer, Block & destination,
-                           bool destIsPointer)
+void Machine::getArrayLength(const Block & arrayPointer, Block & destination)
 {
-    const Block * pointerBlock = arrayPointerIsPointer ? getBlockFrom(arrayPointer) : &arrayPointer;
+    const Block * pointerBlock = getBlockFrom(arrayPointer, 1);
     if (pointerBlock == NULL) return;
-    Block * destBlock = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * destBlock = getBlockFrom(destination, 2);
     if (destBlock == NULL) return;
     getArrayLength(pointerBlock, destBlock);
 }
@@ -576,36 +580,36 @@ void Machine::getArrayLength(const Block * pointerBlock, Block * destBlock)
 
 void Machine::compare(const locationId lhs, const locationId rhs)
 {
-    const Block * lhsBlock = getBlockFrom(lhs);
+    const Block * lhsBlock = getBlockFrom(lhs, 1);
     if (lhsBlock == NULL) return;
-    const Block * rhsBlock = getBlockFrom(rhs);
+    const Block * rhsBlock = getBlockFrom(rhs, 2);
     if (rhsBlock == NULL) return;
     compare(lhsBlock, rhsBlock);
 }
 
-void Machine::compare(const locationId lhs, const Block & rhs, const bool rhsIsPointer)
+void Machine::compare(const locationId lhs, const Block & rhs)
 {
-    const Block * lhsBlock = getBlockFrom(lhs);
+    const Block * lhsBlock = getBlockFrom(lhs, 1);
     if (lhsBlock == NULL) return;
-    const Block * rhsBlock = rhsIsPointer ? getBlockFrom(rhs) : &rhs;
+    const Block * rhsBlock = getBlockFrom(rhs, 2);
     if (rhsBlock == NULL) return;
     compare(lhsBlock, rhsBlock);
 }
 
-void Machine::compare(const Block & lhs, const bool lhsIsPointer, const locationId rhs)
+void Machine::compare(const Block & lhs, const locationId rhs)
 {
-    const Block * lhsBlock = lhsIsPointer ? getBlockFrom(lhs) : &lhs;
+    const Block * lhsBlock = getBlockFrom(lhs, 1);
     if (lhsBlock == NULL) return;
-    const Block * rhsBlock = getBlockFrom(rhs);
+    const Block * rhsBlock = getBlockFrom(rhs, 2);
     if (rhsBlock == NULL) return;
     compare(lhsBlock, rhsBlock);
 }
 
-void Machine::compare(const Block & lhs, const bool lhsIsPointer, const Block & rhs, const bool rhsIsPointer)
+void Machine::compare(const Block & lhs, const Block & rhs)
 {
-    const Block * lhsBlock = lhsIsPointer ? getBlockFrom(lhs) : &lhs;
+    const Block * lhsBlock = getBlockFrom(lhs, 1);
     if (lhsBlock == NULL) return;
-    const Block * rhsBlock = rhsIsPointer ? getBlockFrom(rhs) : &rhs;
+    const Block * rhsBlock = getBlockFrom(rhs, 2);
     if (rhsBlock == NULL) return;
     compare(lhsBlock, rhsBlock);
 }
@@ -687,14 +691,13 @@ void Machine::compare(const Block * lhsBlock, const Block * rhsBlock)
 
 void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, locationId destination)
 {
-    Block * block = getBlockFrom(destination);
+    Block * block = getBlockFrom(destination, 2);
     if (block != NULL) block->setToBoolean(comparisonFlagRegister_.getValue(flagId));
 }
 
-void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Block & destination,
-                       const bool destIsPointer)
+void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Block & destination)
 {
-    Block * block = destIsPointer ? getBlockFrom(destination) : &destination;
+    Block * block = getBlockFrom(destination, 2);
     if (block != NULL) block->setToBoolean(comparisonFlagRegister_.getValue(flagId));
 }
 
@@ -730,22 +733,88 @@ Block & Machine::allocOutRegister()
     return allocOutRegister_;
 }
 
-Block * Machine::getBlockFrom(const locationId location)
+bool & Machine::operand1IsPointer()
 {
-    switch (location)
-    {
-    case L_STACK:                   return &stack_.peek();
-    case L_PRIMARY_REGISTER:        return &primaryRegister_;
-    case L_ALLOC_OUT_REGISTER:      return &allocOutRegister_;
-    case L_ADDR_STACK:              return getBlockFrom(stack_.peek());
-    case L_ADDR_PRIMARY_REGISTER:   return getBlockFrom(primaryRegister_);
-    case L_ADDR_ALLOC_OUT_REGISTER: return getBlockFrom(allocOutRegister_);
-    default:                        return NULL;
-    }
+    return operand1IsPointer_;
 }
 
-Block * Machine::getBlockFrom(const Block & pointer)
+bool Machine::operand1IsPointer() const
 {
-    if (pointer.dataType() != Block::DT_POINTER) return NULL;
-    return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+    return operand1IsPointer_;
+}
+
+bool & Machine::operand2IsPointer()
+{
+    return operand2IsPointer_;
+}
+
+bool Machine::operand2IsPointer() const
+{
+    return operand2IsPointer_;
+}
+
+Block * Machine::getBlockFrom(const locationId location, const short operandNumber)
+{
+    Block * block;
+    switch (location)
+    {
+    case L_STACK:                   block = &stack_.peek();
+    case L_PRIMARY_REGISTER:        block = &primaryRegister_;
+    case L_ALLOC_OUT_REGISTER:      block = &allocOutRegister_;
+    default:                        block = NULL;
+    }
+
+    if (block == NULL) return NULL;
+
+    bool returnReferencedBlock;
+    switch (operandNumber)
+    {
+    case 1:  returnReferencedBlock = operand1IsPointer_; break;
+    case 2:  returnReferencedBlock = operand2IsPointer_; break;
+    case 3:  returnReferencedBlock = true; break;
+    default: return block;
+    }
+
+    if (returnReferencedBlock) return getBlockFrom(*block , 3);
+    return block;
+}
+
+Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
+{
+    bool returnReferencedBlock;
+    switch (operandNumber)
+    {
+    case 1: returnReferencedBlock = operand1IsPointer_; break;
+    case 2: returnReferencedBlock = operand2IsPointer_; break;
+    case 3: returnReferencedBlock = true;
+    default: return &pointer;
+    }
+
+    if (returnReferencedBlock)
+    {
+        if (pointer.dataType() != Block::DT_POINTER) return NULL;
+        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+    }
+
+    return &pointer;
+}
+
+const Block * Machine::getBlockFrom(const Block & pointer, const short operandNumber)
+{
+    bool returnReferencedBlock;
+    switch (operandNumber)
+    {
+    case 1: returnReferencedBlock = operand1IsPointer_; break;
+    case 2: returnReferencedBlock = operand2IsPointer_; break;
+    case 3: returnReferencedBlock = true;
+    default: return &pointer;
+    }
+
+    if (returnReferencedBlock)
+    {
+        if (pointer.dataType() != Block::DT_POINTER) return NULL;
+        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+    }
+
+    return &pointer;
 }
