@@ -81,6 +81,21 @@ public:
     void divide(const Block & source, bool sourceIsPointer, Block & destination, bool destIsPointer);
 
     void allocate(Block::DataType dataType, unsigned count);
+    void allocate(Block::DataType dataType, locationId count);
+    void allocate(Block::DataType dataType, const Block & count, bool countIsPointer);
+
+    void getArrayElement(locationId arrayPointer, unsigned index);
+    void getArrayElement(locationId arrayPointer, locationId index);
+    void getArrayElement(locationId arrayPointer, const Block & index, bool indexIsPointer);
+    void getArrayElement(const Block & arrayPointer, bool arrayPointerIsPointer, unsigned index);
+    void getArrayElement(const Block & arrayPointer, bool arrayPointerIsPointer, locationId index);
+    void getArrayElement(const Block & arrayPointer, bool arrayPointerIsPointer, const Block & index,
+                         bool indexIsPointer);
+
+    void getArrayLength(locationId arrayPointer, locationId destination);
+    void getArrayLength(locationId arrayPointer, Block & destination, bool destIsPointer);
+    void getArrayLength(const Block & arrayPointer, bool arrayPointerIsPointer, locationId destination);
+    void getArrayLength(const Block & arrayPointer, bool arrayPointerIsPointer, Block & destination, bool destIsPointer);
 
     void compare(locationId lhs, locationId rhs);
     void compare(locationId lhs, const Block & rhs, bool rhsIsPointer);
@@ -123,6 +138,8 @@ private:
     void subtract(const Block * sourceBlock, Block * destBlock);
     void multiply(const Block * sourceBlock, Block * destBlock);
     void divide(const Block * sourceBlock, Block * destBlock);
+    void getArrayElement(const Block * pointerBlock, unsigned index);
+    void getArrayLength(const Block * pointerBlock, Block * destBlock);
     void compare(const Block * lhsBlock, const Block * rhsBlock);
 
     Block * getBlockFrom(locationId location);

@@ -105,12 +105,20 @@ bool Block::pointerIsNull() const
     return (pointerData.address < 0) || (pointerData.heap == NULL);
 }
 
-int Block::pointerArraySize() const
+unsigned Block::pointerArrayLength() const
 {
     if (pointerIsNull()) return 0;
     ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
     if (managedHeap == NULL) return 0;
-    return managedHeap->arraySizeAt(pointerData.address);
+    return managedHeap->arrayLengthAt(pointerData.address);
+}
+
+Block * Block::pointerArrayElementAt(const unsigned index) const
+{
+    if (pointerIsNull()) return NULL;
+    ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
+    if ((managedHeap == NULL) || (index >= pointerArrayLength())) return NULL;
+    return &managedHeap->blockAt(pointerData.address + index);
 }
 
 void Block::nullifyPointerData(const bool decReference)

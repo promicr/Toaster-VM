@@ -54,7 +54,8 @@ public:
 
     Heap * pointerHeap() const;
     bool pointerIsNull() const;
-    int pointerArraySize() const;
+    unsigned pointerArrayLength() const;
+    Block * pointerArrayElementAt(unsigned index) const;
     // Cleans the pointer data of a block, decrementing a heap reference count if necessary
     void nullifyPointerData(bool decReference = true);
 

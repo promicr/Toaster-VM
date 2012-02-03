@@ -22,13 +22,13 @@ public:
     ManagedHeap(unsigned size);
 
     void allocate(Block::DataType dataType, unsigned amount, Block & pointerDestination);
-    unsigned arraySizeAt(unsigned index);
+    unsigned arrayLengthAt(unsigned index);
 
 protected:
     void referenceCountChangeCallback(unsigned index);
 
 private:
-    std::vector<unsigned> arraySize; // The sizes of each array of data allocated
+    std::vector<unsigned> arrayLength; // The sizes of each array of data allocated
 };
 
 #endif // MANAGEDHEAP_HPP
