@@ -30,64 +30,65 @@ public:
 
     // Member functions relating to the bytecode
     void clear(locationId location);
+    void clear(Block & location, bool locationIsPointer);
 
     void set(const Block & value, locationId destination);
-    void set(const Block & value, const Block & pointerToDest);
+    void set(const Block & value, Block & destination, bool destIsPointer);
 
     void move(locationId source, locationId destination);
-    void move(locationId source, const Block & pointerToDest);
-    void move(const Block & pointerToSource, locationId destination);
-    void move(const Block & pointerToSource, const Block & pointerToDest);
+    void move(locationId source, Block & destination, bool destIsPointer);
+    void move(const Block & source, bool sourceIsPointer, locationId destination);
+    void move(const Block & source, bool sourceIsPointer, Block & destination, bool destIsPointer);
 
     // Reads a character and stores it in the destination memory block. Will read in a string of characters if
     // destination is an array of characters
     void read(locationId destination);
-    void read(const Block & pointerToDest);
+    void read(Block & destination, bool destIsPointer);
 
     void write(locationId source);
-    void write(const Block & pointerToSource);
+    void write(const Block & source, bool sourceIsPointer);
 
     void push(locationId source);
-    void push(const Block & pointerToSource);
+    void push(const Block & source, bool sourceIsPointer);
 
     void pop(locationId destination);
-    void pop(const Block & pointerToDest);
+    void pop(Block & destination, bool destIsPointer);
 
     void increment(locationId destination);
-    void increment(const Block & pointerToDestination);
+    void increment(Block & destination, bool destIsPointer);
 
     void decrement(locationId destination);
-    void decrement(const Block & pointerToDestination);
+    void decrement(Block & destination, bool destIsPointer);
 
     void add(locationId source, locationId destination);
-    void add(locationId source, const Block & pointerToDest);
-    void add(const Block & pointerToSource, locationId destination);
-    void add(const Block & pointerToSource, const Block & pointerToDest);
+    void add(locationId source, Block & destination, bool destIsPointer);
+    void add(const Block & source, bool sourceIsPointer, locationId destination);
+    void add(const Block & source, bool sourceIsPointer, Block & destination, bool destIsPointer);
 
     void subtract(locationId source, locationId destination);
-    void subtract(locationId source, const Block & pointerToDest);
-    void subtract(const Block & pointerToSource, locationId destination);
-    void subtract(const Block & pointerToSource, const Block & pointerToDest);
+    void subtract(locationId source, Block & destination, bool destIsPointer);
+    void subtract(const Block & source, bool sourceIsPointer, locationId destination);
+    void subtract(const Block & source, bool sourceIsPointer, Block & pointerToDest, bool destIsPointer);
 
     void multiply(locationId source, locationId destination);
-    void multiply(locationId source, const Block & pointerToDest);
-    void multiply(const Block & pointerToSource, locationId destination);
-    void multiply(const Block & pointerToSource, const Block & pointerToDest);
+    void multiply(locationId source, Block & destination, bool destIsPointer);
+    void multiply(const Block & source, bool sourceIsPointer, locationId destination);
+    void multiply(const Block & source, bool sourceIsPointer, Block & destination, bool destIsPointer);
 
     void divide(locationId source, locationId destination);
-    void divide(locationId source, const Block & pointerToDest);
-    void divide(const Block & pointerToSource, locationId destination);
-    void divide(const Block & pointerToSource, const Block & pointerToDest);
+    void divide(locationId source, Block & destination, bool destIsPointer);
+    void divide(const Block & source, bool sourceIsPointer, locationId destination);
+    void divide(const Block & source, bool sourceIsPointer, Block & destination, bool destIsPointer);
 
     void allocate(Block::DataType dataType, unsigned count);
 
     void compare(locationId lhs, locationId rhs);
-    void compare(locationId lhs, const Block & pointerToRhs);
-    void compare(const Block & pointerToLhs, locationId rhs);
-    void compare(const Block & pointerToLhs, const Block & pointerToRhs);
+    void compare(locationId lhs, const Block & rhs, bool rhsIsPointer);
+    void compare(const Block & lhs, bool lhsIsPointer, locationId rhs);
+    void compare(const Block & lhs, bool lhsIsPointer, const Block & rhs, bool rhsIsPointer);
 
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, locationId destination);
-    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const Block & pointerToDest);
+    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block & destination, bool destIsPointer);
 
     Stack & stack();
     Heap & unmanagedHeap();
@@ -109,19 +110,20 @@ private:
      * if need be. It saves time and is less prone to error.
      * Pointers should be validated BEFORE being passed to these functions
      */
+    void clear(Block * locationBlock);
     void set(const Block & value, Block * destBlock);
-    void move(Block * sourceBlock, Block * destBlock);
+    void move(const Block * sourceBlock, Block * destBlock);
     void read(Block * destBlock);
-    void write(Block * sourceBlock);
-    void push(Block * sourceBlock);
+    void write(const Block * sourceBlock);
+    void push(const Block * sourceBlock);
     void pop(Block * destBlock);
     void increment(Block * destBlock);
     void decrement(Block * destBlock);
-    void add(Block * sourceBlock, Block * destBlock);
-    void subtract(Block * sourceBlock, Block * destBlock);
-    void multiply(Block * sourceBlock, Block * destBlock);
-    void divide(Block * sourceBlock, Block * destBlock);
-    void compare(Block * lhsBlock, Block * rhsBlock);
+    void add(const Block * sourceBlock, Block * destBlock);
+    void subtract(const Block * sourceBlock, Block * destBlock);
+    void multiply(const Block * sourceBlock, Block * destBlock);
+    void divide(const Block * sourceBlock, Block * destBlock);
+    void compare(const Block * lhsBlock, const Block * rhsBlock);
 
     Block * getBlockFrom(locationId location);
     Block * getBlockFrom(const Block & pointer);
