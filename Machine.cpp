@@ -469,7 +469,7 @@ void Machine::divide(const Block * sourceBlock, Block * destBlock)
 void Machine::allocate(const Block::DataType dataType, const unsigned count)
 {
     if (dataType == Block::DATA_TYPE_COUNT) return;
-    managedHeap_.allocate(dataType, count, allocOutRegister_);
+    managedHeap_.allocate(dataType, count, managedOutRegister_);
 }
 
 void Machine::allocate(const Block::DataType dataType, const locationId count)
@@ -530,7 +530,7 @@ void Machine::getArrayElement(const Block * pointerBlock, const unsigned index)
 {
     if ((pointerBlock->dataType() != Block::DT_POINTER) || (index >= pointerBlock->pointerArrayLength())) return;
     const Block * element = pointerBlock->pointerArrayElementAt(index);
-    if (element != NULL) allocOutRegister_ = *element;
+    if (element != NULL) managedOutRegister_ = *element;
 }
 
 ////////////////////////////////////////////////////////////
@@ -703,6 +703,23 @@ void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Bl
 
 ////////////////////////////////////////////////////////////
 
+void Machine::jump(const std::string & labelName)
+{
+    labelTable::iterator iterator = labels_.find(labelName);
+    if (iterator != labels_.end()) programCounter_ = iterator->second;
+}
+
+void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName)
+{
+    if (comparisonFlagRegister_.getValue(condition))
+    {
+        labelTable::iterator iterator = labels_.find(labelName);
+        if (iterator != labels_.end()) programCounter_ = iterator->second;
+    }
+}
+
+////////////////////////////////////////////////////////////
+
 Stack & Machine::stack()
 {
     return stack_;
@@ -728,9 +745,25 @@ Block & Machine::primaryRegister()
     return primaryRegister_;
 }
 
-Block & Machine::allocOutRegister()
+Block & Machine::managedOutRegister()
 {
-    return allocOutRegister_;
+    return managedOutRegister_;
+}
+
+unsigned & Machine::programCounter()
+{
+    return programCounter_;
+}
+
+const Machine::labelTable & Machine::labels() const
+{
+    return labels_;
+}
+
+void Machine::addLabel(const std::string & labelName, unsigned lineNumber)
+{
+    if (labelName.empty()) return;
+    labels_[labelName] = lineNumber;
 }
 
 bool & Machine::operand1IsPointer()
@@ -758,10 +791,10 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
     Block * block;
     switch (location)
     {
-    case L_STACK:                   block = &stack_.peek();
-    case L_PRIMARY_REGISTER:        block = &primaryRegister_;
-    case L_ALLOC_OUT_REGISTER:      block = &allocOutRegister_;
-    default:                        block = NULL;
+    case L_STACK:                block = &stack_.peek();
+    case L_PRIMARY_REGISTER:     block = &primaryRegister_;
+    case L_MANAGED_OUT_REGISTER: block = &managedOutRegister_;
+    default:                     block = NULL;
     }
 
     if (block == NULL) return NULL;

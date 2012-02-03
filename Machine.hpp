@@ -8,6 +8,8 @@
 #ifndef MACHINE_HPP
 #define MACHINE_HPP
 
+#include <map>
+
 #include "Stack.hpp"
 #include "ManagedHeap.hpp"
 #include "ComparisonFlagRegister.hpp"
@@ -15,11 +17,13 @@
 class Machine
 {
 public:
+    typedef std::map<std::string, unsigned> labelTable; // Maybe change string to an int, i.e. hashed label name
+
     enum locationId
     {
         L_STACK,
         L_PRIMARY_REGISTER,
-        L_ALLOC_OUT_REGISTER,
+        L_MANAGED_OUT_REGISTER,
         L_TRASH
     };
 
@@ -101,12 +105,19 @@ public:
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, locationId destination);
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block & destination);
 
+    void jump(const std::string & labelName);
+    void conditionalJump(ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName);
+
     Stack & stack();
     Heap & unmanagedHeap();
     ManagedHeap & managedHeap();
     ComparisonFlagRegister & comparisonFlagRegister();
     Block & primaryRegister();
-    Block & allocOutRegister();
+    Block & managedOutRegister();
+    unsigned & programCounter();
+
+    const labelTable & labels() const;
+    void addLabel(const std::string & labelName, unsigned lineNumber);
 
     bool & operand1IsPointer();
     bool operand1IsPointer() const;
@@ -119,7 +130,10 @@ private:
     ManagedHeap managedHeap_;
     ComparisonFlagRegister comparisonFlagRegister_;
     Block primaryRegister_,
-    allocOutRegister_; // a register for storing the pointer output of managed heap allocations
+    managedOutRegister_; // a register for storing the output of managed heap functions
+    unsigned programCounter_;
+
+    labelTable labels_;
 
     bool operand1IsPointer_, operand2IsPointer_;
 
