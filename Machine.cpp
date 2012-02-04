@@ -10,7 +10,8 @@
 #include "Machine.hpp"
 
 Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, const unsigned managedHeapSize)
-    : stack_(stackSize), unmanagedHeap_(unmanagedHeapSize), managedHeap_(managedHeapSize) {}
+    : stack_(stackSize), unmanagedHeap_(unmanagedHeapSize), managedHeap_(managedHeapSize), programCounter_(0),
+      operand1IsPointer_(false), operand2IsPointer_(false) {}
 
 void Machine::clear(const locationId location)
 {
@@ -103,11 +104,7 @@ void Machine::move(const Block * sourceBlock, Block * destBlock)
 void Machine::read(const locationId destination)
 {
     Block * block = getBlockFrom(destination, 1);
-    if (block != NULL)
-    {
-        char c;
-        if (scanf("%c", &c) != 0) block->setToChar(c);
-    }
+    if (block != NULL) read(block);
 }
 
 void Machine::read(Block & destination)
@@ -120,6 +117,55 @@ void Machine::read(Block * destBlock)
 {
     char c;
     if (scanf("%c", &c) != 0) destBlock->setToChar(c);
+}
+
+////////////////////////////////////////////////////////////
+
+void Machine::readString(const locationId destination)
+{
+    Block * block = getBlockFrom(destination, 1);
+    if (block != NULL) readString(block);
+}
+
+void Machine::readString(Block & destination)
+{
+    Block * block = getBlockFrom(destination, 1);
+    if (block != NULL) readString(block);
+}
+
+void Machine::readString(Block * destBlock)
+{
+    if (destBlock->dataType() != Block::DT_POINTER) return;
+    Block * data = destBlock->pointerDataPointedTo();
+    if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
+
+    if (destBlock->pointerArrayLength() == 0)
+    {
+        char c;
+        if (scanf("%c", &c) != 0) data->charData() = c;
+    }
+    else
+    {
+        char c;
+        unsigned length = destBlock->pointerArrayLength();
+        for (unsigned i = 0; i < length; ++i)
+        {
+            if (scanf("%c", &c) != 0)
+            {
+                if ((c == '\n') || (c == '\r') || (c== '\0'))
+                {
+                    destBlock->pointerArrayElementAt(i)->charData() = '\0';
+                    break;
+                }
+                else destBlock->pointerArrayElementAt(i)->charData() = c;
+            }
+            else
+            {
+                destBlock->pointerArrayElementAt(i)->charData() = '\0';
+                break;
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -139,6 +185,41 @@ void Machine::write(const Block & source)
 void Machine::write(const Block * sourceBlock)
 {
     std::cout << *sourceBlock << std::endl;
+}
+
+////////////////////////////////////////////////////////////
+
+void Machine::writeString(const locationId source)
+{
+    const Block * block = getBlockFrom(source, 1);
+    if (block != NULL) writeString(block);
+}
+
+void Machine::writeString(const Block & source)
+{
+    const Block * block = getBlockFrom(source, 1);
+    if (block != NULL) writeString(block);
+}
+
+void Machine::writeString(const Block * sourceBlock)
+{
+    if (sourceBlock->dataType() != Block::DT_POINTER) return;
+    Block * data = sourceBlock->pointerDataPointedTo();
+    if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
+
+    if (sourceBlock->pointerArrayLength() == 0) std::cout << data->charData() << std::endl;
+    else
+    {
+        char c;
+        unsigned length = sourceBlock->pointerArrayLength();
+        for (unsigned i = 0; i < length; ++i)
+        {
+            c = sourceBlock->pointerArrayElementAt(i)->charData();
+            if (c == '\0') break;
+            std::cout << c;
+        }
+        std::cout << std::endl;
+    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -791,9 +872,9 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
     Block * block;
     switch (location)
     {
-    case L_STACK:                block = &stack_.peek();
-    case L_PRIMARY_REGISTER:     block = &primaryRegister_;
-    case L_MANAGED_OUT_REGISTER: block = &managedOutRegister_;
+    case L_STACK:                block = &stack_.peek(); break;
+    case L_PRIMARY_REGISTER:     block = &primaryRegister_; break;
+    case L_MANAGED_OUT_REGISTER: block = &managedOutRegister_; break;
     default:                     block = NULL;
     }
 

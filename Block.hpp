@@ -56,6 +56,7 @@ public:
     bool pointerIsNull() const;
     unsigned pointerArrayLength() const;
     Block * pointerArrayElementAt(unsigned index) const;
+    Block * pointerDataPointedTo() const;
     // Cleans the pointer data of a block, decrementing a heap reference count if necessary
     void nullifyPointerData(bool decReference = true);
 

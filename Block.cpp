@@ -115,10 +115,14 @@ unsigned Block::pointerArrayLength() const
 
 Block * Block::pointerArrayElementAt(const unsigned index) const
 {
+    if (pointerIsNull() || (index >= pointerArrayLength())) return NULL;
+    return &pointerData.heap->blockAt(pointerData.address + index);
+}
+
+Block * Block::pointerDataPointedTo() const
+{
     if (pointerIsNull()) return NULL;
-    ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
-    if ((managedHeap == NULL) || (index >= pointerArrayLength())) return NULL;
-    return &managedHeap->blockAt(pointerData.address + index);
+    return &pointerData.heap->blockAt(pointerData.address);
 }
 
 void Block::nullifyPointerData(const bool decReference)

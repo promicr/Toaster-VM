@@ -41,13 +41,20 @@ public:
     void move(const Block & source, locationId destination);
     void move(const Block & source, Block & destination);
 
-    // Reads a character and stores it in the destination memory block. Will read in a string of characters if
-    // destination is an array of characters
+    // Reads a character and stores it in the destination memory block
     void read(locationId destination);
     void read(Block & destination);
 
+    // Takes a pointer to an array of characters, and reads a string of data into that array. If the pointer doesn't
+    // point to an array, it will read just one character into the memory that the pointer is pointing to
+    void readString(locationId destination);
+    void readString(Block & destination);
+
     void write(locationId source);
     void write(const Block & source);
+
+    void writeString(locationId source);
+    void writeString(const Block & source);
 
     void push(locationId source);
     void push(const Block & source);
@@ -146,7 +153,9 @@ private:
     void set(const Block * value, Block * destBlock);
     void move(const Block * sourceBlock, Block * destBlock);
     void read(Block * destBlock);
+    void readString(Block * destBlock);
     void write(const Block * sourceBlock);
+    void writeString(const Block * sourceBlock);
     void push(const Block * sourceBlock);
     void pop(Block * destBlock);
     void increment(Block * destBlock);

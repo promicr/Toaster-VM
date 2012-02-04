@@ -11,7 +11,7 @@
 #include "Block.hpp"
 
 ManagedHeap::ManagedHeap(const unsigned size)
-    : Heap(size), arrayLength(size, 0) {}
+    : Heap(size), arrayLength(size == 0 ? defaultSize : size, 0) {}
 
 void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount, Block & pointerDestination)
 {
