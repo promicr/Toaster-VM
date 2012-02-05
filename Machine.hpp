@@ -20,6 +20,8 @@ class Machine
 public:
     typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to int, i.e. hashed label name
     typedef std::vector<unsigned> ReturnAddressStack;
+    typedef Block (*ExtensionFunction)(void*, Block);
+    typedef std::map<std::string, ExtensionFunction> ExtensionFunctionTable;
 
     struct StackLocation
     {
@@ -32,14 +34,17 @@ public:
         L_STACK,
         L_PRIMARY_REGISTER,
         L_MANAGED_OUT_REGISTER,
+        L_EXTENSION_OUT_REGISTER,
         L_NIL
     }
     static const STACK = L_STACK, // For use in Machine member functions that take T& arguments
     PRIMARY_REGISTER = L_PRIMARY_REGISTER,
     MANAGED_OUT_REGISTER = L_MANAGED_OUT_REGISTER,
+    EXTENSION_OUT_REGISTER = L_EXTENSION_OUT_REGISTER,
     NIL = L_NIL;
 
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
+    ~Machine();
 
     // Member functions relating to the bytecode
     template <typename T>
@@ -119,7 +124,7 @@ public:
     void stackMultiply();
     void stackDivide();
 
-    void allocateDirect(Block::DataType dataType, unsigned count);
+    void allocateDirect(Block::DataType dataType, unsigned count, Block & pointerDestination);
     template <typename T>
     void allocate(Block::DataType dataType, const T & count);
 
@@ -158,12 +163,17 @@ public:
     template<typename T>
     void returnFromCall(const T & returnValue);
 
+    void loadExtension(const std::string & fileName);
+    template<typename T>
+    void extensionCall(const std::string & functionName, const T & argument);
+
     Stack & stack();
     Heap & unmanagedHeap();
     ManagedHeap & managedHeap();
     ComparisonFlagRegister & comparisonFlagRegister();
     Block & primaryRegister();
     Block & managedOutRegister();
+    Block & extensionOutRegister();
     unsigned & programCounter();
 
     const LabelTable & labels() const;
@@ -174,13 +184,20 @@ public:
     bool & operand2IsPointer();
     bool operand2IsPointer() const;
 
+    static const ExtensionFunctionTable & extensionFunctions();
+
 private:
+    static std::vector<void*> extensionHandles;
+    static ExtensionFunctionTable extensionFunctions_;
+    static unsigned machineCount;
+
     Stack stack_;
     Heap unmanagedHeap_;
     ManagedHeap managedHeap_;
     ComparisonFlagRegister comparisonFlagRegister_;
     Block primaryRegister_,
-    managedOutRegister_; // a register for storing the output of managed heap functions
+    managedOutRegister_, // a register for storing the output of managed heap functions
+    extensionOutRegister_; // a register for storing the output of extension functions
     unsigned programCounter_;
 
     LabelTable labels_;
@@ -231,6 +248,7 @@ private:
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
     void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
     void _returnFromCall(const Block * returnBlock);
+    void _extensionCall(const std::string & functionName, const Block * argument);
 
     Block * getBlockFrom(locationId location, short operandNumber);
     Block * getBlockFrom(StackLocation location, short operandNumber);
@@ -459,6 +477,12 @@ template <typename T>
 void Machine::returnFromCall(const T & returnValue)
 {
     _returnFromCall(getBlockFrom(returnValue, 1));
+}
+
+template <typename T>
+void Machine::extensionCall(const std::string & functionName, const T & argument)
+{
+    _extensionCall(functionName, getBlockFrom(argument, 2));
 }
 
 #endif // MACHINE_HPP

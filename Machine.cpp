@@ -7,16 +7,28 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include <dlfcn.h>
 
 #include "Machine.hpp"
 
-const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER, Machine::NIL;
+const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER,
+Machine::EXTENSION_OUT_REGISTER, Machine::NIL;
+
+Machine::ExtensionFunctionTable Machine::extensionFunctions_;
+std::vector<void*> Machine::extensionHandles;
+unsigned Machine::machineCount = 0;
 
 Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, const unsigned managedHeapSize)
     : stack_(stackSize), unmanagedHeap_(unmanagedHeapSize), managedHeap_(managedHeapSize), programCounter_(0),
       operand1IsPointer_(false), operand2IsPointer_(false)
 {
     returnAddressStack.reserve((stackSize == 0 ? Stack::defaultSize : stackSize) / 4);
+    ++machineCount;
+}
+
+Machine::~Machine()
+{
+    if (--machineCount == 0) for (unsigned i = 0; i < extensionHandles.size(); ++i) dlclose(extensionHandles[i]);
 }
 
 Machine::ArrayPopulator::ArrayPopulator()
@@ -308,11 +320,11 @@ void Machine::stackDivide()
     stack_.pop();
 }
 
-void Machine::allocateDirect(const Block::DataType dataType, const unsigned count)
+void Machine::allocateDirect(const Block::DataType dataType, const unsigned count, Block & pointerDestination)
 {
     if (dataType == Block::DATA_TYPE_COUNT)
         throw(std::runtime_error("Machine::allocateDirect: Invalid data type given"));
-    managedHeap_.allocate(dataType, count, managedOutRegister_);
+    managedHeap_.allocate(dataType, count, pointerDestination);
 }
 
 void Machine::_allocate(const Block::DataType dataType, const Block * countBlock)
@@ -320,7 +332,7 @@ void Machine::_allocate(const Block::DataType dataType, const Block * countBlock
     if (countBlock == NULL) throw(std::runtime_error("Machine::_allocate: Invalid array size given"));
     if (countBlock->dataType() != Block::DT_INTEGER)
         throw(std::runtime_error("Machine::_allocate: Data type of array size is invalid (expected integer)"));
-    allocateDirect(dataType, countBlock->integerData());
+    allocateDirect(dataType, countBlock->integerData(), managedOutRegister_);
 }
 
 void Machine::_startPopulatingArray(const Block * pointerBlock)
@@ -463,8 +475,8 @@ void Machine::_copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, B
 void Machine::jump(const std::string & labelName)
 {
     LabelTable::iterator iterator = labels_.find(labelName);
-    if (iterator != labels_.end()) programCounter_ = iterator->second;
-    else throw(std::runtime_error("Machine::jump: Unknown label '" + labelName + "'"));
+    if (iterator == labels_.end()) throw(std::runtime_error("Machine::jump: Unknown label '" + labelName + "'"));
+    programCounter_ = iterator->second;
 }
 
 void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName)
@@ -485,6 +497,33 @@ void Machine::_returnFromCall(const Block * returnBlock)
     stack_.popFrame(returnBlock);
     programCounter_ = returnAddressStack.back();
     returnAddressStack.pop_back();
+}
+
+void Machine::loadExtension(const std::string & fileName)
+{
+    void * handle = dlopen(fileName.c_str(), RTLD_LAZY);
+    char * error = dlerror();
+    if ((handle == NULL) || (error != NULL))
+        throw(std::runtime_error("Machine::loadExtension: " + std::string(error)));
+
+    void * f = dlsym(handle, "tvmLoadExtension");
+    error = dlerror();
+    if ((f == NULL) || (error != NULL)) throw(std::runtime_error("Machine::loadExtension: " + std::string(error)));
+
+    typedef void(*func)(void*);
+    func loadFunction = *reinterpret_cast<func*>(&f);
+    loadFunction(&extensionFunctions_);
+
+    extensionHandles.push_back(handle);
+}
+
+void Machine::_extensionCall(const std::string & functionName, const Block * argument)
+{
+    if (argument == NULL) throw(std::runtime_error("Machine::_extensionCall: Argument is invalid"));
+    ExtensionFunctionTable::iterator iterator = extensionFunctions_.find(functionName);
+    if (iterator == extensionFunctions_.end())
+        throw(std::runtime_error("Machine::_extensionCall: Unknown extension function '" + functionName + "'"));
+    extensionOutRegister_ = iterator->second(this, *argument);
 }
 
 Stack & Machine::stack()
@@ -515,6 +554,11 @@ Block & Machine::primaryRegister()
 Block & Machine::managedOutRegister()
 {
     return managedOutRegister_;
+}
+
+Block & Machine::extensionOutRegister()
+{
+    return extensionOutRegister_;
 }
 
 unsigned & Machine::programCounter()
@@ -551,6 +595,11 @@ bool & Machine::operand2IsPointer()
 bool Machine::operand2IsPointer() const
 {
     return operand2IsPointer_;
+}
+
+const Machine::ExtensionFunctionTable & Machine::extensionFunctions()
+{
+    return extensionFunctions_;
 }
 
 Block * Machine::getBlockFrom(const locationId location, const short operandNumber)
