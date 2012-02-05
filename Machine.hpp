@@ -62,6 +62,15 @@ public:
     template <typename T1, typename T2>
     void move(const T1 & source, const T2 & destination);
 
+    template <typename T1, typename T2>
+    void swap(T1 & a, T2 & b);
+    template <typename T1, typename T2>
+    void swap(const T1 & a, T2 & b);
+    template <typename T1, typename T2>
+    void swap(T1 & a, const T2 & b);
+    template <typename T1, typename T2>
+    void swap(const T1 & a, const T2 & b);
+
     // Reads a character and stores it in the destination memory block
     template <typename T>
     void read(T & destination);
@@ -98,6 +107,11 @@ public:
     void decrement(T & destination);
     template <typename T>
     void decrement(const T & destination);
+
+    template <typename T>
+    void negate(T & destination);
+    template <typename T>
+    void negate(const T & destination);
 
     template <typename T1, typename T2>
     void add(const T1 & source, T2 & destination);
@@ -145,6 +159,11 @@ public:
     void getArrayLength(const T1 & arrayPointer, const T2 & destination);
 
     template <typename T1, typename T2>
+    void convert(const T1 & source, T2 & destination, Block::DataType dataType);
+    template <typename T1, typename T2>
+    void convert(const T1 & source, const T2 & destination, Block::DataType dataType);
+
+    template <typename T1, typename T2>
     void dereference(const T1 & pointer, T2 & destinaton);
     template <typename T1, typename T2>
     void dereference(const T1 & pointer, const T2 & destination);
@@ -156,6 +175,26 @@ public:
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination);
     template <typename T>
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination);
+
+    template <typename T>
+    void logicalNot(T & destination);
+    template <typename T>
+    void logicalNot(const T & destination);
+
+    template <typename T1, typename T2>
+    void logicalAnd(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void logicalAnd(const T1 & source, const T2 & destination);
+
+    template <typename T1, typename T2>
+    void logicalOr(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void logicalOr(const T1 & source, const T2 & destination);
+
+    template <typename T1, typename T2>
+    void logicalXor(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void logicalXor(const T1 & source, const T2 & destination);
 
     void jump(const std::string & labelName);
     void conditionalJump(ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName);
@@ -226,6 +265,7 @@ private:
     void _clear(Block * locationBlock);
     void _set(const Block * value, Block * destBlock);
     void _move(const Block * sourceBlock, Block * destBlock);
+    void _swap(Block * a, Block * b);
     void _read(Block * destBlock);
     void _readString(Block * destBlock);
     void _write(const Block * sourceBlock);
@@ -234,6 +274,7 @@ private:
     void _pop(Block * destBlock);
     void _increment(Block * destBlock);
     void _decrement(Block * destBlock);
+    void _negate(Block * destBlock);
     void _add(const Block * sourceBlock, Block * destBlock);
     void _subtract(const Block * sourceBlock, Block * destBlock);
     void _multiply(const Block * sourceBlock, Block * destBlock);
@@ -244,9 +285,14 @@ private:
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
     void _getArrayLength(const Block * pointerBlock, Block * destBlock);
+    void _convert(const Block * sourceBlock, Block * destBlock, Block::DataType dataType);
     void _dereference(const Block * pointerBlock, Block * destBlock);
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
     void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
+    void _logicalNot(Block * destBlock);
+    void _logicalAnd(const Block * sourceBlock, Block * destBlock);
+    void _logicalOr(const Block * sourceBlock, Block * destBlock);
+    void _logicalXor(const Block * sourceBlock, Block * destBlock);
     void _returnFromCall(const Block * returnBlock);
     void _extensionCall(const std::string & functionName, const Block * argument);
 
@@ -287,6 +333,27 @@ template <typename T1, typename T2>
 void Machine::move(const T1 & source, const T2 & destination)
 {
     _move(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::swap(T1 & a, T2 & b)
+{
+    _swap(getBlockFrom(a, 1), getBlockFrom(b, 2));
+}
+template <typename T1, typename T2>
+void Machine::swap(const T1 & a, T2 & b)
+{
+    _swap(getBlockFrom(a, 1), getBlockFrom(b, 2));
+}
+template <typename T1, typename T2>
+void Machine::swap(T1 & a, const T2 & b)
+{
+    _swap(getBlockFrom(a, 1), getBlockFrom(b, 2));
+}
+template <typename T1, typename T2>
+void Machine::swap(const T1 & a, const T2 & b)
+{
+    _swap(getBlockFrom(a, 1), getBlockFrom(b, 2));
 }
 
 template <typename T>
@@ -359,6 +426,17 @@ template <typename T>
 void Machine::decrement(const T & destination)
 {
     _decrement(getBlockFrom(destination, 1));
+}
+
+template <typename T>
+void Machine::negate(T & destination)
+{
+    _negate(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::negate(const T & destination)
+{
+    _negate(getBlockFrom(destination, 1));
 }
 
 template <typename T1, typename T2>
@@ -446,6 +524,17 @@ void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
 }
 
 template <typename T1, typename T2>
+void Machine::convert(const T1 & source, T2 & destination, const Block::DataType dataType)
+{
+    _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
+}
+template <typename T1, typename T2>
+void Machine::convert(const T1 & source, const T2 & destination, const Block::DataType dataType)
+{
+    _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
+}
+
+template <typename T1, typename T2>
 void Machine::dereference(const T1 & pointer, T2 & destination)
 {
     _dereference(getBlockFrom(pointer, 1), getBlockFrom(destination, 2));
@@ -471,6 +560,50 @@ template <typename T>
 void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
 {
     _copyFlag(flagId, getBlockFrom(destination, 2));
+}
+
+template <typename T>
+void Machine::logicalNot(T & destination)
+{
+    _logicalNot(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::logicalNot(const T & destination)
+{
+    _logicalNot(getBlockFrom(destination, 1));
+}
+
+template <typename T1, typename T2>
+void Machine::logicalAnd(const T1 & source, T2 & destination)
+{
+    _logicalAnd(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::logicalAnd(const T1 & source, const T2 & destination)
+{
+    _logicalAnd(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::logicalOr(const T1 & source, T2 & destination)
+{
+    _logicalOr(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::logicalOr(const T1 & source, const T2 & destination)
+{
+    _logicalOr(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::logicalXor(const T1 & source, T2 & destination)
+{
+    _logicalXor(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::logicalXor(const T1 & source, const T2 & destination)
+{
+    _logicalXor(getBlockFrom(source, 1), getBlockFrom(destination, 2));
 }
 
 template <typename T>

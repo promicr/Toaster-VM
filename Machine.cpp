@@ -67,7 +67,7 @@ void Machine::_clear(Block * locationBlock)
 void Machine::_set(const Block * value, Block * destBlock)
 {
     if (value == NULL) destBlock->clear();
-    else if (destBlock == NULL) return;
+    else if (destBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid destination given"));
     *destBlock = *value;
 }
 
@@ -76,6 +76,16 @@ void Machine::_move(const Block * sourceBlock, Block * destBlock) // sacrificing
     if (sourceBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid destination given"));
     *destBlock = *sourceBlock;
+}
+
+void Machine::_swap(Block * a, Block * b)
+{
+    if (a == NULL) throw(std::runtime_error("Machine::_exchange: Invalid first argument given"));
+    if (b == NULL) throw(std::runtime_error("Machine::_exchange: Invalid second argument given"));
+
+    Block temp(*a);
+    *a = *b;
+    *b = temp;
 }
 
 void Machine::_read(Block * destBlock)
@@ -207,6 +217,17 @@ void Machine::_decrement(Block * destBlock)
         break;
 
     default: throw(std::runtime_error("Machine::_decrement: Destination data type is invalid"));
+    }
+}
+
+void Machine::_negate(Block * destBlock)
+{
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_negate: Invalid destination given"));
+    switch (destBlock->dataType())
+    {
+    case Block::DT_INTEGER: destBlock->integerData() = -destBlock->integerData(); break;
+    case Block::DT_REAL:    destBlock->realData() = -destBlock->realData(); break;
+    default: throw(std::runtime_error("Machine::_negate: Destination data type is invalid (expected integer or real)"));
     }
 }
 
@@ -381,6 +402,60 @@ void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
     destBlock->setToInteger(pointerBlock->pointerArrayLength());
 }
 
+void Machine::_convert(const Block * sourceBlock, Block * destBlock, const Block::DataType dataType)
+{
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid destination given"));
+    if (dataType == Block::DATA_TYPE_COUNT) throw(std::runtime_error("Machine::_convert: Invalid data type given"));
+    if (destBlock->dataType() == Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_convert: Pointers cannot be converted into other data types"));
+
+    switch (dataType)
+    {
+    case Block::DT_INTEGER:
+        switch (sourceBlock->dataType())
+        {
+        case Block::DT_INTEGER: destBlock->setToInteger(sourceBlock->integerData()); break;
+        case Block::DT_REAL:    destBlock->setToInteger(sourceBlock->realData()); break;
+        case Block::DT_CHAR:    destBlock->setToInteger(sourceBlock->charData()); break;
+        case Block::DT_BOOLEAN: destBlock->setToInteger(sourceBlock->booleanData()); break;
+        default: break;
+        }
+        break;
+    case Block::DT_REAL:
+        switch (sourceBlock->dataType())
+        {
+        case Block::DT_INTEGER: destBlock->setToReal(sourceBlock->integerData()); break;
+        case Block::DT_REAL:    destBlock->setToReal(sourceBlock->realData()); break;
+        case Block::DT_CHAR:    destBlock->setToReal(sourceBlock->charData()); break;
+        case Block::DT_BOOLEAN: destBlock->setToReal(sourceBlock->booleanData()); break;
+        default: break;
+        }
+        break;
+    case Block::DT_CHAR:
+        switch (sourceBlock->dataType())
+        {
+        case Block::DT_INTEGER: destBlock->setToChar(sourceBlock->integerData()); break;
+        case Block::DT_REAL:    destBlock->setToChar(sourceBlock->realData()); break;
+        case Block::DT_CHAR:    destBlock->setToChar(sourceBlock->charData()); break;
+        case Block::DT_BOOLEAN: destBlock->setToChar(sourceBlock->booleanData()); break;
+        default: break;
+        }
+        break;
+    case Block::DT_BOOLEAN:
+        switch (sourceBlock->dataType())
+        {
+        case Block::DT_INTEGER: destBlock->setToBoolean(sourceBlock->integerData()); break;
+        case Block::DT_REAL:    destBlock->setToBoolean(sourceBlock->realData()); break;
+        case Block::DT_CHAR:    destBlock->setToBoolean(sourceBlock->charData()); break;
+        case Block::DT_BOOLEAN: destBlock->setToBoolean(sourceBlock->booleanData()); break;
+        default: break;
+        }
+        break;
+    default: throw(std::runtime_error("Machine::_convert: Cannot convert other data types into pointers"));
+    }
+}
+
 void Machine::_dereference(const Block * pointerBlock, Block * destBlock)
 {
     if (pointerBlock == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is invalid"));
@@ -470,6 +545,42 @@ void Machine::_copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, B
 {
     if (destBlock == NULL) throw(std::runtime_error("Machine::_copyFlag: Destination argument is invalid"));
     destBlock->setToBoolean(comparisonFlagRegister_.getValue(flagId));
+}
+
+void Machine::_logicalNot(Block * destBlock)
+{
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Destination is invalid"));
+    if (destBlock->dataType() != Block::DT_BOOLEAN)
+        throw(std::runtime_error("Machine::_logicalAnd: Destination data type is invalid (boolean expected)"));
+    destBlock->setToBoolean(!destBlock->booleanData());
+}
+
+void validateBooleans(const Block * sourceBlock, const Block * destBlock)
+{
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Source is invalid"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Destination is invalid"));
+    if (sourceBlock->dataType() != Block::DT_BOOLEAN)
+        throw(std::runtime_error("Machine::_logicalAnd: Source data type is invalid (boolean expected)"));
+    if (destBlock->dataType() != Block::DT_BOOLEAN)
+        throw(std::runtime_error("Machine::_logicalAnd: Destination data type is invalid (boolean expected)"));
+}
+
+void Machine::_logicalAnd(const Block * sourceBlock, Block * destBlock)
+{
+    validateBooleans(sourceBlock, destBlock);
+    destBlock->setToBoolean(sourceBlock->booleanData() && destBlock->booleanData());
+}
+
+void Machine::_logicalOr(const Block * sourceBlock, Block * destBlock)
+{
+    validateBooleans(sourceBlock, destBlock);
+    destBlock->setToBoolean(sourceBlock->booleanData() || destBlock->booleanData());
+}
+
+void Machine::_logicalXor(const Block * sourceBlock, Block * destBlock)
+{
+    validateBooleans(sourceBlock, destBlock);
+    destBlock->setToBoolean(sourceBlock->booleanData() != destBlock->booleanData());
 }
 
 void Machine::jump(const std::string & labelName)
