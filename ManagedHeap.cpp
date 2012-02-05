@@ -52,6 +52,7 @@ void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount
     else
     {
         pointerDestination.setToPointer();
+        throw(std::runtime_error("Data could not be allocated in the managed heap"));
     }
 }
 

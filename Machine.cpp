@@ -50,7 +50,8 @@ void Machine::_readString(Block * destBlock)
     Block * data = destBlock->pointerDataPointedTo();
     if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
 
-    if (destBlock->pointerArrayLength() == 0)
+    const unsigned length = destBlock->pointerArrayLength();
+    if (length == 0)
     {
         char c;
         if (scanf("%c", &c) != 0) data->charData() = c;
@@ -58,7 +59,6 @@ void Machine::_readString(Block * destBlock)
     else
     {
         char c;
-        unsigned length = destBlock->pointerArrayLength();
         for (unsigned i = 0; i < length; ++i)
         {
             if (scanf("%c", &c) != 0)
@@ -92,11 +92,11 @@ void Machine::_writeString(const Block * sourceBlock)
     Block * data = sourceBlock->pointerDataPointedTo();
     if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
 
-    if (sourceBlock->pointerArrayLength() == 0) std::cout << data->charData() << std::endl;
+    const unsigned length = sourceBlock->pointerArrayLength();
+    if (length == 0) std::cout << data->charData() << std::endl;
     else
     {
         char c;
-        unsigned length = sourceBlock->pointerArrayLength();
         for (unsigned i = 0; i < length; ++i)
         {
             c = sourceBlock->pointerArrayElementAt(i)->charData();
@@ -110,14 +110,30 @@ void Machine::_writeString(const Block * sourceBlock)
 void Machine::_push(const Block * sourceBlock)
 {
     if (sourceBlock == NULL) return;
-    stack_.push(*sourceBlock);
+
+    try
+    {
+        stack_.push(*sourceBlock);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
 }
 
 void Machine::_pop(Block * destBlock)
 {
     if (destBlock == NULL) return;
-    *destBlock = stack_.peek();
-    stack_.pop();
+
+    try
+    {
+        *destBlock = stack_.peek();
+        stack_.pop();
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
 }
 
 void Machine::_increment(Block * destBlock)
@@ -229,7 +245,15 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
 void Machine::allocateDirect(const Block::DataType dataType, const unsigned count)
 {
     if (dataType == Block::DATA_TYPE_COUNT) return;
-    managedHeap_.allocate(dataType, count, managedOutRegister_);
+
+    try
+    {
+        managedHeap_.allocate(dataType, count, managedOutRegister_);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
 }
 
 void Machine::_allocate(const Block::DataType dataType, const Block * countBlock)
@@ -425,10 +449,51 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
     Block * block;
     switch (location)
     {
-    case L_STACK:                block = &stack_.peek(); break;
+    case L_STACK:
+    {
+        try
+        {
+            block = &stack_.peek();
+        }
+        catch(const std::exception & exception)
+        {
+            std::cout << exception.what() << std::endl;
+            return NULL;
+        }
+    }
+    break;
+
     case L_PRIMARY_REGISTER:     block = &primaryRegister_; break;
     case L_MANAGED_OUT_REGISTER: block = &managedOutRegister_; break;
     default:                     block = NULL;
+    }
+
+    if (block == NULL) return NULL;
+
+    bool returnReferencedBlock;
+    switch (operandNumber)
+    {
+    case 1:  returnReferencedBlock = operand1IsPointer_; break;
+    case 2:  returnReferencedBlock = operand2IsPointer_; break;
+    case 3:  returnReferencedBlock = true; break;
+    default: return block;
+    }
+
+    if (returnReferencedBlock) return getBlockFrom(*block , 3);
+    return block;
+}
+
+Block * Machine::getBlockFrom(const StackLocation location, const short operandNumber)
+{
+    Block * block;
+    try
+    {
+        block = &stack_.at(location.value);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return NULL;
     }
 
     if (block == NULL) return NULL;
@@ -460,7 +525,16 @@ Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
     if (returnReferencedBlock)
     {
         if (pointer.dataType() != Block::DT_POINTER) return NULL;
-        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+
+        try
+        {
+            return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+        }
+        catch(const std::exception & exception)
+        {
+            std::cout << exception.what() << std::endl;
+            return NULL;
+        }
     }
 
     return &pointer;
@@ -480,7 +554,16 @@ const Block * Machine::getBlockFrom(const Block & pointer, const short operandNu
     if (returnReferencedBlock)
     {
         if (pointer.dataType() != Block::DT_POINTER) return NULL;
-        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+
+        try
+        {
+            return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
+        }
+        catch(const std::exception & exception)
+        {
+            std::cout << exception.what() << std::endl;
+            return NULL;
+        }
     }
 
     return &pointer;

@@ -14,16 +14,19 @@ ComparisonFlagRegister::ComparisonFlagRegister()
 
 bool ComparisonFlagRegister::getValue(const ComparisonFlagRegister::ComparisonFlagId id) const
 {
+    if (id == FLAG_COUNT) return false;
     return flags[id];
 }
 
 void ComparisonFlagRegister::setValue(const ComparisonFlagRegister::ComparisonFlagId id, const bool value)
 {
+    if (id == FLAG_COUNT) return;
     flags[id] = value;
 }
 
 void ComparisonFlagRegister::toggle(const ComparisonFlagRegister::ComparisonFlagId id)
 {
+    if (id == FLAG_COUNT) return;
     flags[id] = !flags[id];
 }
 

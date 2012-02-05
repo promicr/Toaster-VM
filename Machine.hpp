@@ -9,7 +9,6 @@
 #define MACHINE_HPP
 
 #include <map>
-#include <stack>
 #include <vector>
 
 #include "Stack.hpp"
@@ -19,7 +18,7 @@
 class Machine
 {
 public:
-    typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to an int, i.e. hashed label name
+    typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to int, i.e. hashed label name
     typedef std::vector<unsigned> ReturnAddressStack;
 
     struct StackLocation
@@ -198,6 +197,7 @@ private:
     void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
 
     Block * getBlockFrom(locationId location, short operandNumber);
+    Block * getBlockFrom(StackLocation location, short operandNumber);
     Block * getBlockFrom(Block & pointer, short operandNumber);
     const Block * getBlockFrom(const Block & pointer, short operandNumber);
 };
@@ -351,9 +351,8 @@ void Machine::divide(const T1 & source, const T2 & destination)
     _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
 }
 
-void allocateDirect(Block::DataType dataType, unsigned count);
 template <typename T>
-void Machine::allocate(Block::DataType dataType, const T & count)
+void Machine::allocate(const Block::DataType dataType, const T & count)
 {
     _allocate(dataType, getBlockFrom(count, 2));
 }
@@ -387,12 +386,12 @@ void Machine::compare(const T1 & lhs, const T2 & rhs)
 }
 
 template <typename T>
-void Machine::copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination)
+void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, T & destination)
 {
     _copyFlag(flagId, getBlockFrom(destination, 2));
 }
 template <typename T>
-void Machine::copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
+void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
 {
     _copyFlag(flagId, getBlockFrom(destination, 2));
 }

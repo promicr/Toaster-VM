@@ -110,25 +110,60 @@ unsigned Block::pointerArrayLength() const
     if (pointerIsNull()) return 0;
     ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
     if (managedHeap == NULL) return 0;
-    return managedHeap->arrayLengthAt(pointerData.address);
+
+    try
+    {
+        return managedHeap->arrayLengthAt(pointerData.address);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return 0;
+    }
 }
 
 Block * Block::pointerArrayElementAt(const unsigned index) const
 {
     if (pointerIsNull() || (index >= pointerArrayLength())) return NULL;
-    return &pointerData.heap->blockAt(pointerData.address + index);
+
+    try
+    {
+        return &pointerData.heap->blockAt(pointerData.address + index);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return NULL;
+    }
 }
 
 Block * Block::pointerDataPointedTo() const
 {
     if (pointerIsNull()) return NULL;
-    return &pointerData.heap->blockAt(pointerData.address);
+    try
+    {
+        return &pointerData.heap->blockAt(pointerData.address);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return NULL;
+    }
 }
 
 void Block::nullifyPointerData(const bool decReference)
 {
     if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL) && decReference)
-        pointerData.heap->decReferenceCountAt(pointerData.address);
+    {
+        try
+        {
+            pointerData.heap->decReferenceCountAt(pointerData.address);
+        }
+        catch(const std::exception & exception)
+        {
+            std::cout << exception.what() << std::endl;
+        }
+    }
     pointerData.address = -1;
     pointerData.heap = NULL;
 }
@@ -191,7 +226,14 @@ void Block::setTo(DataType dataType)
 
 void Block::clear()
 {
-    setTo(dataType_);
+    try
+    {
+        setTo(dataType_);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+    }
 }
 
 Block & Block::operator =(const Block & rhs)
@@ -219,7 +261,9 @@ bool Block::operator ==(const Block & rhs) const
     case DT_POINTER:
         return (pointerData.address == rhs.pointerData.address) && (pointerData.heap == rhs.pointerData.heap);
 
-    default: throw(std::runtime_error("Unknown type handled in assignment"));
+    default:
+        std::cout << "Unknown type handled in assignment" << std::endl;
+        return false;
     }
 }
 
