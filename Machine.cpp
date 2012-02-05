@@ -21,7 +21,7 @@ Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, con
 
 void Machine::_clear(Block * locationBlock)
 {
-    if (locationBlock == NULL) return;
+    if (locationBlock == NULL) throw(std::runtime_error("Machine::_clear: Invalid location given"));
     locationBlock->clear();
 }
 
@@ -34,23 +34,28 @@ void Machine::_set(const Block * value, Block * destBlock)
 
 void Machine::_move(const Block * sourceBlock, Block * destBlock) // sacrificing DRYness for consistency...
 {
-    if ((sourceBlock == NULL) || (destBlock == NULL)) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid destination given"));
     *destBlock = *sourceBlock;
 }
 
 void Machine::_read(Block * destBlock)
 {
-    if (destBlock == NULL) return;
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_read: Invalid destination given"));
     char c;
     if (scanf("%c", &c) != 0) destBlock->setToChar(c);
 }
 
 void Machine::_readString(Block * destBlock)
 {
-    if ((destBlock == NULL) || (destBlock->dataType() != Block::DT_POINTER)) return;
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_readString: Invalid destination given"));
+    if (destBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_readString: Data type of destination is invalid (pointer expected)"));
 
     Block * data = destBlock->pointerDataPointedTo();
-    if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
+    if (data == NULL) throw(std::runtime_error("Machine::_readString: Destination pointer is null"));
+    if (data->dataType() != Block::DT_CHAR)
+        throw(std::runtime_error("Machine::_readString: Destination pointer does not point to an array of characters"));
 
     const unsigned length = destBlock->pointerArrayLength();
     if (length == 0)
@@ -83,16 +88,21 @@ void Machine::_readString(Block * destBlock)
 
 void Machine::_write(const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_write: Invalid source given"));
     std::cout << *sourceBlock << std::endl;
 }
 
 void Machine::_writeString(const Block * sourceBlock)
 {
-    if ((sourceBlock == NULL) || (sourceBlock->dataType() != Block::DT_POINTER)) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_writeString: Invalid source given"));
+    if (sourceBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_writeString: Data type of source is invalid (pointer expected)"));
 
     Block * data = sourceBlock->pointerDataPointedTo();
-    if ((data == NULL) || (data->dataType() != Block::DT_CHAR)) return;
+    if (data == NULL) throw(std::runtime_error("Machine::_writeString: Destination pointer is null"));
+    if (data->dataType() != Block::DT_CHAR)
+        throw(std::runtime_error(
+                "Machine::_writeString: Destination pointer does not point to an array of characters"));
 
     const unsigned length = sourceBlock->pointerArrayLength();
     if (length == 0) std::cout << data->charData() << std::endl;
@@ -111,40 +121,25 @@ void Machine::_writeString(const Block * sourceBlock)
 
 void Machine::_push(const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) return;
-
-    try
-    {
-        stack_.push(*sourceBlock);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-    }
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_push: Invalid source given"));
+    stack_.push(*sourceBlock);
 }
 
 void Machine::_pop(Block * destBlock)
 {
     if (destBlock == NULL)
     {
-        try { stack_.pop(); } catch(const std::exception & e) { std::cout << e.what() << std::endl; }
+        stack_.pop();
         return;
     }
 
-    try
-    {
-        *destBlock = stack_.peek();
-        stack_.pop();
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-    }
+    *destBlock = stack_.peek();
+    stack_.pop();
 }
 
 void Machine::_increment(Block * destBlock)
 {
-    if (destBlock == NULL) return;
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_increment: Invalid destination given"));
     switch (destBlock->dataType())
     {
     case Block::DT_INTEGER: ++destBlock->integerData(); break;
@@ -155,13 +150,13 @@ void Machine::_increment(Block * destBlock)
             ++destBlock->pointerAddress();
         break;
 
-    default: break;
+    default: throw(std::runtime_error("Machine::_increment: Destination data type is invalid"));
     }
 }
 
 void Machine::_decrement(Block * destBlock)
 {
-    if (destBlock == NULL) return;
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_decrement: Invalid destination given"));
     switch (destBlock->dataType())
     {
     case Block::DT_INTEGER: --destBlock->integerData(); break;
@@ -172,13 +167,16 @@ void Machine::_decrement(Block * destBlock)
             --destBlock->pointerAddress();
         break;
 
-    default: break;
+    default: throw(std::runtime_error("Machine::_decrement: Destination data type is invalid"));
     }
 }
 
 void Machine::_add(const Block * sourceBlock, Block * destBlock)
 {
-    if ((sourceBlock == NULL) || (destBlock == NULL) || (sourceBlock->dataType() != destBlock->dataType())) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid destination given"));
+    if (sourceBlock->dataType() != destBlock->dataType())
+        throw(std::runtime_error("Machine::_add: Data types of operands do not match"));
 
     switch (sourceBlock->dataType())
     {
@@ -190,7 +188,7 @@ void Machine::_add(const Block * sourceBlock, Block * destBlock)
         destBlock->realData() += sourceBlock->realData();
         break;
 
-    default: break;
+    default: throw(std::runtime_error("Machine::_add: Data types of operands are invalid (expected integer or real)"));
     }
 }
 
@@ -208,7 +206,8 @@ void Machine::_subtract(const Block * sourceBlock, Block * destBlock)
         destBlock->realData() -= sourceBlock->realData();
         break;
 
-    default: break;
+    default:
+        throw(std::runtime_error("Machine::_subtract: Data types of operands are invalid (expected integer or real)"));
     }
 }
 
@@ -226,7 +225,8 @@ void Machine::_multiply(const Block * sourceBlock, Block * destBlock)
         destBlock->realData() *= sourceBlock->realData();
         break;
 
-    default: break;
+    default:
+        throw(std::runtime_error("Machine::_multiply: Data types of operands are invalid (expected integer or real)"));
     }
 }
 
@@ -244,83 +244,94 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
         destBlock->realData() /= sourceBlock->realData();
         break;
 
-    default: break;
+    default:
+        throw(std::runtime_error("Machine::_divide: Data types of operands are invalid (expected integer or real)"));
     }
 }
 
 void Machine::stackAdd()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+        throw(std::runtime_error("Machine::stackAdd: Not enough items on stack (minimum 2)"));
     _add(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
 }
 
 void Machine::stackSubtract()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+        throw(std::runtime_error("Machine::stackSubtract: Not enough items on stack (minimum 2)"));
     _subtract(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
 }
 
 void Machine::stackMultiply()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+        throw(std::runtime_error("Machine::stackMultiply: Not enough items on stack (minimum 2)"));
     _multiply(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
 }
 
 void Machine::stackDivide()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+        throw(std::runtime_error("Machine::stackDivide: Not enough items on stack (minimum 2)"));
     _divide(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
 }
 
 void Machine::allocateDirect(const Block::DataType dataType, const unsigned count)
 {
-    if (dataType == Block::DATA_TYPE_COUNT) return;
-
-    try
-    {
-        managedHeap_.allocate(dataType, count, managedOutRegister_);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-    }
+    if (dataType == Block::DATA_TYPE_COUNT)
+        throw(std::runtime_error("Machine::allocateDirect: Invalid data type given"));
+    managedHeap_.allocate(dataType, count, managedOutRegister_);
 }
 
 void Machine::_allocate(const Block::DataType dataType, const Block * countBlock)
 {
-    if ((countBlock == NULL) || (countBlock->dataType() != Block::DT_INTEGER)) return;
+    if (countBlock == NULL) throw(std::runtime_error("Machine::_allocate: Invalid array size given"));
+    if (countBlock->dataType() != Block::DT_INTEGER)
+        throw(std::runtime_error("Machine::_allocate: Data type of array size is invalid (expected integer)"));
     allocateDirect(dataType, countBlock->integerData());
 }
 
 void Machine::_getArrayElement(const Block * pointerBlock, const unsigned index)
 {
-    if ((pointerBlock == NULL) || (pointerBlock->dataType() != Block::DT_POINTER) ||
-            (index >= pointerBlock->pointerArrayLength())) return;
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayElement: Invalid array pointer given"));
+    if (pointerBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_getArrayElement: First argument data type is invalid (expected pointer)"));
+    if (index >= pointerBlock->pointerArrayLength())
+        throw(std::runtime_error("Machine::_getArrayElement: Index given is out of array range"));
     const Block * element = pointerBlock->pointerArrayElementAt(index);
     if (element != NULL) managedOutRegister_ = *element;
 }
 
 void Machine::_getArrayElement(const Block * pointerBlock, const Block * indexBlock)
 {
-    if ((indexBlock == NULL) || (indexBlock->dataType() != Block::DT_INTEGER)) return;
+    if (indexBlock == NULL)
+        throw(std::runtime_error("Machine::_getArrayElement: Element index is invalid"));
+    if (indexBlock->dataType() != Block::DT_INTEGER)
+        throw(std::runtime_error("Machine::_getArrayElement: Element index data type is invalid (expected integer)"));;
     _getArrayElement(pointerBlock, indexBlock->integerData());
 }
 
 void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
 {
-    if ((pointerBlock == NULL) || (destBlock == NULL) || (pointerBlock->dataType() != Block::DT_POINTER)) return;
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Array pointer is invalid"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Destination is invalid"));
+    if (pointerBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_getArrayLength: First argument data type is invalid (expected pointer)"));
     destBlock->setToInteger(pointerBlock->pointerArrayLength());
 }
 
 void Machine::_dereference(const Block * pointerBlock, Block * destBlock)
 {
-    if ((pointerBlock == NULL) || (destBlock == NULL) || (pointerBlock->pointerIsNull())) return;
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is invalid"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_dereference: Destination is invalid"));
+    if (pointerBlock->pointerIsNull()) throw(std::runtime_error("Machine::_dereference: Pointer is null"));
     const Block * block = pointerBlock->pointerDataPointedTo();
-    if (block == NULL) return;
+    if (block == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is null"));
     *destBlock = *block;
 }
 
@@ -336,13 +347,14 @@ void setInequalityComparisonFlags(const T1 lhs, const T2 rhs, ComparisonFlagRegi
 void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 {
     comparisonFlagRegister_.reset();
-    if ((lhsBlock == NULL) || (rhsBlock == NULL)) return;
+    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
+    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second argument is invalid"));
 
     bool equality = (*lhsBlock == *rhsBlock);
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_EQUAL, equality);
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_NOT_EQUAL, !equality);
 
-    if (lhsBlock->dataType() != rhsBlock->dataType()) return;
+    if (lhsBlock->dataType() != rhsBlock->dataType()) return; // Don't throw exception here
 
     switch (lhsBlock->dataType())
     {
@@ -400,7 +412,7 @@ void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 
 void Machine::_copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock)
 {
-    if (destBlock == NULL) return;
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_copyFlag: Destination argument is invalid"));
     destBlock->setToBoolean(comparisonFlagRegister_.getValue(flagId));
 }
 
@@ -413,42 +425,20 @@ void Machine::jump(const std::string & labelName)
 
 void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName)
 {
-    if (comparisonFlagRegister_.getValue(condition))
-    {
-        try { jump(labelName); } catch(const std::exception & e) { std::cout << e.what() << std::endl; }
-    }
+    if (comparisonFlagRegister_.getValue(condition)) jump(labelName);
 }
 
 void Machine::call(const std::string & labelName)
 {
     const unsigned returnAddress = programCounter_ + 1;
-
-    try
-    {
-        jump(labelName);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return;
-    }
-
+    jump(labelName);
     returnAddressStack.push_back(returnAddress);
     stack_.pushFrame();
 }
 
 void Machine::_returnFromCall(const Block * returnBlock)
 {
-    try
-    {
-        stack_.popFrame(returnBlock);
-    }
-    catch (const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return;
-    }
-
+    stack_.popFrame(returnBlock);
     programCounter_ = returnAddressStack.back();
     returnAddressStack.pop_back();
 }
@@ -524,20 +514,7 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
     Block * block;
     switch (location)
     {
-    case L_STACK:
-    {
-        try
-        {
-            block = &stack_.peek();
-        }
-        catch(const std::exception & exception)
-        {
-            std::cout << exception.what() << std::endl;
-            return NULL;
-        }
-    }
-    break;
-
+    case L_STACK:                block = &stack_.peek(); break;
     case L_PRIMARY_REGISTER:     block = &primaryRegister_; break;
     case L_MANAGED_OUT_REGISTER: block = &managedOutRegister_; break;
     default:                     block = NULL;
@@ -560,18 +537,7 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
 
 Block * Machine::getBlockFrom(const StackLocation location, const short operandNumber)
 {
-    Block * block;
-    try
-    {
-        block = &stack_.at(location.value);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return NULL;
-    }
-
-    if (block == NULL) return NULL;
+    Block * block = &stack_.at(location.value);
 
     bool returnReferencedBlock;
     switch (operandNumber)
@@ -600,16 +566,7 @@ Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
     if (returnReferencedBlock)
     {
         if (pointer.dataType() != Block::DT_POINTER) return NULL;
-
-        try
-        {
-            return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
-        }
-        catch(const std::exception & exception)
-        {
-            std::cout << exception.what() << std::endl;
-            return NULL;
-        }
+        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
     }
 
     return &pointer;
@@ -629,16 +586,7 @@ const Block * Machine::getBlockFrom(const Block & pointer, const short operandNu
     if (returnReferencedBlock)
     {
         if (pointer.dataType() != Block::DT_POINTER) return NULL;
-
-        try
-        {
-            return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
-        }
-        catch(const std::exception & exception)
-        {
-            std::cout << exception.what() << std::endl;
-            return NULL;
-        }
+        return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
     }
 
     return &pointer;

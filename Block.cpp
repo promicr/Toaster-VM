@@ -111,60 +111,25 @@ unsigned Block::pointerArrayLength() const
     if (pointerIsNull()) return 0;
     ManagedHeap * managedHeap = dynamic_cast<ManagedHeap*>(pointerData.heap);
     if (managedHeap == NULL) return 0;
-
-    try
-    {
-        return managedHeap->arrayLengthAt(pointerData.address);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return 0;
-    }
+    return managedHeap->arrayLengthAt(pointerData.address);
 }
 
 Block * Block::pointerArrayElementAt(const unsigned index) const
 {
     if (pointerIsNull() || (index >= pointerArrayLength())) return NULL;
-
-    try
-    {
-        return &pointerData.heap->blockAt(pointerData.address + index);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return NULL;
-    }
+    return &pointerData.heap->blockAt(pointerData.address + index);
 }
 
 Block * Block::pointerDataPointedTo() const
 {
     if (pointerIsNull()) return NULL;
-    try
-    {
-        return &pointerData.heap->blockAt(pointerData.address);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-        return NULL;
-    }
+    return &pointerData.heap->blockAt(pointerData.address);
 }
 
 void Block::nullifyPointerData(const bool decReference)
 {
     if ((dataType_ == DT_POINTER) && (pointerData.heap != NULL) && decReference)
-    {
-        try
-        {
-            pointerData.heap->decReferenceCountAt(pointerData.address);
-        }
-        catch(const std::exception & exception)
-        {
-            std::cout << exception.what() << std::endl;
-        }
-    }
+        pointerData.heap->decReferenceCountAt(pointerData.address);
     pointerData.address = -1;
     pointerData.heap = NULL;
 }
@@ -227,14 +192,7 @@ void Block::setTo(DataType dataType)
 
 void Block::clear()
 {
-    try
-    {
-        setTo(dataType_);
-    }
-    catch(const std::exception & exception)
-    {
-        std::cout << exception.what() << std::endl;
-    }
+    setTo(dataType_);
 }
 
 Block & Block::operator =(const Block & rhs)
