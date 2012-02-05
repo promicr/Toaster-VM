@@ -101,7 +101,7 @@ Heap * Block::pointerHeap() const
 
 bool Block::pointerIsNull() const
 {
-    if (dataType_ != DT_POINTER) return false;
+    if (dataType_ != DT_POINTER) return true;
     return (pointerData.address < 0) || (pointerData.heap == NULL);
 }
 

@@ -59,7 +59,7 @@ void Stack::pushFrame()
     pointer = 0;
 }
 
-void Stack::popFrame(const Block & returnValue)
+void Stack::popFrame(const Block * returnValue)
 {
     if (framePointerStack.size() == 0) throw(std::runtime_error("Stack::popFrame: Stack frame underflow"));
 
@@ -69,8 +69,14 @@ void Stack::popFrame(const Block & returnValue)
 
     for ( ; oldPointer > pointer; --oldPointer) data[combinedFramePointer + oldPointer].clear();
 
-    data[combinedFramePointer - 1] = returnValue;
+    if (returnValue == NULL) --pointer, --combinedFramePointer;
+    else data[combinedFramePointer - 1] = *returnValue;
     combinedFramePointer -= pointer;
+}
+
+bool Stack::empty() const
+{
+    return pointer == 0;
 }
 
 unsigned Stack::highestIndex() const

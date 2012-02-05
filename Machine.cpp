@@ -9,7 +9,7 @@
 
 #include "Machine.hpp"
 
-const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER, Machine::TRASH;
+const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER, Machine::NIL;
 
 Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, const unsigned managedHeapSize)
     : stack_(stackSize), unmanagedHeap_(unmanagedHeapSize), managedHeap_(managedHeapSize), programCounter_(0),
@@ -242,6 +242,34 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
     }
 }
 
+void Machine::stackAdd()
+{
+    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    _add(&stack_.fromTop(0), &stack_.fromTop(1));
+    stack_.pop();
+}
+
+void Machine::stackSubtract()
+{
+    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    _subtract(&stack_.fromTop(0), &stack_.fromTop(1));
+    stack_.pop();
+}
+
+void Machine::stackMultiply()
+{
+    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    _multiply(&stack_.fromTop(0), &stack_.fromTop(1));
+    stack_.pop();
+}
+
+void Machine::stackDivide()
+{
+    if ((stack_.empty()) || (stack_.highestIndex() < 1)) return;
+    _divide(&stack_.fromTop(0), &stack_.fromTop(1));
+    stack_.pop();
+}
+
 void Machine::allocateDirect(const Block::DataType dataType, const unsigned count)
 {
     if (dataType == Block::DATA_TYPE_COUNT) return;
@@ -280,6 +308,14 @@ void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
 {
     if ((pointerBlock == NULL) || (destBlock == NULL) || (pointerBlock->dataType() != Block::DT_POINTER)) return;
     destBlock->setToInteger(pointerBlock->pointerArrayLength());
+}
+
+void Machine::_dereference(const Block * pointerBlock, Block * destBlock)
+{
+    if ((pointerBlock == NULL) || (destBlock == NULL) || (pointerBlock->pointerIsNull())) return;
+    const Block * block = pointerBlock->pointerDataPointedTo();
+    if (block == NULL) return;
+    *destBlock = *block;
 }
 
 template<typename T1, typename T2>
@@ -376,6 +412,20 @@ void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId con
         LabelTable::iterator iterator = labels_.find(labelName);
         if (iterator != labels_.end()) programCounter_ = iterator->second;
     }
+}
+
+void Machine::call(const std::string & labelName)
+{
+    returnAddressStack.push_back(programCounter_ + 1);
+    jump(labelName);
+    stack_.pushFrame();
+}
+
+void Machine::_returnFromCall(const Block * returnBlock)
+{
+    stack_.popFrame(returnBlock);
+    programCounter_ = returnAddressStack.back();
+    returnAddressStack.pop_back();
 }
 
 Stack & Machine::stack()

@@ -32,12 +32,12 @@ public:
         L_STACK,
         L_PRIMARY_REGISTER,
         L_MANAGED_OUT_REGISTER,
-        L_TRASH
+        L_NIL
     }
     static const STACK = L_STACK, // For use in Machine member functions that take T& arguments
     PRIMARY_REGISTER = L_PRIMARY_REGISTER,
     MANAGED_OUT_REGISTER = L_MANAGED_OUT_REGISTER,
-    TRASH = L_TRASH;
+    NIL = L_NIL;
 
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
 
@@ -114,6 +114,11 @@ public:
     template <typename T1, typename T2>
     void divide(const T1 & source, const T2 & destination);
 
+    void stackAdd();
+    void stackSubtract();
+    void stackMultiply();
+    void stackDivide();
+
     void allocateDirect(Block::DataType dataType, unsigned count);
     template <typename T>
     void allocate(Block::DataType dataType, const T & count);
@@ -129,6 +134,11 @@ public:
     void getArrayLength(const T1 & arrayPointer, const T2 & destination);
 
     template <typename T1, typename T2>
+    void dereference(const T1 & pointer, T2 & destinaton);
+    template <typename T1, typename T2>
+    void dereference(const T1 & pointer, const T2 & destination);
+
+    template <typename T1, typename T2>
     void compare(const T1 & lhs, const T2 & rhs);
 
     template <typename T>
@@ -138,6 +148,9 @@ public:
 
     void jump(const std::string & labelName);
     void conditionalJump(ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName);
+    void call(const std::string & labelName);
+    template<typename T>
+    void returnFromCall(const T & returnValue);
 
     Stack & stack();
     Heap & unmanagedHeap();
@@ -193,8 +206,10 @@ private:
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
     void _getArrayLength(const Block * pointerBlock, Block * destBlock);
+    void _dereference(const Block * pointerBlock, Block * destBlock);
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
     void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
+    void _returnFromCall(const Block * returnBlock);
 
     Block * getBlockFrom(locationId location, short operandNumber);
     Block * getBlockFrom(StackLocation location, short operandNumber);
@@ -380,6 +395,17 @@ void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
 }
 
 template <typename T1, typename T2>
+void Machine::dereference(const T1 & pointer, T2 & destination)
+{
+    _dereference(getBlockFrom(pointer, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::dereference(const T1 & pointer, const T2 & destination)
+{
+    _dereference(getBlockFrom(pointer, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
 void Machine::compare(const T1 & lhs, const T2 & rhs)
 {
     _compare(getBlockFrom(lhs, 1), getBlockFrom(rhs, 2));
@@ -394,6 +420,12 @@ template <typename T>
 void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
 {
     _copyFlag(flagId, getBlockFrom(destination, 2));
+}
+
+template <typename T>
+void Machine::returnFromCall(const T & returnValue)
+{
+    _returnFromCall(getBlockFrom(returnValue, 1));
 }
 
 #endif // MACHINE_HPP

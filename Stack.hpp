@@ -27,8 +27,9 @@ public:
     Block & fromTop(unsigned index);
 
     void pushFrame();
-    void popFrame(const Block & returnValue);
+    void popFrame(const Block * returnValue);
 
+    bool empty() const;
     unsigned highestIndex() const;
     unsigned size() const;
 
