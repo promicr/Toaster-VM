@@ -9,6 +9,8 @@
 #define MACHINE_HPP
 
 #include <map>
+#include <stack>
+#include <vector>
 
 #include "Stack.hpp"
 #include "ManagedHeap.hpp"
@@ -17,7 +19,14 @@
 class Machine
 {
 public:
-    typedef std::map<std::string, unsigned> labelTable; // Maybe change string to an int, i.e. hashed label name
+    typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to an int, i.e. hashed label name
+    typedef std::vector<unsigned> ReturnAddressStack;
+
+    struct StackLocation
+    {
+        unsigned value;
+        StackLocation(const unsigned value) : value(value) {}
+    };
 
     enum locationId
     {
@@ -25,92 +34,108 @@ public:
         L_PRIMARY_REGISTER,
         L_MANAGED_OUT_REGISTER,
         L_TRASH
-    };
+    }
+    static const STACK = L_STACK, // For use in Machine member functions that take T& arguments
+    PRIMARY_REGISTER = L_PRIMARY_REGISTER,
+    MANAGED_OUT_REGISTER = L_MANAGED_OUT_REGISTER,
+    TRASH = L_TRASH;
 
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
 
     // Member functions relating to the bytecode
-    void clear(locationId location);
-    void clear(Block & location);
+    template <typename T>
+    void clear(T & location);
+    template <typename T>
+    void clear(const T & location);
 
-    void set(const Block & value, locationId destination);
-    void set(const Block & value, Block & destination);
+    template <typename T1, typename T2>
+    void set(const T1 & value, T2 & destination);
+    template <typename T1, typename T2>
+    void set(const T1 & value, const T2 & destination);
 
-    void move(locationId source, locationId destination);
-    void move(locationId source, Block & destination);
-    void move(const Block & source, locationId destination);
-    void move(const Block & source, Block & destination);
+    template <typename T1, typename T2>
+    void move(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void move(const T1 & source, const T2 & destination);
 
     // Reads a character and stores it in the destination memory block
-    void read(locationId destination);
-    void read(Block & destination);
+    template <typename T>
+    void read(T & destination);
+    template <typename T>
+    void read(const T & destination);
 
     // Takes a pointer to an array of characters, and reads a string of data into that array. If the pointer doesn't
     // point to an array, it will read just one character into the memory that the pointer is pointing to
-    void readString(locationId destination);
-    void readString(Block & destination);
+    template <typename T>
+    void readString(T & destination);
+    template <typename T>
+    void readString(const T & destination);
 
-    void write(locationId source);
-    void write(const Block & source);
+    template <typename T>
+    void write(const T & source);
 
-    void writeString(locationId source);
-    void writeString(const Block & source);
+    template <typename T>
+    void writeString(const T & source);
 
-    void push(locationId source);
-    void push(const Block & source);
+    template <typename T>
+    void push(const T & source);
 
-    void pop(locationId destination);
-    void pop(Block & destination);
+    template <typename T>
+    void pop(T & destination);
+    template <typename T>
+    void pop(const T & destination);
 
-    void increment(locationId destination);
-    void increment(Block & destination);
+    template <typename T>
+    void increment(T & destination);
+    template <typename T>
+    void increment(const T & destination);
 
-    void decrement(locationId destination);
-    void decrement(Block & destination);
+    template <typename T>
+    void decrement(T & destination);
+    template <typename T>
+    void decrement(const T & destination);
 
-    void add(locationId source, locationId destination);
-    void add(locationId source, Block & destination);
-    void add(const Block & source, locationId destination);
-    void add(const Block & source, Block & destination);
+    template <typename T1, typename T2>
+    void add(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void add(const T1 & source, const T2 & destination);
 
-    void subtract(locationId source, locationId destination);
-    void subtract(locationId source, Block & destination);
-    void subtract(const Block & source, locationId destination);
-    void subtract(const Block & source, Block & pointerToDest);
+    template <typename T1, typename T2>
+    void subtract(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void subtract(const T1 & source, const T2 & destination);
 
-    void multiply(locationId source, locationId destination);
-    void multiply(locationId source, Block & destination);
-    void multiply(const Block & source, locationId destination);
-    void multiply(const Block & source, Block & destination);
+    template <typename T1, typename T2>
+    void multiply(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void multiply(const T1 & source, const T2 & destination);
 
-    void divide(locationId source, locationId destination);
-    void divide(locationId source, Block & destination);
-    void divide(const Block & source, locationId destination);
-    void divide(const Block & source, Block & destination);
+    template <typename T1, typename T2>
+    void divide(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void divide(const T1 & source, const T2 & destination);
 
-    void allocate(Block::DataType dataType, unsigned count);
-    void allocate(Block::DataType dataType, locationId count);
-    void allocate(Block::DataType dataType, const Block & count);
+    void allocateDirect(Block::DataType dataType, unsigned count);
+    template <typename T>
+    void allocate(Block::DataType dataType, const T & count);
 
-    void getArrayElement(locationId arrayPointer, unsigned index);
-    void getArrayElement(locationId arrayPointer, locationId index);
-    void getArrayElement(locationId arrayPointer, const Block & index);
-    void getArrayElement(const Block & arrayPointer, unsigned index);
-    void getArrayElement(const Block & arrayPointer, locationId index);
-    void getArrayElement(const Block & arrayPointer, const Block & index);
+    template <typename T>
+    void getArrayElement(const T & arrayPointer, unsigned index);
+    template <typename T1, typename T2>
+    void getArrayElement(const T2 & arrayPointer, const T2 & index);
 
-    void getArrayLength(locationId arrayPointer, locationId destination);
-    void getArrayLength(locationId arrayPointer, Block & destination);
-    void getArrayLength(const Block & arrayPointer, locationId destination);
-    void getArrayLength(const Block & arrayPointer, Block & destination);
+    template <typename T1, typename T2>
+    void getArrayLength(const T1 & arrayPointer, T2 & destination);
+    template <typename T1, typename T2>
+    void getArrayLength(const T1 & arrayPointer, const T2 & destination);
 
-    void compare(locationId lhs, locationId rhs);
-    void compare(locationId lhs, const Block & rhs);
-    void compare(const Block & lhs, locationId rhs);
-    void compare(const Block & lhs, const Block & rhs);
+    template <typename T1, typename T2>
+    void compare(const T1 & lhs, const T2 & rhs);
 
-    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, locationId destination);
-    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block & destination);
+    template <typename T>
+    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination);
+    template <typename T>
+    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination);
 
     void jump(const std::string & labelName);
     void conditionalJump(ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName);
@@ -123,7 +148,7 @@ public:
     Block & managedOutRegister();
     unsigned & programCounter();
 
-    const labelTable & labels() const;
+    const LabelTable & labels() const;
     void addLabel(const std::string & labelName, unsigned lineNumber);
 
     bool & operand1IsPointer();
@@ -140,37 +165,236 @@ private:
     managedOutRegister_; // a register for storing the output of managed heap functions
     unsigned programCounter_;
 
-    labelTable labels_;
+    LabelTable labels_;
+    ReturnAddressStack returnAddressStack;
 
     bool operand1IsPointer_, operand2IsPointer_;
 
     /* Functions handling the operations shared by many other functions.
      * Even if operations are trivial, these functions should be used so that the operation can be changed with ease
      * if need be. It saves time and is less prone to error.
-     * Pointers should be validated BEFORE being passed to these functions
+     * Identifiers are preceded by underscores to avoid template recursion problems
      */
-    void clear(Block * locationBlock);
-    void set(const Block * value, Block * destBlock);
-    void move(const Block * sourceBlock, Block * destBlock);
-    void read(Block * destBlock);
-    void readString(Block * destBlock);
-    void write(const Block * sourceBlock);
-    void writeString(const Block * sourceBlock);
-    void push(const Block * sourceBlock);
-    void pop(Block * destBlock);
-    void increment(Block * destBlock);
-    void decrement(Block * destBlock);
-    void add(const Block * sourceBlock, Block * destBlock);
-    void subtract(const Block * sourceBlock, Block * destBlock);
-    void multiply(const Block * sourceBlock, Block * destBlock);
-    void divide(const Block * sourceBlock, Block * destBlock);
-    void getArrayElement(const Block * pointerBlock, unsigned index);
-    void getArrayLength(const Block * pointerBlock, Block * destBlock);
-    void compare(const Block * lhsBlock, const Block * rhsBlock);
+    void _clear(Block * locationBlock);
+    void _set(const Block * value, Block * destBlock);
+    void _move(const Block * sourceBlock, Block * destBlock);
+    void _read(Block * destBlock);
+    void _readString(Block * destBlock);
+    void _write(const Block * sourceBlock);
+    void _writeString(const Block * sourceBlock);
+    void _push(const Block * sourceBlock);
+    void _pop(Block * destBlock);
+    void _increment(Block * destBlock);
+    void _decrement(Block * destBlock);
+    void _add(const Block * sourceBlock, Block * destBlock);
+    void _subtract(const Block * sourceBlock, Block * destBlock);
+    void _multiply(const Block * sourceBlock, Block * destBlock);
+    void _divide(const Block * sourceBlock, Block * destBlock);
+    void _allocate(const Block::DataType dataType, const Block * countBlock);
+    void _getArrayElement(const Block * pointerBlock, unsigned index);
+    void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
+    void _getArrayLength(const Block * pointerBlock, Block * destBlock);
+    void _compare(const Block * lhsBlock, const Block * rhsBlock);
+    void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
 
     Block * getBlockFrom(locationId location, short operandNumber);
     Block * getBlockFrom(Block & pointer, short operandNumber);
     const Block * getBlockFrom(const Block & pointer, short operandNumber);
 };
+
+template <typename T>
+void Machine::clear(T & location)
+{
+    _clear(getBlockFrom(location, 1));
+}
+template <typename T>
+void Machine::clear(const T & location)
+{
+    _clear(getBlockFrom(location, 1));
+}
+
+template <typename T1, typename T2>
+void Machine::set(const T1 & value, T2 & destination)
+{
+    _set(getBlockFrom(value, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::set(const T1 & value, const T2 & destination)
+{
+    _set(getBlockFrom(value, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::move(const T1 & source, T2 & destination)
+{
+    _move(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::move(const T1 & source, const T2 & destination)
+{
+    _move(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T>
+void Machine::read(T & destination)
+{
+    _read(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::read(const T & destination)
+{
+    _read(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::readString(T & destination)
+{
+    _readString(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::readString(const T & destination)
+{
+    _readString(getBlockFrom(destination, 1));
+}
+
+template <typename T>
+void Machine::write(const T & source)
+{
+    _write(getBlockFrom(source, 1));
+}
+
+template <typename T>
+void Machine::writeString(const T & source)
+{
+    _writeString(getBlockFrom(source, 1));
+}
+
+template <typename T>
+void Machine::push(const T & source)
+{
+    _push(getBlockFrom(source, 1));
+}
+
+template <typename T>
+void Machine::pop(T & destination)
+{
+    _pop(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::pop(const T & destination)
+{
+    _pop(getBlockFrom(destination, 1));
+}
+
+template <typename T>
+void Machine::increment(T & destination)
+{
+    _increment(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::increment(const T & destination)
+{
+    _increment(getBlockFrom(destination, 1));
+}
+
+template <typename T>
+void Machine::decrement(T & destination)
+{
+    _decrement(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::decrement(const T & destination)
+{
+    _decrement(getBlockFrom(destination, 1));
+}
+
+template <typename T1, typename T2>
+void Machine::add(const T1 & source, T2 & destination)
+{
+    _add(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::add(const T1 & source, const T2 & destination)
+{
+    _add(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::subtract(const T1 & source, T2 & destination)
+{
+    _subtract(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::subtract(const T1 & source, const T2 & destination)
+{
+    _subtract(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::multiply(const T1 & source, T2 & destination)
+{
+    _multiply(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::multiply(const T1 & source, const T2 & destination)
+{
+    _multiply(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::divide(const T1 & source, T2 & destination)
+{
+    _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::divide(const T1 & source, const T2 & destination)
+{
+    _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+void allocateDirect(Block::DataType dataType, unsigned count);
+template <typename T>
+void Machine::allocate(Block::DataType dataType, const T & count)
+{
+    _allocate(dataType, getBlockFrom(count, 2));
+}
+
+template <typename T>
+void Machine::getArrayElement(const T & arrayPointer, unsigned index)
+{
+    _getArrayElement(getBlockFrom(arrayPointer, 1), index);
+}
+template <typename T1, typename T2>
+void Machine::getArrayElement(const T2 & arrayPointer, const T2 & index)
+{
+    _getArrayElement(getBlockFrom(arrayPointer, 1), getBlockFrom(index, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::getArrayLength(const T1 & arrayPointer, T2 & destination)
+{
+    _getArrayLength(getBlockFrom(arrayPointer, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
+{
+    _getArrayLength(getBlockFrom(arrayPointer, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::compare(const T1 & lhs, const T2 & rhs)
+{
+    _compare(getBlockFrom(lhs, 1), getBlockFrom(rhs, 2));
+}
+
+template <typename T>
+void Machine::copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination)
+{
+    _copyFlag(flagId, getBlockFrom(destination, 2));
+}
+template <typename T>
+void Machine::copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
+{
+    _copyFlag(flagId, getBlockFrom(destination, 2));
+}
 
 #endif // MACHINE_HPP

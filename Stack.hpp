@@ -19,18 +19,23 @@ public:
 
     Stack(unsigned size);
 
-    void push(const Block &data);
+    void push(const Block & data);
     void pop();
 
     Block & peek();
     Block & at(unsigned index);
     Block & fromTop(unsigned index);
 
+    void pushFrame();
+    void popFrame(const Block & returnValue);
+
+    unsigned highestIndex() const;
     unsigned size() const;
 
 private:
-    unsigned size_, pointer;
+    unsigned size_, pointer, combinedFramePointer;
     std::vector<Block> data;
+    std::vector<unsigned> framePointerStack;
 };
 
 #endif // STACK_HPP
