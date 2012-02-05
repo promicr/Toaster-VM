@@ -10,7 +10,7 @@
 
 // A class sotring flags which are used for storing the results of comparison operations
 
-class ComparisonFlagRegister
+typedef class ComparisonFlagRegister
 {
 public:
     enum ComparisonFlagId
@@ -34,6 +34,6 @@ public:
 
 private:
     bool flags[FLAG_COUNT];
-};
+} CFR;
 
 #endif // COMPARISONFLAGREGISTER_HPP

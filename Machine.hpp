@@ -24,7 +24,7 @@ public:
     struct StackLocation
     {
         unsigned value;
-        StackLocation(const unsigned value) : value(value) {}
+        explicit StackLocation(const unsigned value) : value(value) {}
     };
 
     enum locationId
@@ -124,6 +124,12 @@ public:
     void allocate(Block::DataType dataType, const T & count);
 
     template <typename T>
+    void startPopulatingArray(const T & arrayPointer);
+    void stopPopulatingArray();
+    template <typename T>
+    void addToArray(const T & value);
+
+    template <typename T>
     void getArrayElement(const T & arrayPointer, unsigned index);
     template <typename T1, typename T2>
     void getArrayElement(const T2 & arrayPointer, const T2 & index);
@@ -180,6 +186,19 @@ private:
     LabelTable labels_;
     ReturnAddressStack returnAddressStack;
 
+    class ArrayPopulator
+    {
+    public:
+        ArrayPopulator();
+        void start(const Block & pointerToArray);
+        void stop();
+        void add(const Block & value);
+
+    private:
+        Block arrayPointer;
+        int currentIndex;
+    } arrayBeingPopulated;
+
     bool operand1IsPointer_, operand2IsPointer_;
 
     /* Functions handling the operations shared by many other functions.
@@ -203,6 +222,8 @@ private:
     void _multiply(const Block * sourceBlock, Block * destBlock);
     void _divide(const Block * sourceBlock, Block * destBlock);
     void _allocate(const Block::DataType dataType, const Block * countBlock);
+    void _startPopulatingArray(const Block * pointerBlock);
+    void _addToArray(const Block * valueBlock);
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
     void _getArrayLength(const Block * pointerBlock, Block * destBlock);
@@ -370,6 +391,18 @@ template <typename T>
 void Machine::allocate(const Block::DataType dataType, const T & count)
 {
     _allocate(dataType, getBlockFrom(count, 2));
+}
+
+template <typename T>
+void Machine::startPopulatingArray(const T & arrayPointer)
+{
+    _startPopulatingArray(getBlockFrom(arrayPointer, 1));
+}
+
+template <typename T>
+void Machine::addToArray(const T & value)
+{
+    _addToArray(getBlockFrom(value, 1));
 }
 
 template <typename T>

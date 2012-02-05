@@ -19,6 +19,33 @@ Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, con
     returnAddressStack.reserve((stackSize == 0 ? Stack::defaultSize : stackSize) / 4);
 }
 
+Machine::ArrayPopulator::ArrayPopulator()
+    : arrayPointer(Block::DT_POINTER), currentIndex(-1) {}
+
+void Machine::ArrayPopulator::start(const Block & pointerToArray)
+{
+    if (pointerToArray.dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::ArrayPopulator::start: Argument data type is invalid (pointer expected)"));
+    if (pointerToArray.pointerIsNull())
+        throw(std::runtime_error("Machine::ArrayPopulator::start: Array pointer given is null"));
+    arrayPointer = pointerToArray;
+}
+
+void Machine::ArrayPopulator::stop()
+{
+    arrayPointer.nullifyPointerData();
+    currentIndex = -1;
+}
+
+void Machine::ArrayPopulator::add(const Block & value)
+{
+    if (arrayPointer.pointerIsNull())
+        throw(std::runtime_error("Machine::ArrayPopulator::add: No array has been specified to populate"));
+    Block * element = arrayPointer.pointerArrayElementAt(++currentIndex);
+    if (element == NULL) throw(std::runtime_error("Machine::ArrayPopulator::add: Array index out of range"));
+    *element = value;
+}
+
 void Machine::_clear(Block * locationBlock)
 {
     if (locationBlock == NULL) throw(std::runtime_error("Machine::_clear: Invalid location given"));
@@ -294,6 +321,23 @@ void Machine::_allocate(const Block::DataType dataType, const Block * countBlock
     if (countBlock->dataType() != Block::DT_INTEGER)
         throw(std::runtime_error("Machine::_allocate: Data type of array size is invalid (expected integer)"));
     allocateDirect(dataType, countBlock->integerData());
+}
+
+void Machine::_startPopulatingArray(const Block * pointerBlock)
+{
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_startPopulatingArray: Invalid array pointer given"));
+    arrayBeingPopulated.start(*pointerBlock);
+}
+
+void Machine::stopPopulatingArray()
+{
+    arrayBeingPopulated.stop();
+}
+
+void Machine::_addToArray(const Block * valueBlock)
+{
+    if (valueBlock == NULL) throw(std::runtime_error("Machine::_addToArray: Invalid value given"));
+    arrayBeingPopulated.add(*valueBlock);
 }
 
 void Machine::_getArrayElement(const Block * pointerBlock, const unsigned index)
