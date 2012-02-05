@@ -18,7 +18,7 @@ Heap::Heap(const unsigned size)
 
 Block & Heap::blockAt(const unsigned index)
 {
-    if (index >= size_) throw(std::out_of_range("Block index out of range"));
+    if (index >= size_) throw(std::out_of_range("Heap::blockAt: Block index out of range"));
     return data[index];
 }
 
@@ -29,9 +29,9 @@ unsigned Heap::size() const
 
 void Heap::incReferenceCountAt(const unsigned index)
 {
-    if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
+    if (index >= size_) throw(std::out_of_range("Heap::incReferenceCountAt: Reference count index out of range"));
     if (referenceCount[index] == USHRT_MAX)
-        throw(std::runtime_error("Reference count is already at its maximum"));
+        throw(std::runtime_error("Heap::incReferenceCountAt: Reference count is already at its maximum"));
 
     referenceCount[index] += 1;
     referenceCountChangeCallback(index);
@@ -39,9 +39,9 @@ void Heap::incReferenceCountAt(const unsigned index)
 
 void Heap::decReferenceCountAt(const unsigned index)
 {
-    if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
+    if (index >= size_) throw(std::out_of_range("Heap::decReferenceCountAt: Reference count index out of range"));
     if (referenceCount[index] == 0)
-        throw(std::runtime_error("Reference count is already at its minimum (i.e. 0)"));
+        throw(std::runtime_error("Heap::decReferenceCountAt: Reference count is already at its minimum (i.e. 0)"));
 
     referenceCount[index] -= 1;
     referenceCountChangeCallback(index);
@@ -49,7 +49,7 @@ void Heap::decReferenceCountAt(const unsigned index)
 
 unsigned short Heap::referenceCountAt(const unsigned index) const
 {
-    if (index >= size_) throw(std::out_of_range("Reference count index out of range"));
+    if (index >= size_) throw(std::out_of_range("Heap::referenceCountAt: Reference count index out of range"));
     return referenceCount[index];
 }
 

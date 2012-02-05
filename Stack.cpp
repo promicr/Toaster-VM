@@ -23,32 +23,32 @@ Stack::Stack(const unsigned size)
 
 void Stack::push(const Block & data_)
 {
-    if (combinedFramePointer + pointer >= size_) throw(std::runtime_error("Stack overflow"));
+    if (combinedFramePointer + pointer >= size_) throw(std::runtime_error("Stack::push: Stack overflow"));
     data[combinedFramePointer + pointer] = data_;
     ++pointer;
 }
 
 void Stack::pop()
 {
-    if (pointer == 0) throw(std::runtime_error("Stack underflow"));
+    if (pointer == 0) throw(std::runtime_error("Stack::pop: Stack underflow"));
     --pointer;
 }
 
 Block & Stack::peek()
 {
-    if (pointer == 0) throw(std::runtime_error("No items on the stack"));
+    if (pointer == 0) throw(std::runtime_error("Stack::peek: No items on the stack"));
     return data[combinedFramePointer + pointer - 1];
 }
 
 Block & Stack::at(unsigned index)
 {
-    if (index >= pointer) throw(std::out_of_range("Stack block index out of range"));
+    if (index >= pointer) throw(std::out_of_range("Stack::at: Stack block index out of range"));
     return data[combinedFramePointer + index];
 }
 
 Block & Stack::fromTop(unsigned index)
 {
-    if (index >= pointer) throw(std::out_of_range("Stack block index out of range"));
+    if (index >= pointer) throw(std::out_of_range("Stack::fromTop: Stack block index out of range"));
     return data[combinedFramePointer + pointer - 1 - index];
 }
 
@@ -61,7 +61,7 @@ void Stack::pushFrame()
 
 void Stack::popFrame(const Block & returnValue)
 {
-    if (framePointerStack.size() == 0) throw(std::runtime_error("Stack frame underflow"));
+    if (framePointerStack.size() == 0) throw(std::runtime_error("Stack::popFrame: Stack frame underflow"));
 
     unsigned oldPointer = pointer;
     pointer = framePointerStack.back();

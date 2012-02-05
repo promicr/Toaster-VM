@@ -220,7 +220,7 @@ void Block::setTo(DataType dataType)
     case DT_CHAR:    setToChar(); break;
     case DT_BOOLEAN: setToBoolean(); break;
     case DT_POINTER: setToPointer(); break;
-    default: throw(std::runtime_error("Unknown block data type"));
+    default: throw(std::runtime_error("Block::setTo: Unknown block data type"));
     }
 }
 

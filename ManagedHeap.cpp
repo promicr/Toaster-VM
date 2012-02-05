@@ -52,13 +52,13 @@ void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount
     else
     {
         pointerDestination.setToPointer();
-        throw(std::runtime_error("Data could not be allocated in the managed heap"));
+        throw(std::runtime_error("ManagedHeap::allocate: Data could not be allocated"));
     }
 }
 
 unsigned ManagedHeap::arrayLengthAt(const unsigned index)
 {
-    if (index >= size()) throw(std::out_of_range("Array length index out of range"));
+    if (index >= size()) throw(std::out_of_range("ManagedHeap::arrayLengthAt: Array length index out of range"));
     return arrayLength[index];
 }
 

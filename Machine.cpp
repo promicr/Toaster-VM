@@ -516,9 +516,9 @@ Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
     bool returnReferencedBlock;
     switch (operandNumber)
     {
-    case 1: returnReferencedBlock = operand1IsPointer_; break;
-    case 2: returnReferencedBlock = operand2IsPointer_; break;
-    case 3: returnReferencedBlock = true;
+    case 1:  returnReferencedBlock = operand1IsPointer_; break;
+    case 2:  returnReferencedBlock = operand2IsPointer_; break;
+    case 3:  returnReferencedBlock = true;
     default: return &pointer;
     }
 
@@ -545,9 +545,9 @@ const Block * Machine::getBlockFrom(const Block & pointer, const short operandNu
     bool returnReferencedBlock;
     switch (operandNumber)
     {
-    case 1: returnReferencedBlock = operand1IsPointer_; break;
-    case 2: returnReferencedBlock = operand2IsPointer_; break;
-    case 3: returnReferencedBlock = true;
+    case 1:  returnReferencedBlock = operand1IsPointer_; break;
+    case 2:  returnReferencedBlock = operand2IsPointer_; break;
+    case 3:  returnReferencedBlock = true;
     default: return &pointer;
     }
 
