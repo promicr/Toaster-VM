@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <cmath>
 
 #include "Block.hpp"
 #include "ManagedHeap.hpp"
@@ -241,7 +242,7 @@ Block & Block::operator =(const Block & rhs)
     nullifyPointerData();
     dataType_ = rhs.dataType_;
     if (dataType_ == DT_POINTER) setToPointer(rhs.pointerData.address, *rhs.pointerData.heap);
-    else pointerData = rhs.pointerData; // pointerData is takes up most space in the union
+    else pointerData = rhs.pointerData; // because pointerData takes up most space in the union
     return *this;
 }
 
@@ -253,7 +254,7 @@ bool Block::operator ==(const Block & rhs) const
     case DT_INTEGER:
         return integerData_ == rhs.integerData_;
     case DT_REAL:
-        return realData_ == rhs.realData_;
+        return fabs(realData_ - rhs.realData_) < 0.00001;
     case DT_CHAR:
         return charData_ == rhs.charData_;
     case DT_BOOLEAN:

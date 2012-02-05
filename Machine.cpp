@@ -6,6 +6,7 @@
  */
 
 #include <cstdio>
+#include <stdexcept>
 
 #include "Machine.hpp"
 
@@ -26,7 +27,8 @@ void Machine::_clear(Block * locationBlock)
 
 void Machine::_set(const Block * value, Block * destBlock)
 {
-    if ((value == NULL) || (destBlock == NULL)) return;
+    if (value == NULL) destBlock->clear();
+    else if (destBlock == NULL) return;
     *destBlock = *value;
 }
 
@@ -123,7 +125,11 @@ void Machine::_push(const Block * sourceBlock)
 
 void Machine::_pop(Block * destBlock)
 {
-    if (destBlock == NULL) return;
+    if (destBlock == NULL)
+    {
+        try { stack_.pop(); } catch(const std::exception & e) { std::cout << e.what() << std::endl; }
+        return;
+    }
 
     try
     {
@@ -285,7 +291,7 @@ void Machine::allocateDirect(const Block::DataType dataType, const unsigned coun
 }
 
 void Machine::_allocate(const Block::DataType dataType, const Block * countBlock)
-{std::cout << "hi" << std::endl;
+{
     if ((countBlock == NULL) || (countBlock->dataType() != Block::DT_INTEGER)) return;
     allocateDirect(dataType, countBlock->integerData());
 }
@@ -329,9 +335,8 @@ void setInequalityComparisonFlags(const T1 lhs, const T2 rhs, ComparisonFlagRegi
 
 void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 {
-    if ((lhsBlock == NULL) || (rhsBlock == NULL)) return;
-
     comparisonFlagRegister_.reset();
+    if ((lhsBlock == NULL) || (rhsBlock == NULL)) return;
 
     bool equality = (*lhsBlock == *rhsBlock);
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_EQUAL, equality);
@@ -403,27 +408,47 @@ void Machine::jump(const std::string & labelName)
 {
     LabelTable::iterator iterator = labels_.find(labelName);
     if (iterator != labels_.end()) programCounter_ = iterator->second;
+    else throw(std::runtime_error("Machine::jump: Unknown label '" + labelName + "'"));
 }
 
 void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName)
 {
     if (comparisonFlagRegister_.getValue(condition))
     {
-        LabelTable::iterator iterator = labels_.find(labelName);
-        if (iterator != labels_.end()) programCounter_ = iterator->second;
+        try { jump(labelName); } catch(const std::exception & e) { std::cout << e.what() << std::endl; }
     }
 }
 
 void Machine::call(const std::string & labelName)
 {
-    returnAddressStack.push_back(programCounter_ + 1);
-    jump(labelName);
+    const unsigned returnAddress = programCounter_ + 1;
+
+    try
+    {
+        jump(labelName);
+    }
+    catch(const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return;
+    }
+
+    returnAddressStack.push_back(returnAddress);
     stack_.pushFrame();
 }
 
 void Machine::_returnFromCall(const Block * returnBlock)
 {
-    stack_.popFrame(returnBlock);
+    try
+    {
+        stack_.popFrame(returnBlock);
+    }
+    catch (const std::exception & exception)
+    {
+        std::cout << exception.what() << std::endl;
+        return;
+    }
+
     programCounter_ = returnAddressStack.back();
     returnAddressStack.pop_back();
 }
@@ -568,7 +593,7 @@ Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
     {
     case 1:  returnReferencedBlock = operand1IsPointer_; break;
     case 2:  returnReferencedBlock = operand2IsPointer_; break;
-    case 3:  returnReferencedBlock = true;
+    case 3:  returnReferencedBlock = true; break;
     default: return &pointer;
     }
 
@@ -597,7 +622,7 @@ const Block * Machine::getBlockFrom(const Block & pointer, const short operandNu
     {
     case 1:  returnReferencedBlock = operand1IsPointer_; break;
     case 2:  returnReferencedBlock = operand2IsPointer_; break;
-    case 3:  returnReferencedBlock = true;
+    case 3:  returnReferencedBlock = true; break;
     default: return &pointer;
     }
 
