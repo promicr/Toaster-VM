@@ -181,9 +181,9 @@ public:
     void convertToDataTypeOf(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void dereference(const T1 & pointer, T2 & destinaton);
+    void dereference(T1 & destinaton, const T2 & pointer);
     template <typename T1, typename T2>
-    void dereference(const T1 & pointer, const T2 & destination);
+    void dereference(const T1 & destination, const T2 & pointer);
 
     template <typename T1, typename T2>
     void compare(const T1 & lhs, const T2 & rhs);
@@ -311,7 +311,7 @@ private:
     void _copyArray(const Block * destPointerBlock, const Block * sourcePointerBlock);
     void _convert(Block * destBlock, const Block * sourceBlock, Block::DataType dataType);
     void _convertToDataTypeOf(Block * destBlock, const Block * sourceBlock);
-    void _dereference(const Block * pointerBlock, Block * destBlock);
+    void _dereference(Block * destBlock, const Block * pointerBlock);
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
     void _compareDataType(const Block * lhsBlock, const Block * rhsBlock);
     void _isDataType(const Block * block, Block::DataType dataType);
@@ -601,14 +601,14 @@ void Machine::convertToDataTypeOf(const T1 & destination, const T2 & source)
 }
 
 template <typename T1, typename T2>
-void Machine::dereference(const T1 & pointer, T2 & destination)
+void Machine::dereference(T1 & destination, const T2 & pointer)
 {
-    _dereference(getBlockFrom(pointer, 1), getBlockFrom(destination, 2));
+    _dereference(getBlockFrom(destination, 1), getBlockFrom(pointer, 2));
 }
 template <typename T1, typename T2>
-void Machine::dereference(const T1 & pointer, const T2 & destination)
+void Machine::dereference(const T1 & destination, const T2 & pointer)
 {
-    _dereference(getBlockFrom(pointer, 1), getBlockFrom(destination, 2));
+    _dereference(getBlockFrom(destination, 1), getBlockFrom(pointer, 2));
 }
 
 template <typename T1, typename T2>

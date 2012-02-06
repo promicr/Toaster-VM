@@ -547,10 +547,10 @@ void Machine::_convertToDataTypeOf(Block * destBlock, const Block * sourceBlock)
     _convert(destBlock, destBlock, sourceBlock->dataType());
 }
 
-void Machine::_dereference(const Block * pointerBlock, Block * destBlock)
+void Machine::_dereference(Block * destBlock, const Block * pointerBlock)
 {
-    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is invalid"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_dereference: Destination is invalid"));
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is invalid"));
     if (pointerBlock->pointerIsNull()) throw(std::runtime_error("Machine::_dereference: Pointer is null"));
     const Block * block = pointerBlock->pointerDataPointedTo();
     if (block == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is null"));
