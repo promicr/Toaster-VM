@@ -40,7 +40,7 @@ Machine::ArrayPopulator::ArrayPopulator()
 void Machine::ArrayPopulator::start(const Block & pointerToArray)
 {
     if (pointerToArray.dataType() != Block::DT_POINTER)
-        throw(std::runtime_error("Machine::ArrayPopulator::start: Argument data type is invalid (pointer expected)"));
+        throw(std::runtime_error("Machine::ArrayPopulator::start: Operand data type is invalid (pointer expected)"));
     if (pointerToArray.pointerIsNull())
         throw(std::runtime_error("Machine::ArrayPopulator::start: Array pointer given is null"));
     arrayPointer = pointerToArray;
@@ -67,24 +67,24 @@ void Machine::_clear(Block * locationBlock)
     locationBlock->clear();
 }
 
-void Machine::_set(const Block * value, Block * destBlock)
+void Machine::_set(Block * destBlock, const Block * value)
 {
     if (value == NULL) destBlock->clear();
     else if (destBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid destination given"));
     *destBlock = *value;
 }
 
-void Machine::_move(const Block * sourceBlock, Block * destBlock) // sacrificing DRYness for consistency...
+void Machine::_move(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_move: Invalid source given"));
     *destBlock = *sourceBlock;
 }
 
 void Machine::_swap(Block * a, Block * b)
 {
-    if (a == NULL) throw(std::runtime_error("Machine::_exchange: Invalid first argument given"));
-    if (b == NULL) throw(std::runtime_error("Machine::_exchange: Invalid second argument given"));
+    if (a == NULL) throw(std::runtime_error("Machine::_exchange: Invalid first operand given"));
+    if (b == NULL) throw(std::runtime_error("Machine::_exchange: Invalid second operand given"));
 
     Block temp(*a);
     *a = *b;
@@ -246,10 +246,10 @@ void Machine::_absolute(Block * destBlock)
     }
 }
 
-void Machine::_add(const Block * sourceBlock, Block * destBlock)
+void Machine::_add(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid source given"));
     if (sourceBlock->dataType() != destBlock->dataType())
         throw(std::runtime_error("Machine::_add: Data types of operands do not match"));
 
@@ -267,10 +267,10 @@ void Machine::_add(const Block * sourceBlock, Block * destBlock)
     }
 }
 
-void Machine::_subtract(const Block * sourceBlock, Block * destBlock)
+void Machine::_subtract(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_subtract: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_subtract: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_subtract: Invalid source given"));
     if (sourceBlock->dataType() != destBlock->dataType())
         throw(std::runtime_error("Machine::_subtract: Data types of operands do not match"));
 
@@ -289,10 +289,10 @@ void Machine::_subtract(const Block * sourceBlock, Block * destBlock)
     }
 }
 
-void Machine::_multiply(const Block * sourceBlock, Block * destBlock)
+void Machine::_multiply(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_multiply: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_multiply: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_multiply: Invalid source given"));
     if (sourceBlock->dataType() != destBlock->dataType())
         throw(std::runtime_error("Machine::_multiply: Data types of operands do not match"));
 
@@ -311,10 +311,10 @@ void Machine::_multiply(const Block * sourceBlock, Block * destBlock)
     }
 }
 
-void Machine::_divide(const Block * sourceBlock, Block * destBlock)
+void Machine::_divide(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_divide: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_divide: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_divide: Invalid source given"));
     if (sourceBlock->dataType() != destBlock->dataType())
         throw(std::runtime_error("Machine::_divide: Data types of operands do not match"));
 
@@ -333,10 +333,10 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
     }
 }
 
-void Machine::_modlulo(const Block * sourceBlock, Block * destBlock)
+void Machine::_modlulo(Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_modlulo: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_modlulo: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_modlulo: Invalid source given"));
     if (sourceBlock->dataType() != destBlock->dataType())
         throw(std::runtime_error("Machine::_modlulo: Data types of operands do not match"));
 
@@ -359,7 +359,7 @@ void Machine::stackAdd()
 {
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackAdd: Not enough items on stack (minimum 2)"));
-    _add(&stack_.fromTop(0), &stack_.fromTop(1));
+    _add(&stack_.fromTop(1), &stack_.fromTop(0));
     stack_.pop();
 }
 
@@ -367,7 +367,7 @@ void Machine::stackSubtract()
 {
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackSubtract: Not enough items on stack (minimum 2)"));
-    _subtract(&stack_.fromTop(0), &stack_.fromTop(1));
+    _subtract(&stack_.fromTop(1), &stack_.fromTop(0));
     stack_.pop();
 }
 
@@ -375,7 +375,7 @@ void Machine::stackMultiply()
 {
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackMultiply: Not enough items on stack (minimum 2)"));
-    _multiply(&stack_.fromTop(0), &stack_.fromTop(1));
+    _multiply(&stack_.fromTop(1), &stack_.fromTop(0));
     stack_.pop();
 }
 
@@ -383,7 +383,7 @@ void Machine::stackDivide()
 {
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackDivide: Not enough items on stack (minimum 2)"));
-    _divide(&stack_.fromTop(0), &stack_.fromTop(1));
+    _divide(&stack_.fromTop(1), &stack_.fromTop(0));
     stack_.pop();
 }
 
@@ -391,15 +391,15 @@ void Machine::stackModulo()
 {
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackModulo: Not enough items on stack (minimum 2)"));
-    _modlulo(&stack_.fromTop(0), &stack_.fromTop(1));
+    _modlulo(&stack_.fromTop(1), &stack_.fromTop(0));
     stack_.pop();
 }
 
-void Machine::allocateDirect(const Block::DataType dataType, const unsigned count, Block & pointerDestination)
+void Machine::allocateDirect(Block & pointerDestination, const Block::DataType dataType, const unsigned count)
 {
     if (dataType == Block::DATA_TYPE_COUNT)
         throw(std::runtime_error("Machine::allocateDirect: Invalid data type given"));
-    managedHeap_.allocate(dataType, count, pointerDestination);
+    managedHeap_.allocate(pointerDestination, dataType, count);
 }
 
 void Machine::_allocate(const Block::DataType dataType, const Block * countBlock)
@@ -407,7 +407,7 @@ void Machine::_allocate(const Block::DataType dataType, const Block * countBlock
     if (countBlock == NULL) throw(std::runtime_error("Machine::_allocate: Invalid array size given"));
     if (countBlock->dataType() != Block::DT_INTEGER)
         throw(std::runtime_error("Machine::_allocate: Data type of array size is invalid (expected integer)"));
-    allocateDirect(dataType, countBlock->integerData(), managedOutRegister_);
+    allocateDirect(managedOutRegister_, dataType, countBlock->integerData());
 }
 
 void Machine::_startPopulatingArray(const Block * pointerBlock)
@@ -431,7 +431,7 @@ void Machine::_getArrayElement(const Block * pointerBlock, const unsigned index)
 {
     if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayElement: Invalid array pointer given"));
     if (pointerBlock->dataType() != Block::DT_POINTER)
-        throw(std::runtime_error("Machine::_getArrayElement: First argument data type is invalid (expected pointer)"));
+        throw(std::runtime_error("Machine::_getArrayElement: First operand data type is invalid (expected pointer)"));
     if (index >= pointerBlock->pointerArrayLength())
         throw(std::runtime_error("Machine::_getArrayElement: Index given is out of array range"));
     const Block * element = pointerBlock->pointerArrayElementAt(index);
@@ -452,24 +452,24 @@ void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
     if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Array pointer is invalid"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Destination is invalid"));
     if (pointerBlock->dataType() != Block::DT_POINTER)
-        throw(std::runtime_error("Machine::_getArrayLength: First argument data type is invalid (expected pointer)"));
+        throw(std::runtime_error("Machine::_getArrayLength: First operand data type is invalid (expected pointer)"));
     destBlock->setToInteger(pointerBlock->pointerArrayLength());
 }
 
-void Machine::_copyArray(const Block * sourcePointerBlock, const Block * destPointerBlock)
+void Machine::_copyArray(const Block * destPointerBlock, const Block * sourcePointerBlock)
 {
-    if (sourcePointerBlock == NULL)
-        throw(std::runtime_error("Machine::_copyArray: Source array pointer is invalid"));
     if (destPointerBlock == NULL)
         throw(std::runtime_error("Machine::_copyArray: Destination array pointer is invalid"));
-    if (sourcePointerBlock->dataType() != Block::DT_POINTER)
-        throw(std::runtime_error("Machine::_copyArray: Source data type is invalid (expected pointer)"));
+    if (sourcePointerBlock == NULL)
+        throw(std::runtime_error("Machine::_copyArray: Source array pointer is invalid"));
     if (destPointerBlock->dataType() != Block::DT_POINTER)
         throw(std::runtime_error("Machine::_copyArray: Destination data type is invalid (expected pointer)"));
-    if (sourcePointerBlock->pointerIsNull())
-        throw(std::runtime_error("Machine::_copyArray: Source array pointer is null"));
+    if (sourcePointerBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_copyArray: Source data type is invalid (expected pointer)"));
     if (destPointerBlock->pointerIsNull())
         throw(std::runtime_error("Machine::_copyArray: Destination array pointer is null"));
+    if (sourcePointerBlock->pointerIsNull())
+        throw(std::runtime_error("Machine::_copyArray: Source array pointer is null"));
 
     const unsigned length = sourcePointerBlock->pointerArrayLength();
     if (length > destPointerBlock->pointerArrayLength())
@@ -487,10 +487,10 @@ void Machine::_copyArray(const Block * sourcePointerBlock, const Block * destPoi
     }
 }
 
-void Machine::_convert(const Block * sourceBlock, Block * destBlock, const Block::DataType dataType)
+void Machine::_convert(Block * destBlock, const Block * sourceBlock, const Block::DataType dataType)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid source given"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid destination given"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid source given"));
     if (dataType == Block::DATA_TYPE_COUNT) throw(std::runtime_error("Machine::_convert: Invalid data type given"));
     if (destBlock->dataType() == Block::DT_POINTER)
         throw(std::runtime_error("Machine::_convert: Pointers cannot be converted into other data types"));
@@ -568,8 +568,8 @@ void setInequalityComparisonFlags(const T1 lhs, const T2 rhs, ComparisonFlagRegi
 
 void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 {
-    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
-    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second argument is invalid"));
+    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First operand is invalid"));
+    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second operand is invalid"));
     comparisonFlagRegister_.reset();
 
     const bool equality = (*lhsBlock == *rhsBlock);
@@ -634,8 +634,8 @@ void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 
 void Machine::_compareDataType(const Block * lhsBlock, const Block * rhsBlock)
 {
-    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
-    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second argument is invalid"));
+    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First operand is invalid"));
+    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second operand is invalid"));
     comparisonFlagRegister_.reset();
 
     const bool equality = (lhsBlock->dataType() == rhsBlock->dataType());
@@ -645,7 +645,7 @@ void Machine::_compareDataType(const Block * lhsBlock, const Block * rhsBlock)
 
 void Machine::_isDataType(const Block * block, const Block::DataType dataType)
 {
-    if (block == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
+    if (block == NULL) throw(std::runtime_error("Machine::_compare: First operand is invalid"));
     comparisonFlagRegister_.reset();
 
     const bool equality = (block->dataType() == dataType);
@@ -653,9 +653,9 @@ void Machine::_isDataType(const Block * block, const Block::DataType dataType)
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_NOT_EQUAL, !equality);
 }
 
-void Machine::_copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock)
+void Machine::_copyFlag(Block * destBlock, const ComparisonFlagRegister::ComparisonFlagId flagId)
 {
-    if (destBlock == NULL) throw(std::runtime_error("Machine::_copyFlag: Destination argument is invalid"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_copyFlag: Destination operand is invalid"));
     destBlock->setToBoolean(comparisonFlagRegister_.getValue(flagId));
 }
 
@@ -667,32 +667,32 @@ void Machine::_logicalNot(Block * destBlock)
     destBlock->setToBoolean(!destBlock->booleanData());
 }
 
-void validateBooleans(const Block * sourceBlock, const Block * destBlock)
+void validateBooleans(const Block * destBlock, const Block * sourceBlock)
 {
-    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Source is invalid"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Destination is invalid"));
-    if (sourceBlock->dataType() != Block::DT_BOOLEAN)
-        throw(std::runtime_error("Machine::_logicalAnd: Source data type is invalid (boolean expected)"));
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_logicalAnd: Source is invalid"));
     if (destBlock->dataType() != Block::DT_BOOLEAN)
         throw(std::runtime_error("Machine::_logicalAnd: Destination data type is invalid (boolean expected)"));
+    if (sourceBlock->dataType() != Block::DT_BOOLEAN)
+        throw(std::runtime_error("Machine::_logicalAnd: Source data type is invalid (boolean expected)"));
 }
 
-void Machine::_logicalAnd(const Block * sourceBlock, Block * destBlock)
+void Machine::_logicalAnd(Block * destBlock, const Block * sourceBlock)
 {
-    validateBooleans(sourceBlock, destBlock);
-    destBlock->setToBoolean(sourceBlock->booleanData() && destBlock->booleanData());
+    validateBooleans(destBlock, sourceBlock);
+    destBlock->setToBoolean(destBlock->booleanData() && sourceBlock->booleanData());
 }
 
-void Machine::_logicalOr(const Block * sourceBlock, Block * destBlock)
+void Machine::_logicalOr(Block * destBlock, const Block * sourceBlock)
 {
-    validateBooleans(sourceBlock, destBlock);
-    destBlock->setToBoolean(sourceBlock->booleanData() || destBlock->booleanData());
+    validateBooleans(destBlock, sourceBlock);
+    destBlock->setToBoolean(destBlock->booleanData() || sourceBlock->booleanData());
 }
 
-void Machine::_logicalXor(const Block * sourceBlock, Block * destBlock)
+void Machine::_logicalXor(Block * destBlock, const Block * sourceBlock)
 {
-    validateBooleans(sourceBlock, destBlock);
-    destBlock->setToBoolean(sourceBlock->booleanData() != destBlock->booleanData());
+    validateBooleans(destBlock, sourceBlock);
+    destBlock->setToBoolean(destBlock->booleanData() != sourceBlock->booleanData());
 }
 
 void Machine::jump(const std::string & labelName)
@@ -702,7 +702,7 @@ void Machine::jump(const std::string & labelName)
     programCounter_ = iterator->second;
 }
 
-void Machine::conditionalJump(const ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName)
+void Machine::conditionalJump(const std::string & labelName, const ComparisonFlagRegister::ComparisonFlagId condition)
 {
     if (comparisonFlagRegister_.getValue(condition)) jump(labelName);
 }

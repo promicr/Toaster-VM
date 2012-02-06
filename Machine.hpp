@@ -51,14 +51,14 @@ public:
     void clear(const T & location);
 
     template <typename T1, typename T2>
-    void set(const T1 & value, T2 & destination);
+    void set(T1 & destination, const T2 & value);
     template <typename T1, typename T2>
-    void set(const T1 & value, const T2 & destination);
+    void set(const T1 & destination, const T2 & value);
 
     template <typename T1, typename T2>
-    void move(const T1 & source, T2 & destination);
+    void move(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void move(const T1 & source, const T2 & destination);
+    void move(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
     void swap(T1 & a, T2 & b);
@@ -117,29 +117,29 @@ public:
     void absolute(const T & destination);
 
     template <typename T1, typename T2>
-    void add(const T1 & source, T2 & destination);
+    void add(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void add(const T1 & source, const T2 & destination);
+    void add(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void subtract(const T1 & source, T2 & destination);
+    void subtract(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void subtract(const T1 & source, const T2 & destination);
+    void subtract(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void multiply(const T1 & source, T2 & destination);
+    void multiply(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void multiply(const T1 & source, const T2 & destination);
+    void multiply(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void divide(const T1 & source, T2 & destination);
+    void divide(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void divide(const T1 & source, const T2 & destination);
+    void divide(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void modulo(const T1 & source, T2 & destination);
+    void modulo(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void modulo(const T1 & source, const T2 & destination);
+    void modulo(const T1 & destination, const T2 & source);
 
     void stackAdd();
     void stackSubtract();
@@ -147,7 +147,7 @@ public:
     void stackDivide();
     void stackModulo();
 
-    void allocateDirect(Block::DataType dataType, unsigned count, Block & pointerDestination);
+    void allocateDirect(Block & pointerDestination, Block::DataType dataType, unsigned count);
     template <typename T>
     void allocate(Block::DataType dataType, const T & count);
 
@@ -168,12 +168,12 @@ public:
     void getArrayLength(const T1 & arrayPointer, const T2 & destination);
 
     template <typename T1, typename T2>
-    void copyArray(const T1 & sourceArrayPointer, const T2 & destArrayPointer);
+    void copyArray(const T1 & destArrayPointer, const T2 & sourceArrayPointer);
 
     template <typename T1, typename T2>
-    void convert(const T1 & source, T2 & destination, Block::DataType dataType);
+    void convert(T1 & destination, const T2 & source, Block::DataType dataType);
     template <typename T1, typename T2>
-    void convert(const T1 & source, const T2 & destination, Block::DataType dataType);
+    void convert(const T1 & destination, const T2 & source, Block::DataType dataType);
 
     template <typename T1, typename T2>
     void convertToDataTypeOf(T1 & destination, const T2 & source);
@@ -195,9 +195,9 @@ public:
     void isDataType(const T & operand, Block::DataType dataType);
 
     template <typename T>
-    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination);
+    void copyFlag(T & destination, ComparisonFlagRegister::ComparisonFlagId flagId);
     template <typename T>
-    void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination);
+    void copyFlag(const T & destination, ComparisonFlagRegister::ComparisonFlagId flagId);
 
     template <typename T>
     void logicalNot(T & destination);
@@ -205,22 +205,22 @@ public:
     void logicalNot(const T & destination);
 
     template <typename T1, typename T2>
-    void logicalAnd(const T1 & source, T2 & destination);
+    void logicalAnd(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void logicalAnd(const T1 & source, const T2 & destination);
+    void logicalAnd(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void logicalOr(const T1 & source, T2 & destination);
+    void logicalOr(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void logicalOr(const T1 & source, const T2 & destination);
+    void logicalOr(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void logicalXor(const T1 & source, T2 & destination);
+    void logicalXor(T1 & destination, const T2 & source);
     template <typename T1, typename T2>
-    void logicalXor(const T1 & source, const T2 & destination);
+    void logicalXor(const T1 & destination, const T2 & source);
 
     void jump(const std::string & labelName);
-    void conditionalJump(ComparisonFlagRegister::ComparisonFlagId condition, const std::string & labelName);
+    void conditionalJump(const std::string & labelName, ComparisonFlagRegister::ComparisonFlagId condition);
     void call(const std::string & labelName);
     template<typename T>
     void returnFromCall(const T & returnValue);
@@ -284,8 +284,8 @@ private:
      * Identifiers are preceded by underscores to avoid template recursion problems
      */
     void _clear(Block * locationBlock);
-    void _set(const Block * value, Block * destBlock);
-    void _move(const Block * sourceBlock, Block * destBlock);
+    void _set(Block * destBlock, const Block * value);
+    void _move(Block * destBlock, const Block * sourceBlock);
     void _swap(Block * a, Block * b);
     void _read(Block * destBlock);
     void _readString(Block * destBlock);
@@ -297,29 +297,29 @@ private:
     void _decrement(Block * destBlock);
     void _negate(Block * destBlock);
     void _absolute(Block * destBlock);
-    void _add(const Block * sourceBlock, Block * destBlock);
-    void _subtract(const Block * sourceBlock, Block * destBlock);
-    void _multiply(const Block * sourceBlock, Block * destBlock);
-    void _divide(const Block * sourceBlock, Block * destBlock);
-    void _modlulo(const Block * sourceBlock, Block * destBlock);
+    void _add(Block * destBlock, const Block * sourceBlock);
+    void _subtract(Block * destBlock, const Block * sourceBlock);
+    void _multiply(Block * destBlock, const Block * sourceBlock);
+    void _divide(Block * destBlock, const Block * sourceBlock);
+    void _modlulo(Block * destBlock, const Block * sourceBlock);
     void _allocate(const Block::DataType dataType, const Block * countBlock);
     void _startPopulatingArray(const Block * pointerBlock);
     void _addToArray(const Block * valueBlock);
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
     void _getArrayLength(const Block * pointerBlock, Block * destBlock);
-    void _copyArray(const Block * sourcePointerBlock, const Block * destPointerBlock);
-    void _convert(const Block * sourceBlock, Block * destBlock, Block::DataType dataType);
+    void _copyArray(const Block * destPointerBlock, const Block * sourcePointerBlock);
+    void _convert(Block * destBlock, const Block * sourceBlock, Block::DataType dataType);
     void _convertToDataTypeOf(Block * destBlock, const Block * sourceBlock);
     void _dereference(const Block * pointerBlock, Block * destBlock);
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
     void _compareDataType(const Block * lhsBlock, const Block * rhsBlock);
     void _isDataType(const Block * block, Block::DataType dataType);
-    void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
+    void _copyFlag(Block * destBlock, ComparisonFlagRegister::ComparisonFlagId flagId);
     void _logicalNot(Block * destBlock);
-    void _logicalAnd(const Block * sourceBlock, Block * destBlock);
-    void _logicalOr(const Block * sourceBlock, Block * destBlock);
-    void _logicalXor(const Block * sourceBlock, Block * destBlock);
+    void _logicalAnd(Block * destBlock, const Block * sourceBlock);
+    void _logicalOr(Block * destBlock, const Block * sourceBlock);
+    void _logicalXor(Block * destBlock, const Block * sourceBlock);
     void _returnFromCall(const Block * returnBlock);
     void _extensionCall(const std::string & functionName);
 
@@ -341,25 +341,25 @@ void Machine::clear(const T & location)
 }
 
 template <typename T1, typename T2>
-void Machine::set(const T1 & value, T2 & destination)
+void Machine::set(T1 & destination, const T2 & value)
 {
-    _set(getBlockFrom(value, 1), getBlockFrom(destination, 2));
+    _set(getBlockFrom(destination, 1), getBlockFrom(value, 2));
 }
 template <typename T1, typename T2>
-void Machine::set(const T1 & value, const T2 & destination)
+void Machine::set(const T1 & destination, const T2 & value)
 {
-    _set(getBlockFrom(value, 1), getBlockFrom(destination, 2));
+    _set(getBlockFrom(destination, 1), getBlockFrom(value, 2));
 }
 
 template <typename T1, typename T2>
-void Machine::move(const T1 & source, T2 & destination)
+void Machine::move(T1 & destination, const T2 & source)
 {
-    _move(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _move(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::move(const T1 & source, const T2 & destination)
+void Machine::move(const T1 & destination, const T2 & source)
 {
-    _move(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _move(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T1, typename T2>
@@ -478,58 +478,58 @@ void Machine::absolute(const T & destination)
 }
 
 template <typename T1, typename T2>
-void Machine::add(const T1 & source, T2 & destination)
+void Machine::add(T1 & destination, const T2 & source)
 {
-    _add(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _add(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::add(const T1 & source, const T2 & destination)
+void Machine::add(const T1 & destination, const T2 & source)
 {
-    _add(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-
-template <typename T1, typename T2>
-void Machine::subtract(const T1 & source, T2 & destination)
-{
-    _subtract(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-template <typename T1, typename T2>
-void Machine::subtract(const T1 & source, const T2 & destination)
-{
-    _subtract(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _add(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T1, typename T2>
-void Machine::multiply(const T1 & source, T2 & destination)
+void Machine::subtract(T1 & destination, const T2 & source)
 {
-    _multiply(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _subtract(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::multiply(const T1 & source, const T2 & destination)
+void Machine::subtract(const T1 & destination, const T2 & source)
 {
-    _multiply(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-
-template <typename T1, typename T2>
-void Machine::divide(const T1 & source, T2 & destination)
-{
-    _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-template <typename T1, typename T2>
-void Machine::divide(const T1 & source, const T2 & destination)
-{
-    _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _subtract(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T1, typename T2>
-void Machine::modulo(const T1 & source, T2 & destination)
+void Machine::multiply(T1 & destination, const T2 & source)
 {
-    _modlulo(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _multiply(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::modulo(const T1 & source, const T2 & destination)
+void Machine::multiply(const T1 & destination, const T2 & source)
 {
-    _modlulo(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _multiply(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::divide(T1 & destination, const T2 & source)
+{
+    _divide(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+template <typename T1, typename T2>
+void Machine::divide(const T1 & destination, const T2 & source)
+{
+    _divide(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::modulo(T1 & destination, const T2 & source)
+{
+    _modlulo(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+template <typename T1, typename T2>
+void Machine::modulo(const T1 & destination, const T2 & source)
+{
+    _modlulo(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T>
@@ -573,20 +573,20 @@ void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
 }
 
 template <typename T1, typename T2>
-void Machine::copyArray(const T1 & sourceArrayPointer, const T2 & destArrayPointer)
+void Machine::copyArray(const T1 & destArrayPointer, const T2 & sourceArrayPointer)
 {
-    _copyArray(getBlockFrom(sourceArrayPointer, 1), getBlockFrom(destArrayPointer, 2));
+    _copyArray(getBlockFrom(destArrayPointer, 1), getBlockFrom(sourceArrayPointer, 2));
 }
 
 template <typename T1, typename T2>
-void Machine::convert(const T1 & source, T2 & destination, const Block::DataType dataType)
+void Machine::convert(T1 & destination, const T2 & source, const Block::DataType dataType)
 {
-    _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
+    _convert(getBlockFrom(destination, 1), getBlockFrom(source, 2), dataType);
 }
 template <typename T1, typename T2>
-void Machine::convert(const T1 & source, const T2 & destination, const Block::DataType dataType)
+void Machine::convert(const T1 & destination, const T2 & source, const Block::DataType dataType)
 {
-    _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
+    _convert(getBlockFrom(destination, 1), getBlockFrom(source, 2), dataType);
 }
 
 template <typename T1, typename T2>
@@ -630,14 +630,14 @@ void Machine::isDataType(const T & operand, const Block::DataType dataType)
 }
 
 template <typename T>
-void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, T & destination)
+void Machine::copyFlag(T & destination, const ComparisonFlagRegister::ComparisonFlagId flagId)
 {
-    _copyFlag(flagId, getBlockFrom(destination, 2));
+    _copyFlag(getBlockFrom(destination, 1), flagId);
 }
 template <typename T>
-void Machine::copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, const T & destination)
+void Machine::copyFlag(const T & destination, const ComparisonFlagRegister::ComparisonFlagId flagId)
 {
-    _copyFlag(flagId, getBlockFrom(destination, 2));
+    _copyFlag(getBlockFrom(destination, 1), flagId);
 }
 
 template <typename T>
@@ -652,36 +652,36 @@ void Machine::logicalNot(const T & destination)
 }
 
 template <typename T1, typename T2>
-void Machine::logicalAnd(const T1 & source, T2 & destination)
+void Machine::logicalAnd(T1 & destination, const T2 & source)
 {
-    _logicalAnd(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _logicalAnd(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::logicalAnd(const T1 & source, const T2 & destination)
+void Machine::logicalAnd(const T1 & destination, const T2 & source)
 {
-    _logicalAnd(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-
-template <typename T1, typename T2>
-void Machine::logicalOr(const T1 & source, T2 & destination)
-{
-    _logicalOr(getBlockFrom(source, 1), getBlockFrom(destination, 2));
-}
-template <typename T1, typename T2>
-void Machine::logicalOr(const T1 & source, const T2 & destination)
-{
-    _logicalOr(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _logicalAnd(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T1, typename T2>
-void Machine::logicalXor(const T1 & source, T2 & destination)
+void Machine::logicalOr(T1 & destination, const T2 & source)
 {
-    _logicalXor(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _logicalOr(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 template <typename T1, typename T2>
-void Machine::logicalXor(const T1 & source, const T2 & destination)
+void Machine::logicalOr(const T1 & destination, const T2 & source)
 {
-    _logicalXor(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+    _logicalOr(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::logicalXor(T1 & destination, const T2 & source)
+{
+    _logicalXor(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+template <typename T1, typename T2>
+void Machine::logicalXor(const T1 & destination, const T2 & source)
+{
+    _logicalXor(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T>

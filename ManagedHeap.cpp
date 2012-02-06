@@ -13,7 +13,7 @@
 ManagedHeap::ManagedHeap(const unsigned size)
     : Heap(size), arrayLength(size == 0 ? defaultSize : size, 0) {}
 
-void ManagedHeap::allocate(const Block::DataType dataType, const unsigned amount, Block & pointerDestination)
+void ManagedHeap::allocate(Block & pointerDestination, const Block::DataType dataType, const unsigned amount)
 {
     unsigned size_ = size(), index;
     bool success = false;

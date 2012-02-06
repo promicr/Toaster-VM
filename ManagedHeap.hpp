@@ -21,7 +21,7 @@ class ManagedHeap : public Heap
 public:
     ManagedHeap(unsigned size);
 
-    void allocate(Block::DataType dataType, unsigned amount, Block & pointerDestination);
+    void allocate(Block & pointerDestination, Block::DataType dataType, unsigned amount);
     unsigned arrayLengthAt(unsigned index);
 
 protected:
