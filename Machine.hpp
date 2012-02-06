@@ -111,6 +111,11 @@ public:
     template <typename T>
     void negate(const T & destination);
 
+    template <typename T>
+    void absolute(T & destination);
+    template <typename T>
+    void absolute(const T & destination);
+
     template <typename T1, typename T2>
     void add(const T1 & source, T2 & destination);
     template <typename T1, typename T2>
@@ -131,10 +136,16 @@ public:
     template <typename T1, typename T2>
     void divide(const T1 & source, const T2 & destination);
 
+    template <typename T1, typename T2>
+    void modulo(const T1 & source, T2 & destination);
+    template <typename T1, typename T2>
+    void modulo(const T1 & source, const T2 & destination);
+
     void stackAdd();
     void stackSubtract();
     void stackMultiply();
     void stackDivide();
+    void stackModulo();
 
     void allocateDirect(Block::DataType dataType, unsigned count, Block & pointerDestination);
     template <typename T>
@@ -285,10 +296,12 @@ private:
     void _increment(Block * destBlock);
     void _decrement(Block * destBlock);
     void _negate(Block * destBlock);
+    void _absolute(Block * destBlock);
     void _add(const Block * sourceBlock, Block * destBlock);
     void _subtract(const Block * sourceBlock, Block * destBlock);
     void _multiply(const Block * sourceBlock, Block * destBlock);
     void _divide(const Block * sourceBlock, Block * destBlock);
+    void _modlulo(const Block * sourceBlock, Block * destBlock);
     void _allocate(const Block::DataType dataType, const Block * countBlock);
     void _startPopulatingArray(const Block * pointerBlock);
     void _addToArray(const Block * valueBlock);
@@ -453,6 +466,17 @@ void Machine::negate(const T & destination)
     _negate(getBlockFrom(destination, 1));
 }
 
+template <typename T>
+void Machine::absolute(T & destination)
+{
+    _absolute(getBlockFrom(destination, 1));
+}
+template <typename T>
+void Machine::absolute(const T & destination)
+{
+    _absolute(getBlockFrom(destination, 1));
+}
+
 template <typename T1, typename T2>
 void Machine::add(const T1 & source, T2 & destination)
 {
@@ -495,6 +519,17 @@ template <typename T1, typename T2>
 void Machine::divide(const T1 & source, const T2 & destination)
 {
     _divide(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::modulo(const T1 & source, T2 & destination)
+{
+    _modlulo(getBlockFrom(source, 1), getBlockFrom(destination, 2));
+}
+template <typename T1, typename T2>
+void Machine::modulo(const T1 & source, const T2 & destination)
+{
+    _modlulo(getBlockFrom(source, 1), getBlockFrom(destination, 2));
 }
 
 template <typename T>

@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include <cmath>
 #include <dlfcn.h>
 
 #include "Machine.hpp"
@@ -233,6 +234,18 @@ void Machine::_negate(Block * destBlock)
     }
 }
 
+void Machine::_absolute(Block * destBlock)
+{
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_absolute: Invalid destination given"));
+    switch (destBlock->dataType())
+    {
+    case Block::DT_INTEGER: destBlock->integerData() = std::abs(destBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->realData() = fabs(destBlock->realData()); break;
+    default:
+        throw(std::runtime_error("Machine::_absolute: Destination data type is invalid (expected integer or real)"));
+    }
+}
+
 void Machine::_add(const Block * sourceBlock, Block * destBlock)
 {
     if (sourceBlock == NULL) throw(std::runtime_error("Machine::_add: Invalid source given"));
@@ -256,7 +269,10 @@ void Machine::_add(const Block * sourceBlock, Block * destBlock)
 
 void Machine::_subtract(const Block * sourceBlock, Block * destBlock)
 {
-    if ((sourceBlock == NULL) || (destBlock == NULL) || (sourceBlock->dataType() != destBlock->dataType())) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_subtract: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_subtract: Invalid destination given"));
+    if (sourceBlock->dataType() != destBlock->dataType())
+        throw(std::runtime_error("Machine::_subtract: Data types of operands do not match"));
 
     switch (sourceBlock->dataType())
     {
@@ -275,7 +291,10 @@ void Machine::_subtract(const Block * sourceBlock, Block * destBlock)
 
 void Machine::_multiply(const Block * sourceBlock, Block * destBlock)
 {
-    if ((sourceBlock == NULL) || (destBlock == NULL) || (sourceBlock->dataType() != destBlock->dataType())) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_multiply: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_multiply: Invalid destination given"));
+    if (sourceBlock->dataType() != destBlock->dataType())
+        throw(std::runtime_error("Machine::_multiply: Data types of operands do not match"));
 
     switch (sourceBlock->dataType())
     {
@@ -294,7 +313,10 @@ void Machine::_multiply(const Block * sourceBlock, Block * destBlock)
 
 void Machine::_divide(const Block * sourceBlock, Block * destBlock)
 {
-    if ((sourceBlock == NULL) || (destBlock == NULL) || (sourceBlock->dataType() != destBlock->dataType())) return;
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_divide: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_divide: Invalid destination given"));
+    if (sourceBlock->dataType() != destBlock->dataType())
+        throw(std::runtime_error("Machine::_divide: Data types of operands do not match"));
 
     switch (sourceBlock->dataType())
     {
@@ -308,6 +330,28 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
 
     default:
         throw(std::runtime_error("Machine::_divide: Data types of operands are invalid (expected integer or real)"));
+    }
+}
+
+void Machine::_modlulo(const Block * sourceBlock, Block * destBlock)
+{
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_modlulo: Invalid source given"));
+    if (destBlock == NULL) throw(std::runtime_error("Machine::_modlulo: Invalid destination given"));
+    if (sourceBlock->dataType() != destBlock->dataType())
+        throw(std::runtime_error("Machine::_modlulo: Data types of operands do not match"));
+
+    switch (sourceBlock->dataType())
+    {
+    case Block::DT_INTEGER:
+        destBlock->integerData() = destBlock->integerData() % sourceBlock->integerData();
+        break;
+
+    case Block::DT_REAL:
+        destBlock->realData() = fmod(destBlock->realData(), sourceBlock->realData());
+        break;
+
+    default:
+        throw(std::runtime_error("Machine::_modlulo: Data types of operands are invalid (expected integer or real)"));
     }
 }
 
@@ -340,6 +384,14 @@ void Machine::stackDivide()
     if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackDivide: Not enough items on stack (minimum 2)"));
     _divide(&stack_.fromTop(0), &stack_.fromTop(1));
+    stack_.pop();
+}
+
+void Machine::stackModulo()
+{
+    if ((stack_.empty()) || (stack_.count() < 2))
+        throw(std::runtime_error("Machine::stackModulo: Not enough items on stack (minimum 2)"));
+    _modlulo(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
 }
 

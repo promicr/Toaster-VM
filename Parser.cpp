@@ -8,10 +8,10 @@
 #include "Parser.hpp"
 
 const std::string Parser::opcodes[] =
-{ "clr", "set", "move", "swap", "in", "ins", "out", "outs", "push", "pop", "inc", "dec", "neg" "add", "sub", "mul",
-  "div", "sadd", "ssub", "smul", "sdiv", "allc", "pla", "fna" , "atoa", "ael", "alen", "cnvi", "cnvr", "cnvc", "cnvb",
-  "cnvt", "dref", "cmp", "cmpt", "ist", "cpyf", "not", "and", "or", "xor", "jump", "je", "jne", "jl", "jg", "jle",
-  "jge", "call", "ret", "extl", "extc", "#" };
+{ "clr", "set", "move", "swap", "in", "ins", "out", "outs", "push", "pop", "inc", "dec", "neg", "abs", "add", "sub",
+  "mul", "div", "mod", "sadd", "ssub", "smul", "sdiv", "allc", "pla", "fna" , "atoa", "ael", "alen", "cnvi", "cnvr",
+  "cnvc", "cnvb", "cnvt", "dref", "cmp", "cmpt", "ist", "cpyf", "not", "and", "or", "xor", "jump", "je", "jne", "jl",
+  "jg", "jle", "jge", "call", "ret", "extl", "extc", "#" };
 
 int Parser::opcodeId(const std::string & opcode)
 {
