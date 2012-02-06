@@ -159,9 +159,17 @@ public:
     void getArrayLength(const T1 & arrayPointer, const T2 & destination);
 
     template <typename T1, typename T2>
+    void copyArray(const T1 & sourceArrayPointer, const T2 & destArrayPointer);
+
+    template <typename T1, typename T2>
     void convert(const T1 & source, T2 & destination, Block::DataType dataType);
     template <typename T1, typename T2>
     void convert(const T1 & source, const T2 & destination, Block::DataType dataType);
+
+    template <typename T1, typename T2>
+    void convertToDataTypeOf(T1 & destination, const T2 & source);
+    template <typename T1, typename T2>
+    void convertToDataTypeOf(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
     void dereference(const T1 & pointer, T2 & destinaton);
@@ -170,6 +178,12 @@ public:
 
     template <typename T1, typename T2>
     void compare(const T1 & lhs, const T2 & rhs);
+
+    template <typename T1, typename T2>
+    void compareDataType(const T1 & lhs, const T2 & rhs);
+
+    template <typename T>
+    void isDataType(const T & operand, Block::DataType dataType);
 
     template <typename T>
     void copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, T & destination);
@@ -285,9 +299,13 @@ private:
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
     void _getArrayLength(const Block * pointerBlock, Block * destBlock);
+    void _copyArray(const Block * sourcePointerBlock, const Block * destPointerBlock);
     void _convert(const Block * sourceBlock, Block * destBlock, Block::DataType dataType);
+    void _convertToDataTypeOf(Block * destBlock, const Block * sourceBlock);
     void _dereference(const Block * pointerBlock, Block * destBlock);
     void _compare(const Block * lhsBlock, const Block * rhsBlock);
+    void _compareDataType(const Block * lhsBlock, const Block * rhsBlock);
+    void _isDataType(const Block * block, Block::DataType dataType);
     void _copyFlag(ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock);
     void _logicalNot(Block * destBlock);
     void _logicalAnd(const Block * sourceBlock, Block * destBlock);
@@ -524,6 +542,12 @@ void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
 }
 
 template <typename T1, typename T2>
+void Machine::copyArray(const T1 & sourceArrayPointer, const T2 & destArrayPointer)
+{
+    _copyArray(getBlockFrom(sourceArrayPointer, 1), getBlockFrom(destArrayPointer, 2));
+}
+
+template <typename T1, typename T2>
 void Machine::convert(const T1 & source, T2 & destination, const Block::DataType dataType)
 {
     _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
@@ -532,6 +556,17 @@ template <typename T1, typename T2>
 void Machine::convert(const T1 & source, const T2 & destination, const Block::DataType dataType)
 {
     _convert(getBlockFrom(source, 1), getBlockFrom(destination, 2), dataType);
+}
+
+template <typename T1, typename T2>
+void Machine::convertToDataTypeOf(T1 & destination, const T2 & source)
+{
+    _convertToDataTypeOf(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+template <typename T1, typename T2>
+void Machine::convertToDataTypeOf(const T1 & destination, const T2 & source)
+{
+    _convertToDataTypeOf(getBlockFrom(destination, 1), getBlockFrom(source, 2));
 }
 
 template <typename T1, typename T2>
@@ -549,6 +584,18 @@ template <typename T1, typename T2>
 void Machine::compare(const T1 & lhs, const T2 & rhs)
 {
     _compare(getBlockFrom(lhs, 1), getBlockFrom(rhs, 2));
+}
+
+template <typename T1, typename T2>
+void Machine::compareDataType(const T1 & lhs, const T2 & rhs)
+{
+    _compareDataType(getBlockFrom(lhs, 1), getBlockFrom(rhs, 2));
+}
+
+template <typename T>
+void Machine::isDataType(const T & operand, const Block::DataType dataType)
+{
+    _isDataType(getBlockFrom(operand, 1), dataType);
 }
 
 template <typename T>

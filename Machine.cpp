@@ -402,6 +402,37 @@ void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
     destBlock->setToInteger(pointerBlock->pointerArrayLength());
 }
 
+void Machine::_copyArray(const Block * sourcePointerBlock, const Block * destPointerBlock)
+{
+    if (sourcePointerBlock == NULL)
+        throw(std::runtime_error("Machine::_copyArray: Source array pointer is invalid"));
+    if (destPointerBlock == NULL)
+        throw(std::runtime_error("Machine::_copyArray: Destination array pointer is invalid"));
+    if (sourcePointerBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_copyArray: Source data type is invalid (expected pointer)"));
+    if (destPointerBlock->dataType() != Block::DT_POINTER)
+        throw(std::runtime_error("Machine::_copyArray: Destination data type is invalid (expected pointer)"));
+    if (sourcePointerBlock->pointerIsNull())
+        throw(std::runtime_error("Machine::_copyArray: Source array pointer is null"));
+    if (destPointerBlock->pointerIsNull())
+        throw(std::runtime_error("Machine::_copyArray: Destination array pointer is null"));
+
+    const unsigned length = sourcePointerBlock->pointerArrayLength();
+    if (length > destPointerBlock->pointerArrayLength())
+        throw(std::runtime_error("Machine::_copyArray: Source array being copied is larger than the destination"));
+
+    Block * sourceBlock, * destBlock;
+    for (unsigned i = 0; i < length; ++i)
+    {
+        sourceBlock = sourcePointerBlock->pointerArrayElementAt(i);
+        if (sourceBlock == NULL) throw(std::runtime_error("Machine::_copyArray: Error with source array"));
+        destBlock = destPointerBlock->pointerArrayElementAt(i);
+        if (destBlock == NULL) throw(std::runtime_error("Machine::_copyArray: Error with destination array"));;
+
+        *destBlock = *sourceBlock;
+    }
+}
+
 void Machine::_convert(const Block * sourceBlock, Block * destBlock, const Block::DataType dataType)
 {
     if (sourceBlock == NULL) throw(std::runtime_error("Machine::_convert: Invalid source given"));
@@ -456,6 +487,12 @@ void Machine::_convert(const Block * sourceBlock, Block * destBlock, const Block
     }
 }
 
+void Machine::_convertToDataTypeOf(Block * destBlock, const Block * sourceBlock)
+{
+    if (sourceBlock == NULL) throw(std::runtime_error("Machine::_convertToDataTypeOf: Invalid data type source given"));
+    _convert(destBlock, destBlock, sourceBlock->dataType());
+}
+
 void Machine::_dereference(const Block * pointerBlock, Block * destBlock)
 {
     if (pointerBlock == NULL) throw(std::runtime_error("Machine::_dereference: Pointer is invalid"));
@@ -477,11 +514,11 @@ void setInequalityComparisonFlags(const T1 lhs, const T2 rhs, ComparisonFlagRegi
 
 void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 {
-    comparisonFlagRegister_.reset();
     if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
     if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second argument is invalid"));
+    comparisonFlagRegister_.reset();
 
-    bool equality = (*lhsBlock == *rhsBlock);
+    const bool equality = (*lhsBlock == *rhsBlock);
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_EQUAL, equality);
     comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_NOT_EQUAL, !equality);
 
@@ -539,6 +576,27 @@ void Machine::_compare(const Block * lhsBlock, const Block * rhsBlock)
 
     default: break;
     }
+}
+
+void Machine::_compareDataType(const Block * lhsBlock, const Block * rhsBlock)
+{
+    if (lhsBlock == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
+    if (rhsBlock == NULL) throw(std::runtime_error("Machine::_compare: Second argument is invalid"));
+    comparisonFlagRegister_.reset();
+
+    const bool equality = (lhsBlock->dataType() == rhsBlock->dataType());
+    comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_EQUAL, equality);
+    comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_NOT_EQUAL, !equality);
+}
+
+void Machine::_isDataType(const Block * block, const Block::DataType dataType)
+{
+    if (block == NULL) throw(std::runtime_error("Machine::_compare: First argument is invalid"));
+    comparisonFlagRegister_.reset();
+
+    const bool equality = (block->dataType() == dataType);
+    comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_EQUAL, equality);
+    comparisonFlagRegister_.setValue(ComparisonFlagRegister::F_NOT_EQUAL, !equality);
 }
 
 void Machine::_copyFlag(const ComparisonFlagRegister::ComparisonFlagId flagId, Block * destBlock)
