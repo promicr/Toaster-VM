@@ -1,5 +1,5 @@
 /*
- * Flags.hpp
+ * ComparisonFlagRegister.hpp
  *
  *  Created on: 31 Jan 2012
  *      Author: Max Foster

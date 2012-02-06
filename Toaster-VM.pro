@@ -6,8 +6,8 @@ SOURCES += \
     ManagedHeap.cpp \
     Machine.cpp \
     ComparisonFlagRegister.cpp \
-    Parser.cpp \
-    ExtensionFunction.cpp
+    ExtensionFunction.cpp \
+    Interpreter.cpp
 
 HEADERS += \
     Block.hpp \
@@ -16,8 +16,8 @@ HEADERS += \
     ManagedHeap.hpp \
     Machine.hpp \
     ComparisonFlagRegister.hpp \
-    Parser.hpp \
-    ExtensionFunction.hpp
+    ExtensionFunction.hpp \
+    Interpreter.hpp
 
 QMAKE_CXXFLAGS_DEBUG += -ansi -pedantic
 QMAKE_CXXFLAGS_RELEASE += -ansi -pedantic

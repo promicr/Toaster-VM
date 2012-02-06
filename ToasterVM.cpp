@@ -9,10 +9,13 @@
 #include <exception>
 
 #include "Machine.hpp"
+#include "Interpreter.hpp"
 
 int main(int argc, char * argv[])
 {
     Machine machine;
+    Interpreter interpreter(machine);
+    interpreter.run();
 
     return 0;
 }
