@@ -20,8 +20,6 @@ class Machine
 public:
     typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to int, i.e. hashed label name
     typedef std::vector<unsigned> ReturnAddressStack;
-    typedef Block (*ExtensionFunction)(void*, Block);
-    typedef std::map<std::string, ExtensionFunction> ExtensionFunctionTable;
 
     struct StackLocation
     {
@@ -217,8 +215,8 @@ public:
     void returnFromCall(const T & returnValue);
 
     void loadExtension(const std::string & fileName);
-    template<typename T>
-    void extensionCall(const std::string & functionName, const T & argument);
+    // returnFromCall is called in this function, so stack frame and parameters must already be pushed before calling!
+    void extensionCall(const std::string & functionName);
 
     Stack & stack();
     Heap & unmanagedHeap();
@@ -226,7 +224,6 @@ public:
     ComparisonFlagRegister & comparisonFlagRegister();
     Block & primaryRegister();
     Block & managedOutRegister();
-    Block & extensionOutRegister();
     unsigned & programCounter();
 
     const LabelTable & labels() const;
@@ -237,20 +234,17 @@ public:
     bool & operand2IsPointer();
     bool operand2IsPointer() const;
 
-    static const ExtensionFunctionTable & extensionFunctions();
-
 private:
     static std::vector<void*> extensionHandles;
-    static ExtensionFunctionTable extensionFunctions_;
     static unsigned machineCount;
+    static const unsigned extensionMachineStackSize, extensionMachineHeapSize;
 
     Stack stack_;
     Heap unmanagedHeap_;
     ManagedHeap managedHeap_;
     ComparisonFlagRegister comparisonFlagRegister_;
     Block primaryRegister_,
-    managedOutRegister_, // a register for storing the output of managed heap functions
-    extensionOutRegister_; // a register for storing the output of extension functions
+    managedOutRegister_; // a register for storing the output of managed heap functions
     unsigned programCounter_;
 
     LabelTable labels_;
@@ -270,6 +264,8 @@ private:
     } arrayBeingPopulated;
 
     bool operand1IsPointer_, operand2IsPointer_;
+
+    Machine * extensionMachine; // A separate machine for extension functions to work inside
 
     /* Functions handling the operations shared by many other functions.
      * Even if operations are trivial, these functions should be used so that the operation can be changed with ease
@@ -312,7 +308,7 @@ private:
     void _logicalOr(const Block * sourceBlock, Block * destBlock);
     void _logicalXor(const Block * sourceBlock, Block * destBlock);
     void _returnFromCall(const Block * returnBlock);
-    void _extensionCall(const std::string & functionName, const Block * argument);
+    void _extensionCall(const std::string & functionName);
 
     Block * getBlockFrom(locationId location, short operandNumber);
     Block * getBlockFrom(StackLocation location, short operandNumber);
@@ -657,12 +653,6 @@ template <typename T>
 void Machine::returnFromCall(const T & returnValue)
 {
     _returnFromCall(getBlockFrom(returnValue, 1));
-}
-
-template <typename T>
-void Machine::extensionCall(const std::string & functionName, const T & argument)
-{
-    _extensionCall(functionName, getBlockFrom(argument, 2));
 }
 
 #endif // MACHINE_HPP

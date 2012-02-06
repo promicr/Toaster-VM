@@ -10,17 +10,18 @@
 #include <dlfcn.h>
 
 #include "Machine.hpp"
+#include "ExtensionFunction.hpp"
 
 const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER,
 Machine::EXTENSION_OUT_REGISTER, Machine::NIL;
 
-Machine::ExtensionFunctionTable Machine::extensionFunctions_;
 std::vector<void*> Machine::extensionHandles;
 unsigned Machine::machineCount = 0;
+const unsigned Machine::extensionMachineStackSize = 1000, Machine::extensionMachineHeapSize = 1000;
 
 Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, const unsigned managedHeapSize)
     : stack_(stackSize), unmanagedHeap_(unmanagedHeapSize), managedHeap_(managedHeapSize), programCounter_(0),
-      operand1IsPointer_(false), operand2IsPointer_(false)
+      operand1IsPointer_(false), operand2IsPointer_(false), extensionMachine(NULL)
 {
     returnAddressStack.reserve((stackSize == 0 ? Stack::defaultSize : stackSize) / 4);
     ++machineCount;
@@ -28,6 +29,7 @@ Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, con
 
 Machine::~Machine()
 {
+    if (extensionMachine != NULL) delete extensionMachine;
     if (--machineCount == 0) for (unsigned i = 0; i < extensionHandles.size(); ++i) dlclose(extensionHandles[i]);
 }
 
@@ -311,7 +313,7 @@ void Machine::_divide(const Block * sourceBlock, Block * destBlock)
 
 void Machine::stackAdd()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+    if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackAdd: Not enough items on stack (minimum 2)"));
     _add(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
@@ -319,7 +321,7 @@ void Machine::stackAdd()
 
 void Machine::stackSubtract()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+    if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackSubtract: Not enough items on stack (minimum 2)"));
     _subtract(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
@@ -327,7 +329,7 @@ void Machine::stackSubtract()
 
 void Machine::stackMultiply()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+    if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackMultiply: Not enough items on stack (minimum 2)"));
     _multiply(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
@@ -335,7 +337,7 @@ void Machine::stackMultiply()
 
 void Machine::stackDivide()
 {
-    if ((stack_.empty()) || (stack_.highestIndex() < 1))
+    if ((stack_.empty()) || (stack_.count() < 2))
         throw(std::runtime_error("Machine::stackDivide: Not enough items on stack (minimum 2)"));
     _divide(&stack_.fromTop(0), &stack_.fromTop(1));
     stack_.pop();
@@ -679,20 +681,25 @@ void Machine::loadExtension(const std::string & fileName)
     error = dlerror();
     if ((f == NULL) || (error != NULL)) throw(std::runtime_error("Machine::loadExtension: " + std::string(error)));
 
-    typedef void(*func)(void*);
-    func loadFunction = *reinterpret_cast<func*>(&f);
-    loadFunction(&extensionFunctions_);
+    typedef void(*AddNewFunctionFunction)(const char *, ExtensionFunction::Pointer, unsigned);
+    typedef void(*LoaderFunction)(AddNewFunctionFunction);
+    LoaderFunction loadFunction = *reinterpret_cast<LoaderFunction*>(&f);
+    loadFunction(ExtensionFunction::addNew);
 
     extensionHandles.push_back(handle);
 }
 
-void Machine::_extensionCall(const std::string & functionName, const Block * argument)
+void Machine::extensionCall(const std::string & functionName)
 {
-    if (argument == NULL) throw(std::runtime_error("Machine::_extensionCall: Argument is invalid"));
-    ExtensionFunctionTable::iterator iterator = extensionFunctions_.find(functionName);
-    if (iterator == extensionFunctions_.end())
-        throw(std::runtime_error("Machine::_extensionCall: Unknown extension function '" + functionName + "'"));
-    extensionOutRegister_ = iterator->second(this, *argument);
+    ExtensionFunction * function = ExtensionFunction::find(functionName);
+    if (function == NULL)
+        throw(std::runtime_error("Machine::extensionCall: Unknown extension function '" + functionName + "'"));
+
+    if (extensionMachine == NULL)
+        extensionMachine = new Machine(extensionMachineStackSize, extensionMachineHeapSize, extensionMachineHeapSize);
+    const Block block = function->call(stack_, extensionMachine);
+
+    _returnFromCall(&block);
 }
 
 Stack & Machine::stack()
@@ -723,11 +730,6 @@ Block & Machine::primaryRegister()
 Block & Machine::managedOutRegister()
 {
     return managedOutRegister_;
-}
-
-Block & Machine::extensionOutRegister()
-{
-    return extensionOutRegister_;
 }
 
 unsigned & Machine::programCounter()
@@ -764,11 +766,6 @@ bool & Machine::operand2IsPointer()
 bool Machine::operand2IsPointer() const
 {
     return operand2IsPointer_;
-}
-
-const Machine::ExtensionFunctionTable & Machine::extensionFunctions()
-{
-    return extensionFunctions_;
 }
 
 Block * Machine::getBlockFrom(const locationId location, const short operandNumber)

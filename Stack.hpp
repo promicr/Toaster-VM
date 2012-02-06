@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "Block.hpp"
+class Block;
 
 class Stack
 {
@@ -23,14 +23,17 @@ public:
     void pop();
 
     Block & peek();
+    const Block & peek() const;
     Block & at(unsigned index);
+    const Block & at(unsigned index) const;
     Block & fromTop(unsigned index);
+    const Block & fromTop(unsigned index) const;
 
     void pushFrame();
     void popFrame(const Block * returnValue);
 
     bool empty() const;
-    unsigned highestIndex() const;
+    unsigned count() const;
     unsigned size() const;
 
 private:

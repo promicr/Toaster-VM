@@ -40,13 +40,31 @@ Block & Stack::peek()
     return data[combinedFramePointer + pointer - 1];
 }
 
-Block & Stack::at(unsigned index)
+const Block & Stack::peek() const
+{
+    if (pointer == 0) throw(std::runtime_error("Stack::peek: No items on the stack"));
+    return data[combinedFramePointer + pointer - 1];
+}
+
+Block & Stack::at(const unsigned index)
 {
     if (index >= pointer) throw(std::out_of_range("Stack::at: Stack block index out of range"));
     return data[combinedFramePointer + index];
 }
 
-Block & Stack::fromTop(unsigned index)
+const Block & Stack::at(const unsigned index) const
+{
+    if (index >= pointer) throw(std::out_of_range("Stack::at: Stack block index out of range"));
+    return data[combinedFramePointer + index];
+}
+
+Block & Stack::fromTop(const unsigned index)
+{
+    if (index >= pointer) throw(std::out_of_range("Stack::fromTop: Stack block index out of range"));
+    return data[combinedFramePointer + pointer - 1 - index];
+}
+
+const Block & Stack::fromTop(unsigned index) const
 {
     if (index >= pointer) throw(std::out_of_range("Stack::fromTop: Stack block index out of range"));
     return data[combinedFramePointer + pointer - 1 - index];
@@ -79,9 +97,9 @@ bool Stack::empty() const
     return pointer == 0;
 }
 
-unsigned Stack::highestIndex() const
+unsigned Stack::count() const
 {
-    return pointer - 1;
+    return pointer;
 }
 
 unsigned Stack::size() const
