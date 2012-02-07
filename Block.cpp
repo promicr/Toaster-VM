@@ -22,6 +22,30 @@ Block::Block(const Block & other)
     if (other.dataType_ != DATA_TYPE_COUNT) *this = other;
 }
 
+Block::Block(const Integer value)
+{
+    dataType_ = DT_INTEGER;
+    integerData_ = value;
+}
+
+Block::Block(const Real value)
+{
+    dataType_ = DT_REAL;
+    realData_ = value;
+}
+
+Block::Block(const Char value)
+{
+    dataType_ = DT_CHAR;
+    charData_ = value;
+}
+
+Block::Block(const Boolean value)
+{
+    dataType_ = DT_BOOLEAN;
+    booleanData_ = value;
+}
+
 Block::Block(const int address, Heap & heap)
 {
     pointerData.heap = NULL;

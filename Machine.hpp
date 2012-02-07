@@ -32,13 +32,11 @@ public:
         L_STACK,
         L_PRIMARY_REGISTER,
         L_MANAGED_OUT_REGISTER,
-        L_EXTENSION_OUT_REGISTER,
         L_NIL
     }
     static const STACK = L_STACK, // For use in Machine member functions that take T& arguments
     PRIMARY_REGISTER = L_PRIMARY_REGISTER,
     MANAGED_OUT_REGISTER = L_MANAGED_OUT_REGISTER,
-    EXTENSION_OUT_REGISTER = L_EXTENSION_OUT_REGISTER,
     NIL = L_NIL;
 
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);

@@ -10,6 +10,8 @@
 
 #include <iostream>
 
+#include "TypeWrappers.hpp"
+
 // A class for a single block of data in memory
 
 class Heap;
@@ -30,6 +32,10 @@ public:
     Block();
     Block(const Block & other);
 
+    explicit Block(Integer value);
+    explicit Block(Real value);
+    explicit Block(Char value);
+    explicit Block(Boolean value);
     explicit Block(int address, Heap & heap);
     explicit Block(DataType dataType);
 

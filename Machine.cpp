@@ -13,8 +13,7 @@
 #include "Machine.hpp"
 #include "ExtensionFunction.hpp"
 
-const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER,
-Machine::EXTENSION_OUT_REGISTER, Machine::NIL;
+const Machine::locationId Machine::STACK, Machine::PRIMARY_REGISTER, Machine::MANAGED_OUT_REGISTER, Machine::NIL;
 
 std::vector<void*> Machine::extensionHandles;
 unsigned Machine::machineCount = 0;

@@ -16,8 +16,6 @@ class Machine;
 class Interpreter
 {
 public:
-    static int opcodeId(const std::string & opcode);
-
     Interpreter(Machine & machine); // Run in command line mode
     Interpreter(Machine & machine, const char * fileName); // Run from file (just plain text for now)
 
@@ -25,10 +23,7 @@ public:
     void execute(const std::string & instruction);
 
 private:
-    static const std::string opcodes[];
-
     Machine & machine;
-    bool runningFromFile;
     std::stringstream fileContents;
 };
 

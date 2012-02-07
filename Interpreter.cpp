@@ -11,30 +11,27 @@
 #include <string>
 
 #include "Interpreter.hpp"
+#include "Lexer.hpp"
+#include "Instruction.hpp"
 #include "Machine.hpp"
 
-const std::string Interpreter::opcodes[] =
-{ "clr", "set", "move", "swap", "in", "ins", "out", "outs", "push", "pop", "inc", "dec", "neg", "abs", "add", "sub",
-  "mul", "div", "mod", "sadd", "ssub", "smul", "sdiv", "allc", "pla", "fna" , "atoa", "ael", "alen", "cnvi", "cnvr",
-  "cnvc", "cnvb", "cnvt", "dref", "cmp", "cmpt", "ist", "cpyf", "not", "and", "or", "xor", "jump", "je", "jne", "jl",
-  "jg", "jle", "jge", "call", "ret", "extl", "extc", "#" };
-
-int Interpreter::opcodeId(const std::string & opcode)
+Interpreter::Interpreter(Machine & machine)
+    : machine(machine)
 {
-    int i = 0;
+    unsigned line = 0;
     while (true)
     {
-        if (opcodes[i] == "#") return -1;
-        if (opcodes[i] == opcode) return i;
-        ++i;
+        ++line;
+        std::cout << line << " >> ";
+        std::string buffer;
+        getline(std::cin, buffer);
+        if (buffer == "END") break;
+        fileContents << buffer << '\n';
     }
 }
 
-Interpreter::Interpreter(Machine & machine)
-    : machine(machine), runningFromFile(false) {}
-
 Interpreter::Interpreter(Machine & machine, const char * fileName)
-    : machine(machine), runningFromFile(true)
+    : machine(machine)
 {
     if ((fileName == NULL) || (strlen(fileName) == 0))
         throw(std::runtime_error("Parser::Parser: Invalid file name given"));
@@ -52,39 +49,50 @@ void Interpreter::run()
 {
     unsigned line = 0;
     std::string instruction;
-    if (runningFromFile)
+    while (true)
     {
-        while (true)
-        {
-            ++line;
-            getline(fileContents, instruction);
-            if (fileContents.eof()) break;
+        ++line;
+        getline(fileContents, instruction);
+        if (fileContents.eof()) break;
 
-            try { execute(instruction); }
-            catch (const std::exception & e)
-            {
-                std::cout << "Error on line " << line << std::endl
-                          << instruction << std::endl
-                          << e.what() << std::endl
-                          << "Execution halted" << std::endl;
-                break;
-            }
+        try { execute(instruction); }
+        catch (const std::exception & e)
+        {
+            std::cout << "Error on line " << line << std::endl
+                      << instruction << std::endl
+                      << e.what() << std::endl
+                      << "Execution halted" << std::endl;
+            break;
         }
     }
-    else
+    getline(std::cin, instruction);
+}
+
+// temporary debug stuff
+std::string t(const Token & l)
+{
+    switch (l.type())
     {
-        while (true)
-        {
-            ++line;
-            std::cout << line << " >> ";
-            getline(std::cin, instruction);
-            if (instruction == "EXIT") break;
-            try { execute(instruction); } catch (const std::exception & e) { std::cout << e.what() << std::endl; }
-        }
+    case Token::T_OPCODE: return "opcode";
+    case Token::T_OPERAND_CONST_INT: return "const-int";
+    case Token::T_OPERAND_CONST_REAL: return "const-real";
+    case Token::T_OPERAND_CONST_CHAR: return "const-char";
+    case Token::T_OPERAND_CONST_BOOL: return "const-bool";
+    case Token::T_OPERAND_STACK_TOP: return "stack-top";
+    case Token::T_OPERAND_STACK_BOTTOM: return "stack-bottom";
+    case Token::T_OPERAND_HEAP_LOCATION: return "heap-location";
+    case Token::T_OPERAND_PRIMARY_REGISTER: return "primary-register";
+    case Token::T_OPERAND_MANAGED_OUT_REGISTER: return "managed-register";
+    case Token::T_LABEL: return "label";
+    case Token::T_NULL: return "null";
+    default: return "ERROR";
     }
 }
 
 void Interpreter::execute(const std::string & instruction)
 {
-
+    const Instruction & i = Lexer::tokenize(instruction);
+    std::cout << t(i.opcode) << " "
+              << (i.operand1.isPointer() ? "@" : "") + t(i.operand1) << " "
+              << (i.operand2.isPointer() ? "@" : "") + t(i.operand2) << std::endl;
 }
