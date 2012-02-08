@@ -216,6 +216,7 @@ void Block::setTo(DataType dataType)
 
 void Block::clear()
 {
+    if ((dataType_ < 0) || (dataType_ >= DATA_TYPE_COUNT)) dataType_ = DT_INTEGER;
     setTo(dataType_);
 }
 

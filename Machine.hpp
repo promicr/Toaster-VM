@@ -52,6 +52,8 @@ public:
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
     ~Machine();
 
+    void flush();
+
     // Member functions relating to the bytecode
     template <typename T>
     void clear(T & location);
@@ -171,9 +173,9 @@ public:
     void getArrayElement(const T1 & arrayPointer, const T2 & index);
 
     template <typename T1, typename T2>
-    void getArrayLength(const T1 & arrayPointer, T2 & destination);
+    void getArrayLength(T1 & destination, const T2 & arrayPointer);
     template <typename T1, typename T2>
-    void getArrayLength(const T1 & arrayPointer, const T2 & destination);
+    void getArrayLength(const T1 & destination, const T2 & arrayPointer);
 
     template <typename T1, typename T2>
     void copyArray(const T1 & destArrayPointer, const T2 & sourceArrayPointer);
@@ -321,7 +323,7 @@ private:
     void _addToArray(const Block * valueBlock);
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
-    void _getArrayLength(const Block * pointerBlock, Block * destBlock);
+    void _getArrayLength(Block * destBlock, const Block * pointerBlock);
     void _copyArray(const Block * destPointerBlock, const Block * sourcePointerBlock);
     void _convert(Block * destBlock, const Block * sourceBlock, Block::DataType dataType);
     void _convertToDataTypeOf(Block * destBlock, const Block * sourceBlock);
@@ -571,14 +573,14 @@ void Machine::getArrayElement(const T1 & arrayPointer, const T2 & index)
 }
 
 template <typename T1, typename T2>
-void Machine::getArrayLength(const T1 & arrayPointer, T2 & destination)
+void Machine::getArrayLength(T1 & destination, const T2 & arrayPointer)
 {
-    _getArrayLength(getBlockFrom(arrayPointer, 1), getBlockFrom(destination, 2));
+    _getArrayLength(getBlockFrom(destination, 1), getBlockFrom(arrayPointer, 2));
 }
 template <typename T1, typename T2>
-void Machine::getArrayLength(const T1 & arrayPointer, const T2 & destination)
+void Machine::getArrayLength(const T1 & destination, const T2 & arrayPointer)
 {
-    _getArrayLength(getBlockFrom(arrayPointer, 1), getBlockFrom(destination, 2));
+    _getArrayLength(getBlockFrom(destination, 1), getBlockFrom(arrayPointer, 2));
 }
 
 template <typename T1, typename T2>

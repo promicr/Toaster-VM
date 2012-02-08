@@ -34,7 +34,7 @@ Interpreter::Interpreter(Machine & machine)
 
 Interpreter::Interpreter(Machine & machine, const char * fileName)
     : machine(machine)
-{std::cout << fileName << std::endl;
+{
     if ((fileName == NULL) || (strlen(fileName) == 0))
         throw(std::runtime_error("Parser::Parser: Invalid file name given"));
 

@@ -27,6 +27,11 @@ unsigned Heap::size() const
     return size_;
 }
 
+void Heap::flush()
+{
+    for (unsigned i = 0; i < data.size(); ++i) data[i].nullifyPointerData();
+}
+
 void Heap::incReferenceCountAt(const unsigned index)
 {
     if (index >= size_) throw(std::out_of_range("Heap::incReferenceCountAt: Reference count index out of range"));
@@ -45,6 +50,16 @@ void Heap::decReferenceCountAt(const unsigned index)
 
     referenceCount[index] -= 1;
     referenceCountChangeCallback(index);
+}
+
+void Heap::setReferenceCountAt(const unsigned index, const unsigned value, bool triggerCallback)
+{
+    if (index >= size_) throw(std::out_of_range("Heap::setReferenceCountAt: Reference count index out of range"));
+    if (value > USHRT_MAX)
+        throw(std::runtime_error("Heap::setReferenceCountAt: New reference count value given is too large"));
+
+    referenceCount[index] = value;
+    if (triggerCallback) referenceCountChangeCallback(index);
 }
 
 unsigned short Heap::referenceCountAt(const unsigned index) const

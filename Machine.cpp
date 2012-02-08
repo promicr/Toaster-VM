@@ -29,8 +29,20 @@ Machine::Machine(const unsigned stackSize, const unsigned unmanagedHeapSize, con
 
 Machine::~Machine()
 {
+    flush();
     if (extensionMachine != NULL) delete extensionMachine;
     if (--machineCount == 0) for (unsigned i = 0; i < extensionHandles.size(); ++i) dlclose(extensionHandles[i]);
+}
+
+void Machine::flush()
+{
+    comparisonFlagRegister_.reset();
+    primaryRegister_.nullifyPointerData();
+    managedOutRegister_.nullifyPointerData();
+    stack_.flush();
+    unmanagedHeap_.flush();
+    managedHeap_.flush();
+    programCounter_ = 0;
 }
 
 Machine::ArrayPopulator::ArrayPopulator()
@@ -446,10 +458,10 @@ void Machine::_getArrayElement(const Block * pointerBlock, const Block * indexBl
     _getArrayElement(pointerBlock, indexBlock->integerData());
 }
 
-void Machine::_getArrayLength(const Block * pointerBlock, Block * destBlock)
+void Machine::_getArrayLength(Block * destBlock, const Block * pointerBlock)
 {
-    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Array pointer is invalid"));
     if (destBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Destination is invalid"));
+    if (pointerBlock == NULL) throw(std::runtime_error("Machine::_getArrayLength: Array pointer is invalid"));
     if (pointerBlock->dataType() != Block::DT_POINTER)
         throw(std::runtime_error("Machine::_getArrayLength: First operand data type is invalid (expected pointer)"));
     destBlock->setToInteger(pointerBlock->pointerArrayLength());

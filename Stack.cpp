@@ -119,3 +119,9 @@ unsigned Stack::size() const
 {
     return size_;
 }
+
+void Stack::flush()
+{
+    for (unsigned i = 0; i < data.size(); ++i) data[i].nullifyPointerData();
+    combinedFramePointer = pointer = 0;
+}

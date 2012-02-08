@@ -38,6 +38,8 @@ public:
     unsigned count() const;
     unsigned size() const;
 
+    void flush();
+
 private:
     unsigned size_, pointer, combinedFramePointer;
     std::vector<Block> data;

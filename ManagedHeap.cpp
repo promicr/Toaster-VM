@@ -64,5 +64,7 @@ unsigned ManagedHeap::arrayLengthAt(const unsigned index)
 
 void ManagedHeap::referenceCountChangeCallback(const unsigned index)
 {
-    if (referenceCountAt(index) == 0) arrayLength[index] = 0;
+    unsigned refCount = referenceCountAt(index);
+    if (refCount == 0) arrayLength[index] = 0;
+    for (unsigned i = 1; i < arrayLength[index]; ++i) setReferenceCountAt(index + i, refCount, false);
 }

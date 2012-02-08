@@ -24,11 +24,14 @@ public:
     Block & blockAt(unsigned index); // Access by an 'address', i.e. an array index
     unsigned size() const;
 
+    void flush();
+
 protected:
     // References counts are simply conveniences in a regular heap.
     // In a managed heap, they are used for garbage collection
     void incReferenceCountAt(unsigned index);
     void decReferenceCountAt(unsigned index);
+    void setReferenceCountAt(unsigned index, unsigned value, bool triggerCallback = true);
     unsigned short referenceCountAt(unsigned index) const;
     virtual void referenceCountChangeCallback(unsigned);
 
