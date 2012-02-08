@@ -28,7 +28,7 @@ int Lexer::getOpcodeId(const std::string & opcode)
     }
 }
 
-inline std::string cleanUpString(const std::string & str)
+inline std::string removeWhitespace(const std::string & str)
 {
     int start = 0, end = str.size() - 1;
     while (isspace(str[start])) ++start;
@@ -43,7 +43,20 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
     tokens.clear();
     if (instruction.size() == 0) return tokens;
 
-    std::string cleanString(cleanUpString(instruction));
+    std::string cleanString(removeWhitespace(instruction));
+
+    {
+        size_t colonPos = cleanString.find_first_of(':');
+        if (colonPos != std::string::npos)
+        {
+            tokens.label.setLabelData(cleanString.substr(0, colonPos).c_str());
+            if (colonPos == cleanString.size() - 1) return tokens;
+
+            cleanString = removeWhitespace(cleanString.substr(colonPos + 1, cleanString.size() - colonPos));
+            if (cleanString.find_first_of(':') != std::string::npos)
+                throw(std::runtime_error("Only one label per line allowed"));
+        }
+    }
 
     size_t spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
@@ -53,7 +66,7 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
     }
     tokens.opcode = getOpcodeTokenFrom(cleanString.substr(0, spacePos));
 
-    cleanString = cleanUpString(cleanString.substr(spacePos, cleanString.size() - spacePos));
+    cleanString = removeWhitespace(cleanString.substr(spacePos, cleanString.size() - spacePos));
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
@@ -62,7 +75,7 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
     }
     tokens.operand1 = getOperandTokenFrom(cleanString.substr(0, spacePos));
 
-    cleanString = cleanUpString(cleanString.substr(spacePos, cleanString.size() - spacePos));
+    cleanString = removeWhitespace(cleanString.substr(spacePos, cleanString.size() - spacePos));
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
@@ -188,7 +201,11 @@ void getStackLocation(const std::string & str, const unsigned stringStart, Token
     default: throw(std::runtime_error("Stack location not specified"));
     }
 
-    if (str.size() == stringStart + 1) return;
+    if (str.size() == stringStart + 1)
+    {
+        token.stackPositionData() = 0;
+        return;
+    }
 
     unsigned position = 0, previousPosition = 0;
     for (unsigned i = stringStart + 1; i < str.size(); ++i)
@@ -218,7 +235,7 @@ void getRegister(const std::string & str, const unsigned stringStart, Token & to
 void getHeapLocation(const std::string & str, const unsigned stringStart, Token & token)
 {
     unsigned location = 0, previousLocation = 0;
-    for (unsigned i = stringStart + 1; i < str.size(); ++i)
+    for (unsigned i = stringStart; i < str.size(); ++i)
     {
         char c = str[i];
         if (!isdigit(c)) throw(std::runtime_error("Invalid heap location specified (must only contain digits)"));

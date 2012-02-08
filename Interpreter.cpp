@@ -9,6 +9,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 #include "Interpreter.hpp"
 #include "Lexer.hpp"
@@ -69,9 +70,9 @@ void Interpreter::run()
 }
 
 // temporary debug stuff
-std::string t(const Token & l)
+std::string typeString(const Token::Type type)
 {
-    switch (l.type())
+    switch (type)
     {
     case Token::T_OPCODE: return "opcode";
     case Token::T_OPERAND_CONST_INT: return "const-int";
@@ -89,10 +90,37 @@ std::string t(const Token & l)
     }
 }
 
+std::string valueString(const Token & token)
+{
+    std::stringstream stream;
+    switch (token.type())
+    {
+    case Token::T_OPCODE: stream << (int)token.opcodeData(); break;
+    case Token::T_OPERAND_CONST_INT: stream << token.integerData(); break;
+    case Token::T_OPERAND_CONST_REAL: stream << token.realData(); break;
+    case Token::T_OPERAND_CONST_CHAR: stream << token.charData(); break;
+    case Token::T_OPERAND_CONST_BOOL: stream << (token.booleanData() ? "true" : "false"); break;
+    case Token::T_OPERAND_STACK_TOP: stream << token.stackPositionData(); break;
+    case Token::T_OPERAND_STACK_BOTTOM: stream << token.stackPositionData(); break;
+    case Token::T_OPERAND_HEAP_LOCATION: stream << token.heapLocationData(); break;
+    case Token::T_OPERAND_PRIMARY_REGISTER: stream << "primary-register"; break;
+    case Token::T_OPERAND_MANAGED_OUT_REGISTER: stream << "managed-register"; break;
+    case Token::T_LABEL: stream << token.labelData(); break;
+    case Token::T_NULL: stream << "null"; break;
+    default: stream << "ERROR";
+    }
+    return stream.str();
+}
+
 void Interpreter::execute(const std::string & instruction)
 {
     const Instruction & i = Lexer::tokenize(instruction);
-    std::cout << t(i.opcode) << " "
-              << (i.operand1.isPointer() ? "@" : "") + t(i.operand1) << " "
-              << (i.operand2.isPointer() ? "@" : "") + t(i.operand2) << std::endl;
+    std::cout << (i.label.isNull() ? "" : typeString(i.label.type()) + " ")
+              << typeString(i.opcode.type()) << " "
+              << (i.operand1.isPointer() ? "@" : "") + typeString(i.operand1.type()) << " "
+              << (i.operand2.isPointer() ? "@" : "") + typeString(i.operand2.type()) << std::endl
+              << (i.label.isNull() ? "" : valueString(i.label) + " ")
+              << valueString(i.opcode) << " "
+              << valueString(i.operand1) << " "
+              << valueString(i.operand2) << std::endl;
 }

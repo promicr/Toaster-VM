@@ -168,3 +168,8 @@ void Token::clear()
     type_ = T_NULL;
     isPointer_ = false;
 }
+
+bool Token::isNull() const
+{
+    return type_ == T_NULL;
+}

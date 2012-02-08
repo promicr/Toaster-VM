@@ -72,6 +72,7 @@ public:
 
     void setLabelData(const char * value);
     void clear();
+    bool isNull() const;
 
 private:
     Type type_;
