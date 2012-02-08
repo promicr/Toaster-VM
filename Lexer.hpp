@@ -13,6 +13,39 @@
 class Instruction;
 class Token;
 
+/* BNF for plain text instructions
+ *
+ * <instruction> ::= { <label> } { <instruction-part> }
+ *
+ * <label> ::= <letter> { <character>* }
+ *
+ * <instruction-part> ::= <opcode> { <operands> }
+ *
+ * <opcode> ::= <letter> { <letter>* }
+ *
+ * <operands> ::= <operand> { <operand> }
+ *
+ * <operand> ::= <constant> | <location> | <pointer>
+ *
+ * <constant> ::= "#" ( <integer> | <real> | <char> | <boolean> )
+ * <integer>  ::= <digit>*
+ * <real>     ::= <digit>* "." <digit>*
+ * <char>     ::= "'" <character> "'"
+ * <boolean>  ::= "T" | "F"
+ *
+ * <location ::= <stack-location> | <heap-location> | <register>
+ *
+ * <stack-location> ::= "S" ( "T" | "B" ) { <digit>* }
+ *
+ * <heap-location> ::= <digit>*
+ *
+ * <register> ::= "R" ( "P" | "M" )
+ *
+ * <pointer> ::= "@" <location>
+ *
+ * No need to explain <letter>, <digit> or <character>
+ */
+
 class Lexer
 {
 public:

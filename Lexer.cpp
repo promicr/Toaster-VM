@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <cstring>
 #include <cmath>
 
 #include "Lexer.hpp"
@@ -49,12 +50,15 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
         size_t colonPos = cleanString.find_first_of(':');
         if (colonPos != std::string::npos)
         {
-            tokens.label.setLabelData(cleanString.substr(0, colonPos).c_str());
+            char label[13];
+            strncpy(label, cleanString.substr(0, colonPos).c_str(), 12);
+            if (!isalpha(label[0])) throw(std::runtime_error("Lexer::tokenize: Labels must start with a letter"));
+            tokens.label.setLabelData(label);
             if (colonPos == cleanString.size() - 1) return tokens;
 
             cleanString = removeWhitespace(cleanString.substr(colonPos + 1, cleanString.size() - colonPos));
             if (cleanString.find_first_of(':') != std::string::npos)
-                throw(std::runtime_error("Only one label per line allowed"));
+                throw(std::runtime_error("Lexer::tokenize: Only one label per line allowed"));
         }
     }
 
@@ -93,28 +97,6 @@ Token Lexer::getOpcodeTokenFrom(const std::string & str)
     if (opcodeId < 0) return Token();
     return Token(static_cast<unsigned char>(opcodeId));
 }
-
-/*
- * <operand> ::= <constant> | <location> | <pointer>
- *
- * <constant> ::= "#" ( <integer> | <real> | <char> | <boolean> )
- * <integer>  ::= <digit>*
- * <real>     ::= <digit>* "." <digit>*
- * <char>     ::= "'" <character> "'"
- * <boolean>  ::= "T" | "F"
- *
- * <location ::= <stack-location> | <heap-location> | <register>
- *
- * <stack-location> ::= "S" ( "T" | "B" ) { <digit>* }
- *
- * <heap-location> ::= <digit>*
- *
- * <register> ::= "R" ( "P" | "M" )
- *
- * <pointer> ::= "@" <location>
- *
- * No need to explain <digit> or <character>
- */
 
 void getInteger(const std::string & str, const unsigned stringStart, Token & token)
 {
