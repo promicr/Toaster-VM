@@ -28,6 +28,8 @@ public:
     const Block & at(unsigned index) const;
     Block & fromTop(unsigned index);
     const Block & fromTop(unsigned index) const;
+    Block & fromTopBelow(unsigned index); // From the top of the stack under the stack pointer
+    const Block & fromTopBelow(unsigned index) const;
 
     void pushFrame();
     void popFrame(const Block * returnValue);

@@ -25,6 +25,16 @@ public:
     {
         unsigned value;
         explicit StackLocation(const unsigned value) : value(value) {}
+        operator unsigned() const { return value; }
+        StackLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
+    };
+
+    struct HeapLocation
+    {
+        unsigned value;
+        explicit HeapLocation(const unsigned value) : value(value) {}
+        operator unsigned() const { return value; }
+        HeapLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
     };
 
     enum locationId
@@ -158,7 +168,7 @@ public:
     template <typename T>
     void getArrayElement(const T & arrayPointer, unsigned index);
     template <typename T1, typename T2>
-    void getArrayElement(const T2 & arrayPointer, const T2 & index);
+    void getArrayElement(const T1 & arrayPointer, const T2 & index);
 
     template <typename T1, typename T2>
     void getArrayLength(const T1 & arrayPointer, T2 & destination);
@@ -243,6 +253,12 @@ public:
     bool & operand2IsPointer();
     bool operand2IsPointer() const;
 
+    Block * getBlockFrom(locationId location, short operandNumber);
+    Block * getBlockFrom(StackLocation location, short operandNumber);
+    Block * getBlockFrom(HeapLocation location, short operandNumber);
+    Block * getBlockFrom(Block & pointer, short operandNumber);
+    const Block * getBlockFrom(const Block & pointer, short operandNumber);
+
 private:
     static std::vector<void*> extensionHandles;
     static unsigned machineCount;
@@ -320,11 +336,6 @@ private:
     void _logicalXor(Block * destBlock, const Block * sourceBlock);
     void _returnFromCall(const Block * returnBlock);
     void _extensionCall(const std::string & functionName);
-
-    Block * getBlockFrom(locationId location, short operandNumber);
-    Block * getBlockFrom(StackLocation location, short operandNumber);
-    Block * getBlockFrom(Block & pointer, short operandNumber);
-    const Block * getBlockFrom(const Block & pointer, short operandNumber);
 };
 
 template <typename T>
@@ -554,7 +565,7 @@ void Machine::getArrayElement(const T & arrayPointer, unsigned index)
     _getArrayElement(getBlockFrom(arrayPointer, 1), index);
 }
 template <typename T1, typename T2>
-void Machine::getArrayElement(const T2 & arrayPointer, const T2 & index)
+void Machine::getArrayElement(const T1 & arrayPointer, const T2 & index)
 {
     _getArrayElement(getBlockFrom(arrayPointer, 1), getBlockFrom(index, 2));
 }

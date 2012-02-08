@@ -70,6 +70,19 @@ const Block & Stack::fromTop(unsigned index) const
     return data[combinedFramePointer + pointer - 1 - index];
 }
 
+Block & Stack::fromTopBelow(unsigned index)
+{
+    if (index >= combinedFramePointer)
+        throw(std::out_of_range("Stack::fromTopBelow: Stack block index out of range"));
+    return data[combinedFramePointer - 1 - index];
+}
+const Block & Stack::fromTopBelow(unsigned index) const
+{
+    if (index >= combinedFramePointer)
+        throw(std::out_of_range("Stack::fromTopBelow: Stack block index out of range"));
+    return data[combinedFramePointer - 1 - index];
+}
+
 void Stack::pushFrame()
 {
     combinedFramePointer += ++pointer; // reserve a space for return value

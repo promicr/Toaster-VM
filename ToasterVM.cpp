@@ -14,8 +14,17 @@
 int main(int argc, char * argv[])
 {
     Machine machine;
-    Interpreter interpreter(machine);
-    interpreter.run();
+
+    if (argc > 1)
+    {
+        Interpreter interpreter(machine, argv[1]);
+        interpreter.run();
+    }
+    else
+    {
+        Interpreter interpreter(machine);
+        interpreter.run();
+    }
 
     return 0;
 }

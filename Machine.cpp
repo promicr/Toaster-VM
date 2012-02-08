@@ -847,19 +847,12 @@ Block * Machine::getBlockFrom(const locationId location, const short operandNumb
 
 Block * Machine::getBlockFrom(const StackLocation location, const short operandNumber)
 {
-    Block * block = &stack_.at(location.value);
+    return getBlockFrom(stack_.at(location), operandNumber);
+}
 
-    bool returnReferencedBlock;
-    switch (operandNumber)
-    {
-    case 1:  returnReferencedBlock = operand1IsPointer_; break;
-    case 2:  returnReferencedBlock = operand2IsPointer_; break;
-    case 3:  returnReferencedBlock = true; break;
-    default: return block;
-    }
-
-    if (returnReferencedBlock) return getBlockFrom(*block , 3);
-    return block;
+Block * Machine::getBlockFrom(const HeapLocation location, const short operandNumber)
+{
+    return getBlockFrom(unmanagedHeap_.blockAt(location), operandNumber);
 }
 
 Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)

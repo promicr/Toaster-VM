@@ -10,8 +10,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
+
+#include "Instruction.hpp"
 
 class Machine;
+class Block;
 
 class Interpreter
 {
@@ -20,11 +24,15 @@ public:
     Interpreter(Machine & machine, const char * fileName); // Run from file (just plain text for now)
 
     void run();
-    void execute(const std::string & instruction);
+    void outputTokenData(const std::string & instruction);
+    void execute(const Instruction & instruction);
 
 private:
     Machine & machine;
     std::stringstream fileContents;
+    std::vector<Instruction> instructions;
+
+   Block * getBlockFromToken(const Token & token, bool & isLabel, const short operandNumber);
 };
 
 #endif // INTERPRETER_HPP

@@ -29,6 +29,9 @@ Token::Token(const Char value)
 Token::Token(const Boolean value)
     : type_(T_OPERAND_CONST_BOOL), isPointer_(false), booleanData_(value) {}
 
+Token::Token(const Block::DataType value)
+    : type_(T_OPERAND_DATA_TYPE), isPointer_(false), dataTypeData_(value) {}
+
 Token::Token(const unsigned value, const bool ftos, const bool isPointer)
     : type_(ftos ? T_OPERAND_STACK_TOP : T_OPERAND_STACK_BOTTOM), isPointer_(isPointer), stackPositionData_(value) {}
 
@@ -45,6 +48,9 @@ Token::Token(const RegisterId registerId, const bool isPointer)
     default: throw(std::runtime_error("Token::Token: Unknown register ID given"));
     }
 }
+
+Token::Token(const CFR::ComparisonFlagId value)
+    : type_(T_OPERAND_COMPARISON_FLAG_ID), isPointer_(false), comparisonFlagData_(value) {}
 
 Token::Token(const char * value)
     : type_(T_LABEL), isPointer_(false)
@@ -127,6 +133,16 @@ bool Token::booleanData() const
     return booleanData_;
 }
 
+Block::DataType & Token::dataTypeData()
+{
+    return dataTypeData_;
+}
+
+Block::DataType Token::dataTypeData() const
+{
+    return dataTypeData_;
+}
+
 unsigned & Token::stackPositionData()
 {
     return stackPositionData_;
@@ -145,6 +161,21 @@ unsigned & Token::heapLocationData()
 unsigned Token::heapLocationData() const
 {
     return heapLocationData_;
+}
+
+CFR::ComparisonFlagId & Token::comparisonFlagData()
+{
+    return comparisonFlagData_;
+}
+
+CFR::ComparisonFlagId Token::comparisonFlagData() const
+{
+    return comparisonFlagData_;
+}
+
+char * Token::labelData()
+{
+    return labelData_;
 }
 
 const char * Token::labelData() const

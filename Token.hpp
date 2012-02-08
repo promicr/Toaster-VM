@@ -8,6 +8,9 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
+#include "Block.hpp"
+#include "ComparisonFlagRegister.hpp"
+
 class Integer;
 class Real;
 class Char;
@@ -23,11 +26,15 @@ public:
         T_OPERAND_CONST_REAL,
         T_OPERAND_CONST_CHAR,
         T_OPERAND_CONST_BOOL,
+        T_OPERAND_DATA_TYPE,
         T_OPERAND_STACK_TOP,
         T_OPERAND_STACK_BOTTOM,
+        T_OPERAND_STACK_NEGATIVE, // to get items from stack under stack frame pointer, i.e. arguments to function
         T_OPERAND_HEAP_LOCATION,
         T_OPERAND_PRIMARY_REGISTER,
         T_OPERAND_MANAGED_OUT_REGISTER,
+        T_OPERAND_COMPARISON_FLAG_ID,
+        T_OPERAND_NIL,
         T_LABEL,
         T_NULL
     };
@@ -38,6 +45,8 @@ public:
         R_MANAGED_OUT
     };
 
+    static const unsigned labelLength = 12;
+
     Token();
 
     Token(unsigned char value);
@@ -45,9 +54,11 @@ public:
     Token(Real value);
     Token(Char value);
     Token(Boolean value);
+    Token(Block::DataType value);
     Token(unsigned value, bool fromTopOfStack, bool isPointer);
     Token(unsigned value, bool isPointer);
     Token(RegisterId registerId, bool isPointer);
+    Token(CFR::ComparisonFlagId value);
     Token(const char * value);
 
     Type & type();
@@ -64,10 +75,15 @@ public:
     char charData() const;
     bool & booleanData();
     bool booleanData() const;
+    Block::DataType & dataTypeData();
+    Block::DataType dataTypeData() const;
     unsigned & stackPositionData();
     unsigned stackPositionData() const;
     unsigned & heapLocationData();
     unsigned heapLocationData() const;
+    CFR::ComparisonFlagId & comparisonFlagData();
+    CFR::ComparisonFlagId comparisonFlagData() const;
+    char * labelData();
     const char * labelData() const;
 
     void setLabelData(const char * value);
@@ -84,8 +100,10 @@ private:
         double realData_;
         char charData_;
         bool booleanData_;
+        Block::DataType dataTypeData_;
         unsigned stackPositionData_, heapLocationData_;
-        char labelData_[12];
+        CFR::ComparisonFlagId comparisonFlagData_;
+        char labelData_[labelLength + 1];
     };
 };
 

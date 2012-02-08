@@ -25,7 +25,7 @@ class Token;
  *
  * <operands> ::= <operand> { <operand> }
  *
- * <operand> ::= <constant> | <location> | <pointer>
+ * <operand> ::= <constant> | <location> | <pointer> | <data-type> | <comparison-flag-id>  | <label> | "nil"
  *
  * <constant> ::= "#" ( <integer> | <real> | <char> | <boolean> )
  * <integer>  ::= <digit>*
@@ -35,13 +35,17 @@ class Token;
  *
  * <location ::= <stack-location> | <heap-location> | <register>
  *
- * <stack-location> ::= "S" ( "T" | "B" ) { <digit>* }
+ * <stack-location> ::= "S" ( "T" | "B" | "N" ) { <digit>* }
  *
  * <heap-location> ::= <digit>*
  *
  * <register> ::= "R" ( "P" | "M" )
  *
  * <pointer> ::= "@" <location>
+ *
+ * <data-type> ::= "$" ( "i" | "r" | "c" | "b" | "p" )
+ *
+ * <comparison-flag-id> ::= "?" ( "eq" | "ne" | "lt" | "gt" | "le" | "ge" )
  *
  * No need to explain <letter>, <digit> or <character>
  */
@@ -50,6 +54,7 @@ class Lexer
 {
 public:
     static const std::string opcodeStrings[];
+    static const short opcodeOperandCounts[];
 
     static int getOpcodeId(const std::string & opcode);
     static const Instruction & tokenize(const std::string & instruction);
