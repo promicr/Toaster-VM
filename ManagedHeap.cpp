@@ -66,5 +66,6 @@ void ManagedHeap::referenceCountChangeCallback(const unsigned index)
 {
     unsigned refCount = referenceCountAt(index);
     if (refCount == 0) arrayLength[index] = 0;
+    // Entire array needs to have reference count updated so that ManagedHeap::allocate works simply
     for (unsigned i = 1; i < arrayLength[index]; ++i) setReferenceCountAt(index + i, refCount, false);
 }

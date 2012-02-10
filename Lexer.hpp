@@ -50,20 +50,14 @@ class Token;
  * No need to explain <letter>, <digit> or <character>
  */
 
-class Lexer
+namespace Lexer
 {
-public:
-    static const std::string opcodeStrings[];
-    static const short opcodeOperandCounts[];
 
-    static int getOpcodeId(const std::string & opcode);
-    static const Instruction & tokenize(const std::string & instruction);
+const Instruction & tokenize(const std::string & instruction);
 
-    static Token getOpcodeTokenFrom(const std::string & str);
-    static Token getOperandTokenFrom(const std::string & str);
+Token getOpcodeTokenFrom(const std::string & str);
+Token getOperandTokenFrom(const std::string & str);
 
-private:
-    Lexer() {} // To stop instantiation of this class
-};
+}
 
 #endif // LEXER_HPP

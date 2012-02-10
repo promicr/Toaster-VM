@@ -15,6 +15,7 @@
 #include "Lexer.hpp"
 #include "Instruction.hpp"
 #include "Machine.hpp"
+#include "Opcodes.hpp"
 
 Interpreter::Interpreter(Machine & machine)
     : machine(machine)
@@ -195,7 +196,7 @@ void Interpreter::execute(const Instruction & instruction)
     Block * operand1Block = getBlockFromToken(instruction.operand1, operand1IsLabel, 1),
             * operand2Block = getBlockFromToken(instruction.operand2, operand2IsLabel, 2);
 
-    short requiredOperandNumber = Lexer::opcodeOperandCounts[instruction.opcode.opcodeData()];
+    short requiredOperandNumber = Opcodes::opcodeOperandCounts[instruction.opcode.opcodeData()];
     if (operand1Block != NULL) --requiredOperandNumber;
     if (operand2Block != NULL) --requiredOperandNumber;
 
@@ -204,8 +205,7 @@ void Interpreter::execute(const Instruction & instruction)
     {
         switch (instruction.opcode.opcodeData())
         {
-        // pop
-        case 9:
+        case Opcodes::POP:
             if ((instruction.operand1.type() == Token::T_OPERAND_NIL)
                     && (operand2Block == NULL) && (instruction.operand2.isNull()))
             {
@@ -215,8 +215,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // allc (allocate)
-        case 24:
+        case Opcodes::ALLC:
             if ((instruction.operand1.type() == Token::T_OPERAND_DATA_TYPE) && (operand2Block != NULL))
             {
                 machine.allocate(instruction.operand1.dataTypeData(), *operand2Block);
@@ -225,8 +224,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // ist (is type?)
-        case 39:
+        case Opcodes::IST:
             if ((operand1Block != NULL) && (instruction.operand2.type() == Token::T_OPERAND_DATA_TYPE))
             {
                 machine.isDataType(*operand1Block, instruction.operand2.dataTypeData());
@@ -235,8 +233,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // cpyf (copy comparison flag)
-        case 40:
+        case Opcodes::CPYF:
             if ((operand1Block != NULL) && (instruction.operand2.type() == Token::T_OPERAND_COMPARISON_FLAG_ID))
             {
                 machine.copyFlag(*operand1Block, instruction.operand2.comparisonFlagData());
@@ -245,8 +242,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jump
-        case 45:
+        case Opcodes::JMP:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.jump(instruction.operand1.labelData());
@@ -255,8 +251,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // je
-        case 46:
+        case Opcodes::JE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_EQUAL);
@@ -265,8 +260,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jne
-        case 47:
+        case Opcodes::JNE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_NOT_EQUAL);
@@ -275,8 +269,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jl
-        case 48:
+        case Opcodes::JL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_LESS);
@@ -285,8 +278,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jg
-        case 49:
+        case Opcodes::JG:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_GREATER);
@@ -295,8 +287,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jle
-        case 50:
+        case Opcodes::JLE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_LESS_EQUAL);
@@ -305,8 +296,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // jge
-        case 51:
+        case Opcodes::JGE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.conditionalJump(instruction.operand1.labelData(), CFR::F_GREATER_EQUAL);
@@ -315,8 +305,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // call (function call)
-        case 52:
+        case Opcodes::CALL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.call(instruction.operand1.labelData());
@@ -325,8 +314,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // extl (load extension)
-        case 54:
+        case Opcodes::EXTL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.loadExtension(instruction.operand1.labelData());
@@ -335,8 +323,7 @@ void Interpreter::execute(const Instruction & instruction)
             else error = true;
             break;
 
-        // extc (extension call)
-        case 55:
+        case Opcodes::EXTC:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
                 machine.extensionCall(instruction.operand1.labelData());
@@ -360,118 +347,62 @@ void Interpreter::execute(const Instruction & instruction)
 
     switch (instruction.opcode.opcodeData())
     {
-    // clr
-    case 0: machine.clear(*operand1Block); break;
-    // set
-    case 1: machine.set(*operand1Block, *operand2Block); break;
-    // move
-    case 2: machine.move(*operand1Block, *operand2Block); break;
-    // swap
-    case 3: machine.swap(*operand1Block, *operand2Block); break;
-    // in (read)
-    case 4: machine.read(*operand1Block); break;
-    // ins (readString)
-    case 5: machine.readString(*operand1Block); break;
-    // out (write)
-    case 6: machine.write(*operand1Block); break;
-    // outs (writeString)
-    case 7: machine.writeString(*operand1Block); break;
-    // push
-    case 8: machine.push(*operand1Block); break;
-    // pop
-    case 9: machine.pop(*operand1Block); break;
-    // inc
-    case 10: machine.increment(*operand1Block); break;
-    // dec
-    case 11: machine.decrement(*operand1Block); break;
-    // neg
-    case 12: machine.negate(*operand1Block); break;
-    // abs
-    case 13: machine.absolute(*operand1Block); break;
-    // add
-    case 14: machine.add(*operand1Block, *operand2Block); break;
-    // sub
-    case 15: machine.subtract(*operand1Block, *operand2Block); break;
-    // mul
-    case 16: machine.multiply(*operand1Block, *operand2Block); break;
-    // div
-    case 17: machine.divide(*operand1Block, *operand2Block); break;
-    // mod
-    case 18: machine.modulo(*operand1Block, *operand2Block); break;
-    // sadd (stack add)
-    case 19: machine.stackAdd(); break;
-    // ssub (stack sub)
-    case 20: machine.stackSubtract(); break;
-    // smul (stack mul)
-    case 21: machine.stackMultiply(); break;
-    // sdiv (stack div)
-    case 22: machine.stackDivide(); break;
-    // smod (stack mod)
-    case 23: machine.stackModulo(); break;
-    // allc
-    case 24: break; // handled above
-    // pla (start populating array)
-    case 25: machine.startPopulatingArray(*operand1Block); break;
-    // fna (finish populating array)
-    case 26: machine.stopPopulatingArray(); break;
-    // atoa (add to array)
-    case 27: machine.addToArray(*operand1Block); break;
-    // ael (array element)
-    case 28: machine.getArrayElement(*operand1Block, *operand2Block); break;
-    // alen (array length)
-    case 29: machine.getArrayLength(*operand1Block, *operand2Block); break;
-    // cpya (copy array)
-    case 30: machine.copyArray(*operand1Block, *operand2Block); break;
-    // cnvi (convert to integer)
-    case 31: machine.convert(*operand1Block, *operand2Block, Block::DT_INTEGER); break;
-    // cnvr (convert to real)
-    case 32: machine.convert(*operand1Block, *operand2Block, Block::DT_REAL); break;
-    // cnvc (convert to char)
-    case 33: machine.convert(*operand1Block, *operand2Block, Block::DT_CHAR); break;
-    // cnvb (convert to boolean)
-    case 34: machine.convert(*operand1Block, *operand2Block, Block::DT_BOOLEAN); break;
-    // cnvt (convert to type of)
-    case 35: machine.convertToDataTypeOf(*operand1Block, *operand2Block); break;
-    // dref (dereference pointer)
-    case 36: machine.dereference(*operand1Block, *operand2Block); break;
-    // cmp (compare)
-    case 37: machine.compare(*operand1Block, *operand2Block); break;
-    // cmpt (compare type)
-    case 38: machine.compareDataType(*operand1Block, *operand2Block); break;
-    // ist
-    case 39: break; // handled above
-    // cpyf
-    case 40: break; // handled above
-    // not (logical not)
-    case 41: machine.logicalNot(*operand1Block); break;
-    // and (logical and)
-    case 42: machine.logicalAnd(*operand1Block, *operand2Block); break;
-    // or (logical or)
-    case 43: machine.logicalOr(*operand1Block, *operand2Block); break;
-    // xor (logical xor)
-    case 44: machine.logicalXor(*operand1Block, *operand2Block); break;
-    // jump
-    case 45: // all handled above
-    // je
-    case 46:
-    // jne
-    case 47:
-    // jl
-    case 48:
-    // jg
-    case 49:
-    // jle
-    case 50:
-    // jge
-    case 51:
-    // call
-    case 52: break; // handled above
-    // ret
-    case 53: machine.returnFromCall(*operand1Block); break;
-    // extl
-    case 54: // handled above
-    // extc (extension call)
-    case 55: break;
+    case Opcodes::CLR:  machine.clear(*operand1Block); break;
+    case Opcodes::SET:  machine.set(*operand1Block, *operand2Block); break;
+    case Opcodes::MOVE: machine.move(*operand1Block, *operand2Block); break;
+    case Opcodes::SWAP: machine.swap(*operand1Block, *operand2Block); break;
+    case Opcodes::IN:   machine.read(*operand1Block); break;
+    case Opcodes::INS:  machine.readString(*operand1Block); break;
+    case Opcodes::OUT:  machine.write(*operand1Block); break;
+    case Opcodes::OUTS: machine.writeString(*operand1Block); break;
+    case Opcodes::PUSH: machine.push(*operand1Block); break;
+    case Opcodes::POP:  machine.pop(*operand1Block); break;
+    case Opcodes::INC:  machine.increment(*operand1Block); break;
+    case Opcodes::DEC:  machine.decrement(*operand1Block); break;
+    case Opcodes::NEG:  machine.negate(*operand1Block); break;
+    case Opcodes::ABS:  machine.absolute(*operand1Block); break;
+    case Opcodes::ADD:  machine.add(*operand1Block, *operand2Block); break;
+    case Opcodes::SUB:  machine.subtract(*operand1Block, *operand2Block); break;
+    case Opcodes::MUL:  machine.multiply(*operand1Block, *operand2Block); break;
+    case Opcodes::DIV:  machine.divide(*operand1Block, *operand2Block); break;
+    case Opcodes::MOD:  machine.modulo(*operand1Block, *operand2Block); break;
+    case Opcodes::SADD: machine.stackAdd(); break;
+    case Opcodes::SSUB: machine.stackSubtract(); break;
+    case Opcodes::SMUL: machine.stackMultiply(); break;
+    case Opcodes::SDIV: machine.stackDivide(); break;
+    case Opcodes::SMOD: machine.stackModulo(); break;
+    case Opcodes::ALLC: break; // handled above
+    case Opcodes::PLA:  machine.startPopulatingArray(*operand1Block, *operand2Block); break;
+    case Opcodes::FNA:  machine.stopPopulatingArray(); break;
+    case Opcodes::ATOA: machine.addToArray(*operand1Block); break;
+    case Opcodes::AEL:  machine.getArrayElement(*operand1Block, *operand2Block); break;
+    case Opcodes::ALEN: machine.getArrayLength(*operand1Block, *operand2Block); break;
+    case Opcodes::CPYA: machine.copyArray(*operand1Block, *operand2Block); break;
+    case Opcodes::CNVI: machine.convert(*operand1Block, *operand2Block, Block::DT_INTEGER); break;
+    case Opcodes::CNVR: machine.convert(*operand1Block, *operand2Block, Block::DT_REAL); break;
+    case Opcodes::CNVC: machine.convert(*operand1Block, *operand2Block, Block::DT_CHAR); break;
+    case Opcodes::CNVB: machine.convert(*operand1Block, *operand2Block, Block::DT_BOOLEAN); break;
+    case Opcodes::CNVT: machine.convertToDataTypeOf(*operand1Block, *operand2Block); break;
+    case Opcodes::DREF: machine.dereference(*operand1Block, *operand2Block); break;
+    case Opcodes::CMP:  machine.compare(*operand1Block, *operand2Block); break;
+    case Opcodes::CMPT: machine.compareDataType(*operand1Block, *operand2Block); break;
+    case Opcodes::IST:  break; // handled above
+    case Opcodes::CPYF: break; // handled above
+    case Opcodes::NOT:  machine.logicalNot(*operand1Block); break;
+    case Opcodes::AND:  machine.logicalAnd(*operand1Block, *operand2Block); break;
+    case Opcodes::OR:   machine.logicalOr(*operand1Block, *operand2Block); break;
+    case Opcodes::XOR:  machine.logicalXor(*operand1Block, *operand2Block); break;
+    case Opcodes::JMP:  // all handled above
+    case Opcodes::JE:
+    case Opcodes::JNE:
+    case Opcodes::JL:
+    case Opcodes::JG:
+    case Opcodes::JLE:
+    case Opcodes::JGE:
+    case Opcodes::CALL: break; // handled above
+    case Opcodes::RET:  machine.returnFromCall(*operand1Block); break;
+    case Opcodes::EXTL: // handled above
+    case Opcodes::EXTC: break;
     }
 }
 

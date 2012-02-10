@@ -9,7 +9,8 @@ SOURCES += \
     ExtensionFunction.cpp \
     Interpreter.cpp \
     Lexer.cpp \
-    Token.cpp
+    Token.cpp \
+    Opcodes.cpp
 
 HEADERS += \
     Block.hpp \
@@ -23,7 +24,8 @@ HEADERS += \
     Lexer.hpp \
     Token.hpp \
     TypeWrappers.hpp \
-    Instruction.hpp
+    Instruction.hpp \
+    Opcodes.hpp
 
 QMAKE_CXXFLAGS_DEBUG += -ansi -pedantic
 QMAKE_CXXFLAGS_RELEASE += -ansi -pedantic

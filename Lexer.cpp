@@ -11,47 +11,7 @@
 
 #include "Lexer.hpp"
 #include "Instruction.hpp"
-
-//  1      2      3       4       5
-const std::string Lexer::opcodeStrings[] =
-{ "clr", "set", "move", "swap", "in",    //  1
-  "ins", "out", "outs", "push", "pop",   //  2
-  "inc", "dec", "neg",  "abs",  "add",   //  3
-  "sub", "mul", "div",  "mod",  "sadd",  //  4
-  "ssub","smul","sdiv", "smod", "allc",  //  5
-  "pla", "fna", "atoa", "ael",  "alen",  //  6
-  "cpya","cnvi","cnvr", "cnvc", "cnvb",  //  7
-  "cnvt","dref","cmp",  "cmpt", "ist",   //  8
-  "cpyf","not", "and",  "or",   "xor",   //  9
-  "jump","je",  "jne",  "jl",   "jg",    // 10
-  "jle", "jge", "call", "ret",  "extl",  // 11
-  "extc", "#" };                         // 12
-
-const short Lexer::opcodeOperandCounts[] =
-{   1,     2,     2,      2,      1,     //  1
-    1,     1,     1,      1,      1,     //  2
-    1,     1,     1,      1,      2,     //  3
-    2,     2,     2,      2,      0,     //  4
-    0,     0,     0,      0,      2,     //  5
-    1,     0,     1,      2,      2,     //  6
-    2,     2,     2,      2,      2,     //  7
-    2,     2,     2,      2,      2,     //  8
-    2,     1,     2,      2,      2,     //  9
-    1,     1,     1,      1,      1,     // 10
-    1,     1,     1,      1,      1,     // 11
-    1,     -1                            // 12
-};
-
-int Lexer::getOpcodeId(const std::string & opcode)
-{
-    int i = 0;
-    while (true)
-    {
-        if (opcodeStrings[i] == "#") return -1;
-        if (opcodeStrings[i] == opcode) return i;
-        ++i;
-    }
-}
+#include "Opcodes.hpp"
 
 inline std::string removeWhitespace(const std::string & str)
 {
@@ -118,7 +78,7 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
 
 Token Lexer::getOpcodeTokenFrom(const std::string & str)
 {
-    int opcodeId = getOpcodeId(str);
+    int opcodeId = Opcodes::getOpcodeId(str);
     if (opcodeId < 0) return Token();
     return Token(static_cast<unsigned char>(opcodeId));
 }

@@ -48,13 +48,18 @@ void Machine::flush()
 Machine::ArrayPopulator::ArrayPopulator()
     : arrayPointer(Block::DT_POINTER), currentIndex(-1) {}
 
-void Machine::ArrayPopulator::start(const Block & pointerToArray)
+void Machine::ArrayPopulator::start(const Block & pointerToArray, const long startIndex)
 {
     if (pointerToArray.dataType() != Block::DT_POINTER)
         throw(std::runtime_error("Machine::ArrayPopulator::start: Operand data type is invalid (pointer expected)"));
     if (pointerToArray.pointerIsNull())
         throw(std::runtime_error("Machine::ArrayPopulator::start: Array pointer given is null"));
+    if (startIndex < 0)
+        throw(std::runtime_error("Machine::ArrayPopulator::start: Start index is less than 0"));
+    if (startIndex >= pointerToArray.pointerArrayLength())
+        throw(std::runtime_error("Machine::ArrayPopulator::start: Start index out of range"));
     arrayPointer = pointerToArray;
+    currentIndex = startIndex - 1; // because currentIndex is incremented before adding a value
 }
 
 void Machine::ArrayPopulator::stop()
@@ -421,10 +426,14 @@ void Machine::_allocate(const Block::DataType dataType, const Block * countBlock
     allocateDirect(managedOutRegister_, dataType, countBlock->integerData());
 }
 
-void Machine::_startPopulatingArray(const Block * pointerBlock)
+void Machine::_startPopulatingArray(const Block * pointerBlock, const Block * startIndexBlock)
 {
     if (pointerBlock == NULL) throw(std::runtime_error("Machine::_startPopulatingArray: Invalid array pointer given"));
-    arrayBeingPopulated.start(*pointerBlock);
+    if (startIndexBlock == NULL) throw(std::runtime_error("Machine::_startPopulatingArray: Invalid start index given"));
+    if (startIndexBlock->dataType() != Block::DT_INTEGER)
+        throw(std::runtime_error("Machine::_startPopulatingArray: Start index data type is invalid "
+                                 "(expected integer)"));
+    arrayBeingPopulated.start(*pointerBlock, startIndexBlock->integerData());
 }
 
 void Machine::stopPopulatingArray()

@@ -161,8 +161,8 @@ public:
     template <typename T>
     void allocate(Block::DataType dataType, const T & count);
 
-    template <typename T>
-    void startPopulatingArray(const T & arrayPointer);
+    template <typename T1, typename T2>
+    void startPopulatingArray(const T1 & arrayPointer, const T2 & startIndex);
     void stopPopulatingArray();
     template <typename T>
     void addToArray(const T & value);
@@ -191,7 +191,7 @@ public:
     void convertToDataTypeOf(const T1 & destination, const T2 & source);
 
     template <typename T1, typename T2>
-    void dereference(T1 & destinaton, const T2 & pointer);
+    void dereference(T1 & destination, const T2 & pointer);
     template <typename T1, typename T2>
     void dereference(const T1 & destination, const T2 & pointer);
 
@@ -281,7 +281,7 @@ private:
     {
     public:
         ArrayPopulator();
-        void start(const Block & pointerToArray);
+        void start(const Block & pointerToArray, long startIndex);
         void stop();
         void add(const Block & value);
 
@@ -319,7 +319,7 @@ private:
     void _divide(Block * destBlock, const Block * sourceBlock);
     void _modlulo(Block * destBlock, const Block * sourceBlock);
     void _allocate(const Block::DataType dataType, const Block * countBlock);
-    void _startPopulatingArray(const Block * pointerBlock);
+    void _startPopulatingArray(const Block * pointerBlock, const Block * startIndexBlock);
     void _addToArray(const Block * valueBlock);
     void _getArrayElement(const Block * pointerBlock, unsigned index);
     void _getArrayElement(const Block * pointerBlock, const Block * indexBlock);
@@ -549,10 +549,10 @@ void Machine::allocate(const Block::DataType dataType, const T & count)
     _allocate(dataType, getBlockFrom(count, 2));
 }
 
-template <typename T>
-void Machine::startPopulatingArray(const T & arrayPointer)
+template <typename T1, typename T2>
+void Machine::startPopulatingArray(const T1 & arrayPointer, const T2 & startIndex)
 {
-    _startPopulatingArray(getBlockFrom(arrayPointer, 1));
+    _startPopulatingArray(getBlockFrom(arrayPointer, 1), getBlockFrom(startIndex, 2));
 }
 
 template <typename T>
