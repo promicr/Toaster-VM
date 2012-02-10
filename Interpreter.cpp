@@ -26,6 +26,11 @@ Interpreter::Interpreter(Machine & machine)
         ++line;
         std::cout << line << " >> ";
         getline(std::cin, buffer);
+
+        size_t commentPos = buffer.find_first_of(';');
+        if (commentPos != std::string::npos)
+            buffer = buffer.substr(0, commentPos);
+
         if (buffer == "END") break;
         fileContents << buffer << '\n';
     }
@@ -41,14 +46,18 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
     std::fstream file(fileName, std::ios_base::in);
     if (file.is_open())
     {
-        fileContents << file.rdbuf();
-
         unsigned line = 0;
         std::string buffer;
         do
         {
             ++line;
             getline(file, buffer);
+
+            size_t commentPos = buffer.find_first_of(';');
+            if (commentPos != std::string::npos)
+                buffer = buffer.substr(0, commentPos);
+
+            fileContents << buffer << '\n';
         } while (!file.eof());
         instructions.reserve(line);
 
@@ -67,7 +76,7 @@ void Interpreter::run()
         if (fileContents.eof()) break;
 
         const Instruction * i;
-        try { i = &Lexer::tokenize(instruction); /* instruction returned is static, so using pointer is fine */ }
+        try { i = &Lexer::tokenize(instruction); } // Instruction returned is static, so using pointer is fine
         catch (const std::exception & e)
         {
             std::cout << "Error on line " << line + 1 << std::endl
@@ -76,12 +85,11 @@ void Interpreter::run()
                       << "Execution halted" << std::endl;
             return;
         }
-        if (!i->opcode.isNull() || !i->label.isNull())
-        {
-            if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
-            instructions.push_back(*i);
-            ++line;
-        }
+
+        if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
+        instructions.push_back(*i); // Even though the Instruction might contain nothing, we still need
+                                    // to add it in order to give helpful error messages (i.e to show line number)
+        ++line;
     }
 
     try { machine.jump("main"); }
