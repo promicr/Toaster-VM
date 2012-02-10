@@ -889,7 +889,11 @@ Block * Machine::getBlockFrom(Block & pointer, const short operandNumber)
 
     if (returnReferencedBlock)
     {
-        if (pointer.dataType() != Block::DT_POINTER) return NULL;
+        if (pointer.dataType() != Block::DT_POINTER)
+        {
+            if (pointer.dataType() == Block::DT_INTEGER) return &unmanagedHeap().blockAt(pointer.integerData());
+            return NULL;
+        }
         return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
     }
 
@@ -909,7 +913,11 @@ const Block * Machine::getBlockFrom(const Block & pointer, const short operandNu
 
     if (returnReferencedBlock)
     {
-        if (pointer.dataType() != Block::DT_POINTER) return NULL;
+        if (pointer.dataType() != Block::DT_POINTER)
+        {
+            if (pointer.dataType() == Block::DT_INTEGER) return &unmanagedHeap().blockAt(pointer.integerData());
+            return NULL;
+        }
         return &pointer.pointerHeap()->blockAt(pointer.pointerAddress());
     }
 
