@@ -45,8 +45,6 @@ public:
         R_MANAGED_OUT
     };
 
-    static const unsigned labelLength = 12;
-
     Token();
 
     Token(unsigned char value);
@@ -103,7 +101,7 @@ private:
         Block::DataType dataTypeData_;
         unsigned stackPositionData_, heapLocationData_;
         CFR::ComparisonFlagId comparisonFlagData_;
-        char labelData_[labelLength + 1];
+        char labelData_[Label::length + 1];
     };
 };
 

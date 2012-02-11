@@ -9,7 +9,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
+#include <cstdlib>
 
 #include "Interpreter.hpp"
 #include "Lexer.hpp"
@@ -17,11 +17,15 @@
 #include "Machine.hpp"
 #include "Opcodes.hpp"
 
+const unsigned Interpreter::instructionReservation;
+
 Interpreter::Interpreter(Machine & machine)
     : machine(machine)
 {
     unsigned line = 0;
     std::string buffer;
+    buffer.reserve(128);
+    instructions.reserve(instructionReservation);
     while (true)
     {
         ++line;
@@ -33,7 +37,17 @@ Interpreter::Interpreter(Machine & machine)
             buffer = buffer.substr(0, commentPos);
 
         if (buffer == "END") break;
-        fileContents << buffer << '\n';
+
+        try { tokenizeAndAddInstruction(buffer, line); }
+        catch (const std::exception & e)
+        {
+            std::cout << "Error on line " << line << std::endl
+                      << buffer << std::endl
+                      << e.what() << std::endl
+                      << "Instruction ignored" << std::endl;
+            --line;
+            continue;
+        }
     }
     instructions.reserve(line);
 }
@@ -49,6 +63,8 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
     {
         unsigned line = 0;
         std::string buffer;
+        buffer.reserve(128);
+        instructions.reserve(instructionReservation);
         do
         {
             ++line;
@@ -58,41 +74,35 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
             if (commentPos != std::string::npos)
                 buffer = buffer.substr(0, commentPos);
 
-            fileContents << buffer << '\n';
+            try { tokenizeAndAddInstruction(buffer, line); }
+            catch (const std::exception & e)
+            {
+                std::cout << "Error on line " << line << std::endl
+                          << buffer << std::endl
+                          << e.what() << std::endl
+                          << "Execution halted" << std::endl;
+                file.close();
+                exit(0);
+            }
         } while (!file.eof());
-        instructions.reserve(line);
 
         file.close();
     }
     else throw(std::runtime_error("Parser::Parser: File could not be opened"));
 }
 
+void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, const unsigned line)
+{
+    const Instruction * i = &Lexer::tokenize(instruction); // Instruction returned is static, so using pointer is fine
+
+    if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
+    instructions.push_back(*i); // Even though the Instruction might contain nothing, we still need
+                                // to add it in order to give helpful error messages (i.e to show line number)
+}
+
+
 void Interpreter::run()
 {
-    unsigned line = 0;
-    std::string instruction;
-    while (true)
-    {
-        getline(fileContents, instruction);
-        if (fileContents.eof()) break;
-
-        const Instruction * i;
-        try { i = &Lexer::tokenize(instruction); } // Instruction returned is static, so using pointer is fine
-        catch (const std::exception & e)
-        {
-            std::cout << "Error on line " << line + 1 << std::endl
-                      << instruction << std::endl
-                      << e.what() << std::endl
-                      << "Execution halted" << std::endl;
-            return;
-        }
-
-        if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
-        instructions.push_back(*i); // Even though the Instruction might contain nothing, we still need
-                                    // to add it in order to give helpful error messages (i.e to show line number)
-        ++line;
-    }
-
     try { machine.jump("main"); }
     catch (const std::exception & e)
     {
@@ -117,8 +127,6 @@ void Interpreter::run()
         if (programCounter == machine.programCounter()) ++machine.programCounter(); // i.e. if there were no jumps
         programCounter = machine.programCounter();
     }
-
-    getline(std::cin, instruction);
 }
 
 std::string typeString(const Token::Type type)
@@ -203,6 +211,7 @@ void Interpreter::execute(const Instruction & instruction)
     bool error = false, instructionFinished = false;
     if (requiredOperandNumber != 0)
     {
+        // Deal with special cases that accept labels or 'nil', which don't have blocks to represent them
         switch (instruction.opcode.opcodeData())
         {
         case Opcodes::POP:
@@ -340,7 +349,7 @@ void Interpreter::execute(const Instruction & instruction)
         if (requiredOperandNumber < 0) throw(std::runtime_error("Interpreter::execute: Too many operands given"));
         else if (requiredOperandNumber > 0) throw(std::runtime_error("Interpreter:execute: Too few operands given"));
         else if ((operand1Block == NULL) && (operand2Block != NULL))
-            throw(std::runtime_error("First operand given is invalid"));
+            throw(std::runtime_error("Interpreter:execute: First operand given is invalid"));
     }
 
     if (instructionFinished) return;

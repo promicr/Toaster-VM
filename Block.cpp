@@ -13,48 +13,36 @@
 
 Block::Block()
 {
-    pointerData.heap = NULL;
+    init();
 }
 
 Block::Block(const Block & other)
 {
-    pointerData.heap = NULL;
+    init();
     if (other.dataType_ != DATA_TYPE_COUNT) *this = other;
 }
 
 Block::Block(const Integer value)
-{
-    dataType_ = DT_INTEGER;
-    integerData_ = value;
-}
+    : dataType_(DT_INTEGER), integerData_(value) {}
 
 Block::Block(const Real value)
-{
-    dataType_ = DT_REAL;
-    realData_ = value;
-}
+    : dataType_(DT_REAL), realData_(value) {}
 
 Block::Block(const Char value)
-{
-    dataType_ = DT_CHAR;
-    charData_ = value;
-}
+    : dataType_(DT_CHAR), charData_(value) {}
 
 Block::Block(const Boolean value)
-{
-    dataType_ = DT_BOOLEAN;
-    booleanData_ = value;
-}
+    : dataType_(DT_BOOLEAN), booleanData_(value) {}
 
 Block::Block(const int address, Heap & heap)
 {
-    pointerData.heap = NULL;
+    init();
     setToPointer(address, heap);
 }
 
 Block::Block(const DataType dataType)
 {
-    pointerData.heap = NULL;
+    init();
     setTo(dataType);
 }
 
@@ -254,6 +242,13 @@ bool Block::operator ==(const Block & rhs) const
 bool Block::operator !=(const Block & rhs) const
 {
     return !(*this == rhs);
+}
+
+void Block::init()
+{
+    pointerData.address = -1;
+    pointerData.heap = NULL;
+    dataType_ = DT_INTEGER;
 }
 
 std::ostream & operator <<(std::ostream & stream, const Block & block)

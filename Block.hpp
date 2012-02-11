@@ -96,6 +96,8 @@ private:
             Heap * heap; // The heap that the address is associated with
         } pointerData;
     };
+
+    void init();
 };
 
 std::ostream & operator <<(std::ostream & stream, const Block & block);

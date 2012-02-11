@@ -20,7 +20,7 @@ public:
     typedef Block (*Pointer)(Machine* const); // i.e. ExtensionFunction::Pointer
 
     static void addNew(const char * name, Pointer function, unsigned parameterCount);
-    static ExtensionFunction * find(const std::string & name);
+    static ExtensionFunction * find(const char * name);
 
     const std::string & name() const;
     const Pointer & pointer() const;

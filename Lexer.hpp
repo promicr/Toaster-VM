@@ -55,8 +55,8 @@ namespace Lexer
 
 const Instruction & tokenize(const std::string & instruction);
 
-Token getOpcodeTokenFrom(const std::string & str);
-Token getOperandTokenFrom(const std::string & str);
+Token getOpcodeToken(const std::string & str);
+Token getOperandToken(const std::string & str);
 
 }
 

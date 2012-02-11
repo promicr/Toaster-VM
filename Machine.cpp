@@ -715,19 +715,25 @@ void Machine::_logicalXor(Block * destBlock, const Block * sourceBlock)
     destBlock->setToBoolean(destBlock->booleanData() != sourceBlock->booleanData());
 }
 
-void Machine::jump(const std::string & labelName)
+void Machine::jump(const char * labelName)
 {
-    LabelTable::iterator iterator = labels_.find(labelName);
-    if (iterator == labels_.end()) throw(std::runtime_error("Machine::jump: Unknown label '" + labelName + "'"));
-    programCounter_ = iterator->second;
+    for (unsigned i = 0; i < labels_.size(); ++i)
+    {
+        if (strcmp(labels_[i].name, labelName) == 0)
+        {
+            programCounter_ = labels_[i].line;
+            return;
+        }
+    }
+    throw(std::runtime_error("Machine::jump: Unknown label '" + std::string(labelName) + "'"));
 }
 
-void Machine::conditionalJump(const std::string & labelName, const ComparisonFlagRegister::ComparisonFlagId condition)
+void Machine::conditionalJump(const char * labelName, const ComparisonFlagRegister::ComparisonFlagId condition)
 {
     if (comparisonFlagRegister_.getValue(condition)) jump(labelName);
 }
 
-void Machine::call(const std::string & labelName)
+void Machine::call(const char * labelName)
 {
     const unsigned returnAddress = programCounter_ + 1;
     jump(labelName);
@@ -742,9 +748,9 @@ void Machine::_returnFromCall(const Block * returnBlock)
     returnAddressStack.pop_back();
 }
 
-void Machine::loadExtension(const std::string & fileName)
+void Machine::loadExtension(const char * fileName)
 {
-    void * handle = dlopen(fileName.c_str(), RTLD_LAZY);
+    void * handle = dlopen(fileName, RTLD_LAZY);
     char * error = dlerror();
     if ((handle == NULL) || (error != NULL))
         throw(std::runtime_error("Machine::loadExtension: " + std::string(error)));
@@ -761,11 +767,12 @@ void Machine::loadExtension(const std::string & fileName)
     extensionHandles.push_back(handle);
 }
 
-void Machine::extensionCall(const std::string & functionName)
+void Machine::extensionCall(const char * functionName)
 {
     ExtensionFunction * function = ExtensionFunction::find(functionName);
     if (function == NULL)
-        throw(std::runtime_error("Machine::extensionCall: Unknown extension function '" + functionName + "'"));
+        throw(std::runtime_error(
+                "Machine::extensionCall: Unknown extension function '" + std::string(functionName) + "'"));
 
     if (extensionMachine == NULL)
         extensionMachine = new Machine(extensionMachineStackSize, extensionMachineHeapSize, extensionMachineHeapSize);
@@ -809,15 +816,15 @@ unsigned & Machine::programCounter()
     return programCounter_;
 }
 
-const Machine::LabelTable & Machine::labels() const
+const Machine::LabelList & Machine::labels() const
 {
     return labels_;
 }
 
-void Machine::addLabel(const std::string & labelName, unsigned lineNumber)
+void Machine::addLabel(const char * labelName, unsigned lineNumber)
 {
-    if (labelName.empty()) return;
-    labels_[labelName] = lineNumber;
+    if (strlen(labelName) == 0) return;
+    labels_.push_back(Label(labelName, lineNumber));
 }
 
 bool & Machine::operand1IsPointer()

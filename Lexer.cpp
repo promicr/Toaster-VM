@@ -34,8 +34,8 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
         size_t colonPos = cleanString.find_first_of(':');
         if (colonPos != std::string::npos)
         {
-            char label[Token::labelLength + 1];
-            strncpy(label, cleanString.substr(0, colonPos).c_str(), Token::labelLength);
+            char label[Label::length + 1];
+            strncpy(label, cleanString.substr(0, colonPos).c_str(), Label::length);
             if (!isalpha(label[0])) throw(std::runtime_error("Lexer::tokenize: Labels must start with a letter"));
             tokens.label.setLabelData(label);
             if (colonPos == cleanString.size() - 1) return tokens;
@@ -46,40 +46,43 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
         }
     }
 
+    if (cleanString.size() == 0) return tokens;
+
     size_t spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
-        tokens.opcode = getOpcodeTokenFrom(cleanString);
+        tokens.opcode = getOpcodeToken(cleanString);
         return tokens;
     }
-    tokens.opcode = getOpcodeTokenFrom(cleanString.substr(0, spacePos));
-    if (tokens.opcode.isNull()) throw(std::runtime_error("Lexer::tokenize: Opcode not found"));
+    tokens.opcode = getOpcodeToken(cleanString.substr(0, spacePos));
 
     cleanString = removeWhitespace(cleanString.substr(spacePos, cleanString.size() - spacePos));
+    if (cleanString.size() == 0) return tokens;
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
-        tokens.operand1 = getOperandTokenFrom(cleanString);
+        tokens.operand1 = getOperandToken(cleanString);
         return tokens;
     }
-    tokens.operand1 = getOperandTokenFrom(cleanString.substr(0, spacePos));
+    tokens.operand1 = getOperandToken(cleanString.substr(0, spacePos));
 
     cleanString = removeWhitespace(cleanString.substr(spacePos, cleanString.size() - spacePos));
+    if (cleanString.size() == 0) return tokens;
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
-        tokens.operand2 = getOperandTokenFrom(cleanString);
+        tokens.operand2 = getOperandToken(cleanString);
         return tokens;
     }
-    tokens.operand2 = getOperandTokenFrom(cleanString.substr(0, spacePos));
+    tokens.operand2 = getOperandToken(cleanString.substr(0, spacePos));
 
     return tokens;
 }
 
-Token Lexer::getOpcodeTokenFrom(const std::string & str)
+Token Lexer::getOpcodeToken(const std::string & str)
 {
     int opcodeId = Opcodes::getOpcodeId(str);
-    if (opcodeId < 0) return Token();
+    if (opcodeId < 0) throw(std::runtime_error("Lexer::getOpcodeToken: Opcode not found"));
     return Token(static_cast<unsigned char>(opcodeId));
 }
 
@@ -255,12 +258,12 @@ void getHeapLocation(const std::string & str, const unsigned stringStart, Token 
 
 void getLabel(const std::string & str, const unsigned stringStart, Token & token)
 {
-    if (stringStart + Token::labelLength < str.size())
+    if (stringStart + Label::length < str.size())
         throw(std::runtime_error("Lexer::getLabel: Label given is too long"));
 
     token.type() = Token::T_LABEL;
     unsigned i = 0;
-    for (i = 0; (i < Token::labelLength) && (stringStart + i < str.size()); ++i)
+    for (i = 0; (i < Label::length) && (stringStart + i < str.size()); ++i)
         token.labelData()[i] = str[stringStart + i];
     token.labelData()[i] = '\0';
 }
@@ -339,12 +342,13 @@ void getComparisonFlagId(const std::string & str, const unsigned stringStart, To
     }
 }
 
-Token Lexer::getOperandTokenFrom(const std::string & str)
+Token Lexer::getOperandToken(const std::string & str)
 {
     Token returnToken;
     if (str.size() < 2)
     {
         if (isdigit(str[0])) getHeapLocation(str, 0, returnToken);
+        else if (isalpha(str[0])) getLabel(str, 0, returnToken);
         return returnToken;
     }
     switch (str[0])

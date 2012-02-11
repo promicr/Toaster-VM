@@ -21,11 +21,11 @@ void ExtensionFunction::addNew(const char * name, const Pointer function, const 
     instances.push_back(ExtensionFunction(name, function, parameterCount));
 }
 
-ExtensionFunction * ExtensionFunction::find(const std::string & name)
+ExtensionFunction * ExtensionFunction::find(const char * name)
 {
     for (unsigned i = 0; i < instances.size(); ++i)
     {
-        if (instances[i].name() == name) return &instances[i];
+        if (strcmp(instances[i].name_.c_str(), name) == 0) return &instances[i];
     }
     return NULL;
 }

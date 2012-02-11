@@ -18,7 +18,7 @@
 class Machine
 {
 public:
-    typedef std::map<std::string, unsigned> LabelTable; // Maybe change string to int, i.e. hashed label name
+    typedef std::vector<Label> LabelList;
     typedef std::vector<unsigned> ReturnAddressStack;
 
     struct StackLocation
@@ -229,15 +229,15 @@ public:
     template <typename T1, typename T2>
     void logicalXor(const T1 & destination, const T2 & source);
 
-    void jump(const std::string & labelName);
-    void conditionalJump(const std::string & labelName, ComparisonFlagRegister::ComparisonFlagId condition);
-    void call(const std::string & labelName);
+    void jump(const char * labelName);
+    void conditionalJump(const char * labelName, ComparisonFlagRegister::ComparisonFlagId condition);
+    void call(const char * labelName);
     template<typename T>
     void returnFromCall(const T & returnValue);
 
-    void loadExtension(const std::string & fileName);
+    void loadExtension(const char * fileName);
     // returnFromCall is called in this function, so stack frame and parameters must already be pushed before calling!
-    void extensionCall(const std::string & functionName);
+    void extensionCall(const char * functionName);
 
     Stack & stack();
     Heap & unmanagedHeap();
@@ -247,8 +247,8 @@ public:
     Block & managedOutRegister();
     unsigned & programCounter();
 
-    const LabelTable & labels() const;
-    void addLabel(const std::string & labelName, unsigned lineNumber);
+    const LabelList & labels() const;
+    void addLabel(const char * labelName, unsigned lineNumber);
 
     bool & operand1IsPointer();
     bool operand1IsPointer() const;
@@ -274,7 +274,7 @@ private:
     managedOutRegister_; // a register for storing the output of managed heap functions
     unsigned programCounter_;
 
-    LabelTable labels_;
+    LabelList labels_;
     ReturnAddressStack returnAddressStack;
 
     class ArrayPopulator
@@ -337,7 +337,7 @@ private:
     void _logicalOr(Block * destBlock, const Block * sourceBlock);
     void _logicalXor(Block * destBlock, const Block * sourceBlock);
     void _returnFromCall(const Block * returnBlock);
-    void _extensionCall(const std::string & functionName);
+    void _extensionCall(const char * functionName);
 };
 
 template <typename T>
