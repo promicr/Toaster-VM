@@ -213,11 +213,7 @@ void Machine::_increment(Block * destBlock)
     case Block::DT_INTEGER: ++destBlock->integerData(); break;
     case Block::DT_REAL:    ++destBlock->realData(); break;
     case Block::DT_CHAR:    ++destBlock->charData(); break;
-    case Block::DT_POINTER:
-        if (!destBlock->pointerIsNull() && (destBlock->pointerAddress() < (int)destBlock->pointerHeap()->size()))
-            ++destBlock->pointerAddress();
-        break;
-
+    case Block::DT_POINTER: throw(std::runtime_error("Machine:_increment: Pointers cannot be incremented"));
     default: throw(std::runtime_error("Machine::_increment: Destination data type is invalid"));
     }
 }
@@ -230,11 +226,7 @@ void Machine::_decrement(Block * destBlock)
     case Block::DT_INTEGER: --destBlock->integerData(); break;
     case Block::DT_REAL:    --destBlock->realData(); break;
     case Block::DT_CHAR:    --destBlock->charData(); break;
-    case Block::DT_POINTER:
-        if (!destBlock->pointerIsNull() && (destBlock->pointerAddress() > 0))
-            --destBlock->pointerAddress();
-        break;
-
+    case Block::DT_POINTER: throw(std::runtime_error("Machine:_decrement: Pointers cannot be decremented"));
     default: throw(std::runtime_error("Machine::_decrement: Destination data type is invalid"));
     }
 }
