@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <cstdlib>
+#include <sys/time.h>
 
 #include "Interpreter.hpp"
 #include "Lexer.hpp"
@@ -38,7 +39,7 @@ Interpreter::Interpreter(Machine & machine)
 
         if (buffer == "END") break;
 
-        try { tokenizeAndAddInstruction(buffer, line); }
+        try { tokenizeAndAddInstruction(buffer, line - 1); }
         catch (const std::exception & e)
         {
             std::cout << "Error on line " << line << std::endl
@@ -49,7 +50,8 @@ Interpreter::Interpreter(Machine & machine)
             continue;
         }
     }
-    instructions.reserve(line);
+
+    preOptimise();
 }
 
 Interpreter::Interpreter(Machine & machine, const char * fileName)
@@ -74,7 +76,7 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
             if (commentPos != std::string::npos)
                 buffer = buffer.substr(0, commentPos);
 
-            try { tokenizeAndAddInstruction(buffer, line); }
+            try { tokenizeAndAddInstruction(buffer, line - 1); }
             catch (const std::exception & e)
             {
                 std::cout << "Error on line " << line << std::endl
@@ -89,6 +91,8 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
         file.close();
     }
     else throw(std::runtime_error("Parser::Parser: File could not be opened"));
+
+    preOptimise();
 }
 
 void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, const unsigned line)
@@ -100,14 +104,83 @@ void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, con
                                 // to add it in order to give helpful error messages (i.e to show line number)
 }
 
-
-void Interpreter::run()
+inline void preOptimiseLabel(Token & token, const Machine & machine)
 {
+    if (!token.isOptimisedLabel())
+    {
+        token.labelLineNumberData() = machine.labelLineNumber(token.labelData());
+        token.isOptimisedLabel() = true;
+    }
+}
+
+inline void preOptimiseOperand(Token & operand, Machine & machine)
+{
+    if (operand.isNull()) return;
+    switch (operand.type())
+    {
+    case Token::T_LABEL:
+        preOptimiseLabel(operand, machine);
+        break;
+    case Token::T_OPERAND_STACK_TOP:
+        operand.locationData() = &machine.stack().fromTop(operand.stackPositionData());
+        operand.isOptimisedLocation() = true;
+        break;
+    case Token::T_OPERAND_STACK_BOTTOM:
+        operand.locationData() = &machine.stack().at(operand.stackPositionData());
+        operand.isOptimisedLocation() = true;
+        break;
+    case Token::T_OPERAND_STACK_NEGATIVE:
+        operand.locationData() = &machine.stack().fromTopBelow(operand.stackPositionData());
+        operand.isOptimisedLocation() = true;
+        break;
+    case Token::T_OPERAND_HEAP_LOCATION:
+        operand.locationData() = &machine.unmanagedHeap().blockAt(operand.heapLocationData());
+        operand.isOptimisedLocation() = true;
+        break;
+    case Token::T_OPERAND_PRIMARY_REGISTER:
+        operand.locationData() = &machine.primaryRegister();
+        operand.isOptimisedLocation() = true;
+        break;
+    case Token::T_OPERAND_MANAGED_OUT_REGISTER:
+        operand.locationData() = &machine.managedOutRegister();
+        operand.isOptimisedLocation() = true;
+        break;
+    default: break;
+    }
+}
+
+void Interpreter::preOptimise()
+{
+    for (unsigned i = 0; i < instructions.size(); ++i)
+    {
+        preOptimiseOperand(instructions[i].operand1, machine);
+        preOptimiseOperand(instructions[i].operand2, machine);
+    }
+}
+
+void Interpreter::run(const bool timeExecution)
+{
+    if (timeExecution)
+    {
+        timeval start, end;
+        gettimeofday(&start, NULL);
+
+        run(false);
+
+        gettimeofday(&end, NULL);
+        long seconds = end.tv_sec  - start.tv_sec,
+                useconds = end.tv_usec - start.tv_usec,
+                milliseconds = (seconds * 1000) + (useconds / 1000);
+        std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
+
+        return;
+    }
+
     try { machine.jump("main"); }
     catch (const std::exception & e)
     {
-        std::cout << e.what() << std::endl;
-        std::cout << "Label 'main' not found" << std::endl
+        std::cout << e.what() << std::endl
+                  << "Label 'main' not found" << std::endl
                   << "Execution halted" << std::endl;
         return;
     }
@@ -254,7 +327,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JMP:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.jump(instruction.operand1.labelData());
+                machine.jump(instruction.operand1.labelLineNumberData());
                 instructionFinished = true;
             }
             else error = true;
@@ -263,7 +336,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -272,7 +345,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JNE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_NOT_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_NOT_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -281,7 +354,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_LESS);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_LESS);
                 instructionFinished = true;
             }
             else error = true;
@@ -290,7 +363,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JG:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_GREATER);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_GREATER);
                 instructionFinished = true;
             }
             else error = true;
@@ -299,7 +372,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JLE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_LESS_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_LESS_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -308,7 +381,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JGE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelData(), CFR::F_GREATER_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_GREATER_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -317,7 +390,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::CALL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.call(instruction.operand1.labelData());
+                machine.call(instruction.operand1.labelLineNumberData());
                 instructionFinished = true;
             }
             else error = true;
@@ -418,6 +491,16 @@ void Interpreter::execute(const Instruction & instruction)
 Block * Interpreter::getBlockFromToken(const Token & token, bool & isLabel, short operandNumber)
 {
     static Block block[2];
+
+    if (token.isOptimisedLocation())
+    {
+        if (token.type() != Token::T_LABEL) return token.locationData();
+        else
+        {
+            isLabel = true;
+            return NULL;
+        }
+    }
 
     isLabel = false;
     if (token.isNull() || (operandNumber < 1) || (operandNumber > 2)) return NULL;

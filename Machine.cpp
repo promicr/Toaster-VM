@@ -728,17 +728,9 @@ void Machine::jump(const char * labelName)
     throw(std::runtime_error("Machine::jump: Unknown label '" + std::string(labelName) + "'"));
 }
 
-void Machine::conditionalJump(const char * labelName, const ComparisonFlagRegister::ComparisonFlagId condition)
+void Machine::jump(const unsigned lineNumber)
 {
-    if (comparisonFlagRegister_.getValue(condition)) jump(labelName);
-}
-
-void Machine::call(const char * labelName)
-{
-    const unsigned returnAddress = programCounter_ + 1;
-    jump(labelName);
-    returnAddressStack.push_back(returnAddress);
-    stack_.pushFrame();
+    programCounter_ = lineNumber;
 }
 
 void Machine::_returnFromCall(const Block * returnBlock)
@@ -825,6 +817,15 @@ void Machine::addLabel(const char * labelName, unsigned lineNumber)
 {
     if (strlen(labelName) == 0) return;
     labels_.push_back(Label(labelName, lineNumber));
+}
+
+unsigned Machine::labelLineNumber(const char * labelName) const
+{
+    for (unsigned i = 0; i < labels_.size(); ++i)
+    {
+        if (strcmp(labels_[i].name, labelName) == 0) return labels_[i].line;
+    }
+    throw(std::runtime_error("Machine::labelLineNumber: Label '" + std::string(labelName) + "' could not be found"));
 }
 
 bool & Machine::operand1IsPointer()

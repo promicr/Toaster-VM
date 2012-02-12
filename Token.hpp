@@ -61,8 +61,14 @@ public:
 
     Type & type();
     Type type() const;
+
     bool & isPointer();
     bool isPointer() const;
+    bool & isOptimisedLabel();
+    bool isOptimisedLabel() const;
+    bool & isOptimisedLocation();
+    bool isOptimisedLocation() const;
+
     unsigned char & opcodeData();
     unsigned char opcodeData() const;
     long & integerData();
@@ -79,10 +85,14 @@ public:
     unsigned stackPositionData() const;
     unsigned & heapLocationData();
     unsigned heapLocationData() const;
+    unsigned & labelLineNumberData();
+    unsigned labelLineNumberData() const;
     CFR::ComparisonFlagId & comparisonFlagData();
     CFR::ComparisonFlagId comparisonFlagData() const;
     char * labelData();
     const char * labelData() const;
+    Block * & locationData();
+    Block * locationData() const;
 
     void setLabelData(const char * value);
     void clear();
@@ -90,7 +100,13 @@ public:
 
 private:
     Type type_;
+
     bool isPointer_;
+    union
+    {
+        bool isOptimisedLabel_, isOptimisedLocation_;
+    };
+
     union
     {
         unsigned char opcodeData_;
@@ -99,9 +115,10 @@ private:
         char charData_;
         bool booleanData_;
         Block::DataType dataTypeData_;
-        unsigned stackPositionData_, heapLocationData_;
+        unsigned stackPositionData_, heapLocationData_, labelLineNumberData_;
         CFR::ComparisonFlagId comparisonFlagData_;
         char labelData_[Label::length + 1];
+        Block * locationData_;
     };
 };
 

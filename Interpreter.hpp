@@ -24,7 +24,8 @@ public:
     Interpreter(Machine & machine, const char * fileName); // Run from file (just plain text for now)
 
     void tokenizeAndAddInstruction(const std::string & instruction, unsigned line);
-    void run();
+    void preOptimise(); // Optimisation that occurs before running the program
+    void run(bool timeExecution = false);
     void outputTokenData(const std::string & instruction);
     void execute(const Instruction & instruction);
 

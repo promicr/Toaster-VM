@@ -12,34 +12,35 @@
 #include "TypeWrappers.hpp"
 
 Token::Token()
-    : type_(T_NULL), isPointer_(false) {}
+    : type_(T_NULL), isPointer_(false), isOptimisedLabel_(false) {}
 
 Token::Token(const unsigned char value)
-    : type_(T_OPCODE), isPointer_(false), opcodeData_(value) {}
+    : type_(T_OPCODE), isPointer_(false), isOptimisedLabel_(false), opcodeData_(value) {}
 
 Token::Token(const Integer value)
-    : type_(T_OPERAND_CONST_INT), isPointer_(false), integerData_(value) {}
+    : type_(T_OPERAND_CONST_INT), isPointer_(false), isOptimisedLabel_(false), integerData_(value) {}
 
 Token::Token(const Real value)
-    : type_(T_OPERAND_CONST_REAL), isPointer_(false), realData_(value) {}
+    : type_(T_OPERAND_CONST_REAL), isPointer_(false), isOptimisedLabel_(false), realData_(value) {}
 
 Token::Token(const Char value)
-    : type_(T_OPERAND_CONST_CHAR), isPointer_(false), charData_(value) {}
+    : type_(T_OPERAND_CONST_CHAR), isPointer_(false), isOptimisedLabel_(false), charData_(value) {}
 
 Token::Token(const Boolean value)
-    : type_(T_OPERAND_CONST_BOOL), isPointer_(false), booleanData_(value) {}
+    : type_(T_OPERAND_CONST_BOOL), isPointer_(false), isOptimisedLabel_(false), booleanData_(value) {}
 
 Token::Token(const Block::DataType value)
-    : type_(T_OPERAND_DATA_TYPE), isPointer_(false), dataTypeData_(value) {}
+    : type_(T_OPERAND_DATA_TYPE), isPointer_(false), isOptimisedLabel_(false), dataTypeData_(value) {}
 
 Token::Token(const unsigned value, const bool ftos, const bool isPointer)
-    : type_(ftos ? T_OPERAND_STACK_TOP : T_OPERAND_STACK_BOTTOM), isPointer_(isPointer), stackPositionData_(value) {}
+    : type_(ftos ? T_OPERAND_STACK_TOP : T_OPERAND_STACK_BOTTOM), isPointer_(isPointer), isOptimisedLabel_(false),
+      stackPositionData_(value) {}
 
 Token::Token(const unsigned value, const bool isPointer)
-    : type_(T_OPERAND_HEAP_LOCATION), isPointer_(isPointer), heapLocationData_(value) {}
+    : type_(T_OPERAND_HEAP_LOCATION), isPointer_(isPointer), isOptimisedLabel_(false), heapLocationData_(value) {}
 
 Token::Token(const RegisterId registerId, const bool isPointer)
-    : isPointer_(isPointer)
+    : isPointer_(isPointer), isOptimisedLabel_(false)
 {
     switch (registerId)
     {
@@ -50,10 +51,10 @@ Token::Token(const RegisterId registerId, const bool isPointer)
 }
 
 Token::Token(const CFR::ComparisonFlagId value)
-    : type_(T_OPERAND_COMPARISON_FLAG_ID), isPointer_(false), comparisonFlagData_(value) {}
+    : type_(T_OPERAND_COMPARISON_FLAG_ID), isPointer_(false), isOptimisedLabel_(false), comparisonFlagData_(value) {}
 
 Token::Token(const char * value)
-    : type_(T_LABEL), isPointer_(false)
+    : type_(T_LABEL), isPointer_(false), isOptimisedLabel_(false)
 {
     if (value == NULL)
     {
@@ -81,6 +82,26 @@ bool & Token::isPointer()
 bool Token::isPointer() const
 {
     return isPointer_;
+}
+
+bool & Token::isOptimisedLabel()
+{
+    return isOptimisedLabel_;
+}
+
+bool Token::isOptimisedLabel() const
+{
+    return isOptimisedLabel_;
+}
+
+bool & Token::isOptimisedLocation()
+{
+    return isOptimisedLocation_;
+}
+
+bool Token::isOptimisedLocation() const
+{
+    return isOptimisedLocation_;
 }
 
 unsigned char & Token::opcodeData()
@@ -163,6 +184,16 @@ unsigned Token::heapLocationData() const
     return heapLocationData_;
 }
 
+unsigned & Token::labelLineNumberData()
+{
+    return labelLineNumberData_;
+}
+
+unsigned Token::labelLineNumberData() const
+{
+    return labelLineNumberData_;
+}
+
 CFR::ComparisonFlagId & Token::comparisonFlagData()
 {
     return comparisonFlagData_;
@@ -183,6 +214,16 @@ const char * Token::labelData() const
     return labelData_;
 }
 
+Block * & Token::locationData()
+{
+    return locationData_;
+}
+
+Block * Token::locationData() const
+{
+    return locationData_;
+}
+
 void Token::setLabelData(const char * value)
 {
     if (value == NULL)
@@ -190,14 +231,16 @@ void Token::setLabelData(const char * value)
         strcpy(labelData_, "");
         return;
     }
-    strncpy(labelData_, value, 12);
+    strncpy(labelData_, value, Label::length);
     type_ = T_LABEL;
+    isOptimisedLabel_ = false;
 }
 
 void Token::clear()
 {
     type_ = T_NULL;
     isPointer_ = false;
+    isOptimisedLabel_ = false;
 }
 
 bool Token::isNull() const

@@ -205,9 +205,9 @@ public:
     void isDataType(const T & operand, Block::DataType dataType);
 
     template <typename T>
-    void copyFlag(T & destination, ComparisonFlagRegister::ComparisonFlagId flagId);
+    void copyFlag(T & destination, CFR::ComparisonFlagId flagId);
     template <typename T>
-    void copyFlag(const T & destination, ComparisonFlagRegister::ComparisonFlagId flagId);
+    void copyFlag(const T & destination, CFR::ComparisonFlagId flagId);
 
     template <typename T>
     void logicalNot(T & destination);
@@ -230,8 +230,14 @@ public:
     void logicalXor(const T1 & destination, const T2 & source);
 
     void jump(const char * labelName);
-    void conditionalJump(const char * labelName, ComparisonFlagRegister::ComparisonFlagId condition);
-    void call(const char * labelName);
+    void jump(unsigned lineNumber);
+
+    template <typename T> // Does not accept blocks! Only const char* and unsigned int
+    void conditionalJump(const T labelNameOrLineNumber, CFR::ComparisonFlagId condition);
+
+    template <typename T> // Does not accept blocks! Only const char* and unsigned int
+    void call(const T labelNameOrLineNumber);
+
     template<typename T>
     void returnFromCall(const T & returnValue);
 
@@ -249,6 +255,7 @@ public:
 
     const LabelList & labels() const;
     void addLabel(const char * labelName, unsigned lineNumber);
+    unsigned labelLineNumber(const char * labelName) const;
 
     bool & operand1IsPointer();
     bool operand1IsPointer() const;
@@ -641,12 +648,12 @@ void Machine::isDataType(const T & operand, const Block::DataType dataType)
 }
 
 template <typename T>
-void Machine::copyFlag(T & destination, const ComparisonFlagRegister::ComparisonFlagId flagId)
+void Machine::copyFlag(T & destination, const CFR::ComparisonFlagId flagId)
 {
     _copyFlag(getBlockFrom(destination, 1), flagId);
 }
 template <typename T>
-void Machine::copyFlag(const T & destination, const ComparisonFlagRegister::ComparisonFlagId flagId)
+void Machine::copyFlag(const T & destination, const CFR::ComparisonFlagId flagId)
 {
     _copyFlag(getBlockFrom(destination, 1), flagId);
 }
@@ -693,6 +700,21 @@ template <typename T1, typename T2>
 void Machine::logicalXor(const T1 & destination, const T2 & source)
 {
     _logicalXor(getBlockFrom(destination, 1), getBlockFrom(source, 2));
+}
+
+template <typename T>
+void Machine::conditionalJump(const T labelNameOrLineNumber, const CFR::ComparisonFlagId condition)
+{
+    if (comparisonFlagRegister_.getValue(condition)) jump(labelNameOrLineNumber);
+}
+
+template <typename T>
+void Machine::call(const T labelNameOrLineNumber)
+{
+    const unsigned returnAddress = programCounter_ + 1;
+    jump(labelNameOrLineNumber);
+    returnAddressStack.push_back(returnAddress);
+    stack_.pushFrame();
 }
 
 template <typename T>
