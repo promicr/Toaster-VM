@@ -117,8 +117,8 @@ void getInteger(const std::string & str, const unsigned stringStart, Token & tok
             throw(std::runtime_error("Lexer::getInteger: Integer constant specified is too large"));
     }
 
-    token.type() = Token::T_OPERAND_CONST_INT;
-    token.integerData() = (isNegative ? -integer : integer);
+    token.type = Token::T_OPERAND_CONST_INT;
+    token.integerData = (isNegative ? -integer : integer);
 }
 
 void getReal(const std::string & str, const unsigned stringStart, Token & token)
@@ -161,8 +161,8 @@ void getReal(const std::string & str, const unsigned stringStart, Token & token)
         if (real < previousReal) throw(std::runtime_error("Lexer::getReal: Real constant specified is too large"));
     }
 
-    token.type() = Token::T_OPERAND_CONST_REAL;
-    token.realData() = (isNegative? -real : real);
+    token.type = Token::T_OPERAND_CONST_REAL;
+    token.realData = (isNegative? -real : real);
 }
 
 void getConstant(const std::string & str, const unsigned stringStart, Token & token)
@@ -172,16 +172,16 @@ void getConstant(const std::string & str, const unsigned stringStart, Token & to
     case '\'':
         if ((str.size() != stringStart + 3) || (str[stringStart + 2] != '\''))
             throw(std::runtime_error("Lexer::getConstant: Invalid character constant given"));
-        token.type() = Token::T_OPERAND_CONST_CHAR;
-        token.charData() = str[stringStart + 1];
+        token.type = Token::T_OPERAND_CONST_CHAR;
+        token.charData = str[stringStart + 1];
         break;
 
     case 'T':
     case 'F':
         if (str.size() != stringStart + 1)
             throw(std::runtime_error("Lexer::getConstant: Invalid boolean constant given"));
-        token.type() = Token::T_OPERAND_CONST_BOOL;
-        token.booleanData() = (str[stringStart] == 'T');
+        token.type = Token::T_OPERAND_CONST_BOOL;
+        token.booleanData = (str[stringStart] == 'T');
         break;
 
     default:
@@ -196,9 +196,9 @@ void getStackLocation(const std::string & str, const unsigned stringStart, Token
 {
     switch (str[stringStart])
     {
-    case 'T': token.type() = Token::T_OPERAND_STACK_TOP; break;
-    case 'B': token.type() = Token::T_OPERAND_STACK_BOTTOM; break;
-    case 'N': token.type() = Token::T_OPERAND_STACK_NEGATIVE; break;
+    case 'T': token.type = Token::T_OPERAND_STACK_TOP; break;
+    case 'B': token.type = Token::T_OPERAND_STACK_BOTTOM; break;
+    case 'N': token.type = Token::T_OPERAND_STACK_NEGATIVE; break;
     default: throw(std::runtime_error("Lexer::getStackLocation: Stack location not specified"));
     }
 
@@ -216,18 +216,18 @@ void getStackLocation(const std::string & str, const unsigned stringStart, Token
         if (position < previousPosition)
             throw(std::runtime_error("Lexer::getStackLocation: Stack position specified is too large"));
     }
-    token.stackPositionData() = position;
+    token.stackPositionData = position;
 }
 
 void getRegister(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
     switch (str[stringStart])
     {
-    case 'P': token.locationData() = &machine.primaryRegister(); break;
-    case 'M': token.locationData() = &machine.managedOutRegister(); break;
+    case 'P': token.locationData = &machine.primaryRegister(); break;
+    case 'M': token.locationData = &machine.managedOutRegister(); break;
     default: throw(std::runtime_error("Lexer::getRegister: Register not specified"));
     }
-    token.type() = Token::T_OPERAND_STATIC_LOCATION;
+    token.type = Token::T_OPERAND_STATIC_LOCATION;
 }
 
 void getHeapLocation(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
@@ -247,8 +247,8 @@ void getHeapLocation(const std::string & str, const unsigned stringStart, Token 
             throw(std::runtime_error("Lexer::getHeapLocation: Heap location specified is too large"));
     }
 
-    token.locationData() = &machine.unmanagedHeap().blockAt(location);
-    token.type() = Token::T_OPERAND_STATIC_LOCATION;
+    token.locationData = &machine.unmanagedHeap().blockAt(location);
+    token.type = Token::T_OPERAND_STATIC_LOCATION;
 }
 
 void getLabel(const std::string & str, const unsigned stringStart, Token & token)
@@ -256,11 +256,11 @@ void getLabel(const std::string & str, const unsigned stringStart, Token & token
     if (stringStart + Label::length < str.size())
         throw(std::runtime_error("Lexer::getLabel: Label given is too long"));
 
-    token.type() = Token::T_LABEL;
+    token.type = Token::T_LABEL;
     unsigned i = 0;
     for (i = 0; (i < Label::length) && (stringStart + i < str.size()); ++i)
-        token.labelData()[i] = str[stringStart + i];
-    token.labelData()[i] = '\0';
+        token.labelData[i] = str[stringStart + i];
+    token.labelData[i] = '\0';
 }
 
 void getLocation(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
@@ -280,19 +280,19 @@ void getLocation(const std::string & str, const unsigned stringStart, Token & to
 void getPointer(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
     getLocation(str, stringStart, token, machine);
-    token.isPointer() = true;
+    token.isPointer = true;
 }
 
 void getDataType(const std::string & str, const unsigned stringStart, Token & token)
 {
-    token.type() = Token::T_OPERAND_DATA_TYPE;
+    token.type = Token::T_OPERAND_DATA_TYPE;
     switch (str[stringStart])
     {
-    case 'i': token.dataTypeData() = Block::DT_INTEGER; break;
-    case 'r': token.dataTypeData() = Block::DT_REAL; break;
-    case 'c': token.dataTypeData() = Block::DT_CHAR; break;
-    case 'b': token.dataTypeData() = Block::DT_BOOLEAN; break;
-    case 'p': token.dataTypeData() = Block::DT_POINTER; break;
+    case 'i': token.dataTypeData = Block::DT_INTEGER; break;
+    case 'r': token.dataTypeData = Block::DT_REAL; break;
+    case 'c': token.dataTypeData = Block::DT_CHAR; break;
+    case 'b': token.dataTypeData = Block::DT_BOOLEAN; break;
+    case 'p': token.dataTypeData = Block::DT_POINTER; break;
     default: throw(std::runtime_error("Lexer::getDataType: Invalid data type given (expected i, r, c, b or p)"));
     }
 }
@@ -307,29 +307,29 @@ void getComparisonFlagId(const std::string & str, const unsigned stringStart, To
 {
     if (str.size() < 3) throwCFRIdError();
 
-    token.type() = Token::T_OPERAND_COMPARISON_FLAG_ID;
+    token.type = Token::T_OPERAND_COMPARISON_FLAG_ID;
     char nextChar = str[stringStart + 1];
     switch (str[stringStart])
     {
     case 'e':
-        if (nextChar == 'q') token.comparisonFlagData() = CFR::F_EQUAL;
+        if (nextChar == 'q') token.comparisonFlagData = CFR::F_EQUAL;
         else throwCFRIdError();
         break;
 
     case 'n':
-        if (nextChar == 'e') token.comparisonFlagData() = CFR::F_NOT_EQUAL;
+        if (nextChar == 'e') token.comparisonFlagData = CFR::F_NOT_EQUAL;
         else throwCFRIdError();
         break;
 
     case 'l':
-        if (nextChar == 't') token.comparisonFlagData() = CFR::F_LESS;
-        else if (nextChar == 'e') token.comparisonFlagData() = CFR::F_LESS_EQUAL;
+        if (nextChar == 't') token.comparisonFlagData = CFR::F_LESS;
+        else if (nextChar == 'e') token.comparisonFlagData = CFR::F_LESS_EQUAL;
         else throwCFRIdError();
         break;
 
     case 'g':
-        if (nextChar == 't') token.comparisonFlagData() = CFR::F_GREATER;
-        else if (nextChar == 'e') token.comparisonFlagData() = CFR::F_GREATER_EQUAL;
+        if (nextChar == 't') token.comparisonFlagData = CFR::F_GREATER;
+        else if (nextChar == 'e') token.comparisonFlagData = CFR::F_GREATER_EQUAL;
         else throwCFRIdError();
         break;
 
@@ -355,7 +355,7 @@ Token Lexer::getOperandToken(const std::string & str, Machine & machine)
     case 'n':
         if ((str.size() == 3) && (str[1] == 'i') && (str[2] == 'l'))
         {
-            returnToken.type() = Token::T_OPERAND_NIL;
+            returnToken.type = Token::T_OPERAND_NIL;
             break;
         } // else fall into default
     default:  getLocation(str, 0, returnToken, machine);

@@ -16,9 +16,8 @@ class Real;
 class Char;
 class Boolean;
 
-class Token
+struct Token
 {
-public:
     enum Type
     {
         T_OPCODE,
@@ -40,61 +39,29 @@ public:
     Token();
     Token(const unsigned char opcode);
 
-    Type & type();
-    Type type() const;
-
-    bool & isPointer();
-    bool isPointer() const;
-    bool & isOptimisedLabel();
-    bool isOptimisedLabel() const;
-
-    unsigned char & opcodeData();
-    unsigned char opcodeData() const;
-    long & integerData();
-    long integerData() const;
-    double & realData();
-    double realData() const;
-    char & charData();
-    char charData() const;
-    bool & booleanData();
-    bool booleanData() const;
-    Block::DataType & dataTypeData();
-    Block::DataType dataTypeData() const;
-    unsigned & stackPositionData();
-    unsigned stackPositionData() const;
-    unsigned & labelLineNumberData();
-    unsigned labelLineNumberData() const;
-    CFR::ComparisonFlagId & comparisonFlagData();
-    CFR::ComparisonFlagId comparisonFlagData() const;
-    char * labelData();
-    const char * labelData() const;
-    Block * & locationData();
-    Block * locationData() const;
-
     void setLabelData(const char * value);
     void clear();
     bool isNull() const;
 
-private:
-    Type type_;
+    Type type;
 
     union
     {
-        bool isPointer_, isOptimisedLabel_;
+        bool isPointer, isOptimisedLabel;
     };
 
     union
     {
-        unsigned char opcodeData_;
-        long integerData_;
-        double realData_;
-        char charData_;
-        bool booleanData_;
-        Block::DataType dataTypeData_;
-        unsigned stackPositionData_, labelLineNumberData_;
-        CFR::ComparisonFlagId comparisonFlagData_;
-        char labelData_[Label::length + 1];
-        Block * locationData_;
+        unsigned char opcodeData;
+        long integerData;
+        double realData;
+        char charData;
+        bool booleanData;
+        Block::DataType dataTypeData;
+        unsigned stackPositionData, labelLineNumberData;
+        CFR::ComparisonFlagId comparisonFlagData;
+        char labelData[Label::length + 1];
+        Block * locationData;
     };
 };
 

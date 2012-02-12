@@ -99,24 +99,24 @@ void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, con
 {
     const Instruction * i = &Lexer::tokenize(instruction, machine); // Return value is static, so using pointer is fine
 
-    if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
+    if (!i->label.isNull()) machine.addLabel(i->label.labelData, line);
     instructions.push_back(*i); // Even though the Instruction might contain nothing, we still need
                                 // to add it in order to give helpful error messages (i.e to show line number)
 }
 
 inline void preOptimiseLabel(Token & token, const Machine & machine)
 {
-    if (!token.isOptimisedLabel())
+    if (!token.isOptimisedLabel)
     {
-        token.labelLineNumberData() = machine.labelLineNumber(token.labelData());
-        token.isOptimisedLabel() = true;
+        token.labelLineNumberData = machine.labelLineNumber(token.labelData);
+        token.isOptimisedLabel = true;
     }
 }
 
 inline void preOptimiseOperand(Token & operand, Machine & machine)
 {
     if (operand.isNull()) return;
-    switch (operand.type())
+    switch (operand.type)
     {
     case Token::T_LABEL:
         preOptimiseLabel(operand, machine);
@@ -202,20 +202,20 @@ std::string typeString(const Token::Type type)
 std::string valueString(const Token & token)
 {
     std::stringstream stream;
-    switch (token.type())
+    switch (token.type)
     {
-    case Token::T_OPCODE:                       stream << (int)token.opcodeData(); break;
-    case Token::T_OPERAND_CONST_INT:            stream << token.integerData(); break;
-    case Token::T_OPERAND_CONST_REAL:           stream << token.realData(); break;
-    case Token::T_OPERAND_CONST_CHAR:           stream << token.charData(); break;
-    case Token::T_OPERAND_CONST_BOOL:           stream << (token.booleanData() ? "true" : "false"); break;
-    case Token::T_OPERAND_DATA_TYPE:            stream << (token.dataTypeData()); break;
-    case Token::T_OPERAND_STATIC_LOCATION:      stream << token.locationData(); break;
+    case Token::T_OPCODE:                       stream << (int)token.opcodeData; break;
+    case Token::T_OPERAND_CONST_INT:            stream << token.integerData; break;
+    case Token::T_OPERAND_CONST_REAL:           stream << token.realData; break;
+    case Token::T_OPERAND_CONST_CHAR:           stream << token.charData; break;
+    case Token::T_OPERAND_CONST_BOOL:           stream << (token.booleanData ? "true" : "false"); break;
+    case Token::T_OPERAND_DATA_TYPE:            stream << (token.dataTypeData); break;
+    case Token::T_OPERAND_STATIC_LOCATION:      stream << token.locationData; break;
     case Token::T_OPERAND_STACK_TOP:
     case Token::T_OPERAND_STACK_BOTTOM:
-    case Token::T_OPERAND_STACK_NEGATIVE:       stream << token.stackPositionData(); break;
+    case Token::T_OPERAND_STACK_NEGATIVE:       stream << token.stackPositionData; break;
     case Token::T_OPERAND_NIL:                  stream << "operand-nil"; break;
-    case Token::T_LABEL:                        stream << token.labelData(); break;
+    case Token::T_LABEL:                        stream << token.labelData; break;
     case Token::T_NULL:                         stream << "null"; break;
     default: stream << "ERROR";
     }
@@ -225,10 +225,10 @@ std::string valueString(const Token & token)
 void Interpreter::outputTokenData(const std::string & instruction)
 {
     const Instruction & i = Lexer::tokenize(instruction, machine);
-    std::cout << (i.label.isNull() ? "" : typeString(i.label.type()) + " ")
-              << typeString(i.opcode.type()) << " "
-              << (i.operand1.isPointer() ? "@" : "") + typeString(i.operand1.type()) << " "
-              << (i.operand2.isPointer() ? "@" : "") + typeString(i.operand2.type()) << std::endl
+    std::cout << (i.label.isNull() ? "" : typeString(i.label.type) + " ")
+              << typeString(i.opcode.type) << " "
+              << (i.operand1.isPointer ? "@" : "") + typeString(i.operand1.type) << " "
+              << (i.operand2.isPointer ? "@" : "") + typeString(i.operand2.type) << std::endl
               << (i.label.isNull() ? "" : valueString(i.label) + " ")
               << valueString(i.opcode) << " "
               << valueString(i.operand1) << " "
@@ -237,21 +237,21 @@ void Interpreter::outputTokenData(const std::string & instruction)
 
 inline bool firstOperandIsLabel(const Instruction & instruction, const Block * const operand2)
 {
-    return (instruction.operand1.type() == Token::T_LABEL) && (operand2 == NULL) && (instruction.operand2.isNull());
+    return (instruction.operand1.type == Token::T_LABEL) && (operand2 == NULL) && (instruction.operand2.isNull());
 }
 
 void Interpreter::execute(const Instruction & instruction)
 {
     if (instruction.opcode.isNull()) return;
 
-    machine.operand1IsPointer() = instruction.operand1.isPointer();
-    machine.operand2IsPointer() = instruction.operand2.isPointer();
+    machine.operand1IsPointer() = instruction.operand1.isPointer;
+    machine.operand2IsPointer() = instruction.operand2.isPointer;
 
     bool operand1IsLabel, operand2IsLabel;
     Block * operand1Block = getBlockFromToken(instruction.operand1, operand1IsLabel, 1),
             * operand2Block = getBlockFromToken(instruction.operand2, operand2IsLabel, 2);
 
-    short requiredOperandNumber = Opcodes::opcodeOperandCounts[instruction.opcode.opcodeData()];
+    short requiredOperandNumber = Opcodes::opcodeOperandCounts[instruction.opcode.opcodeData];
     if (operand1Block != NULL) --requiredOperandNumber;
     if (operand2Block != NULL) --requiredOperandNumber;
 
@@ -259,10 +259,10 @@ void Interpreter::execute(const Instruction & instruction)
     if (requiredOperandNumber != 0)
     {
         // Deal with special cases that accept labels or 'nil', which don't have blocks to represent them
-        switch (instruction.opcode.opcodeData())
+        switch (instruction.opcode.opcodeData)
         {
         case Opcodes::POP:
-            if ((instruction.operand1.type() == Token::T_OPERAND_NIL)
+            if ((instruction.operand1.type == Token::T_OPERAND_NIL)
                     && (operand2Block == NULL) && (instruction.operand2.isNull()))
             {
                 machine.pop(Machine::L_NIL);
@@ -272,27 +272,27 @@ void Interpreter::execute(const Instruction & instruction)
             break;
 
         case Opcodes::ALLC:
-            if ((instruction.operand1.type() == Token::T_OPERAND_DATA_TYPE) && (operand2Block != NULL))
+            if ((instruction.operand1.type == Token::T_OPERAND_DATA_TYPE) && (operand2Block != NULL))
             {
-                machine.allocate(instruction.operand1.dataTypeData(), *operand2Block);
+                machine.allocate(instruction.operand1.dataTypeData, *operand2Block);
                 instructionFinished = true;
             }
             else error = true;
             break;
 
         case Opcodes::IST:
-            if ((operand1Block != NULL) && (instruction.operand2.type() == Token::T_OPERAND_DATA_TYPE))
+            if ((operand1Block != NULL) && (instruction.operand2.type == Token::T_OPERAND_DATA_TYPE))
             {
-                machine.isDataType(*operand1Block, instruction.operand2.dataTypeData());
+                machine.isDataType(*operand1Block, instruction.operand2.dataTypeData);
                 instructionFinished = true;
             }
             else error = true;
             break;
 
         case Opcodes::CPYF:
-            if ((operand1Block != NULL) && (instruction.operand2.type() == Token::T_OPERAND_COMPARISON_FLAG_ID))
+            if ((operand1Block != NULL) && (instruction.operand2.type == Token::T_OPERAND_COMPARISON_FLAG_ID))
             {
-                machine.copyFlag(*operand1Block, instruction.operand2.comparisonFlagData());
+                machine.copyFlag(*operand1Block, instruction.operand2.comparisonFlagData);
                 instructionFinished = true;
             }
             else error = true;
@@ -301,7 +301,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JMP:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.jump(instruction.operand1.labelLineNumberData());
+                machine.jump(instruction.operand1.labelLineNumberData);
                 instructionFinished = true;
             }
             else error = true;
@@ -310,7 +310,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -319,7 +319,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JNE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_NOT_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_NOT_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -328,7 +328,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_LESS);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_LESS);
                 instructionFinished = true;
             }
             else error = true;
@@ -337,7 +337,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JG:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_GREATER);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_GREATER);
                 instructionFinished = true;
             }
             else error = true;
@@ -346,7 +346,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JLE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_LESS_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_LESS_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -355,7 +355,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::JGE:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.conditionalJump(instruction.operand1.labelLineNumberData(), CFR::F_GREATER_EQUAL);
+                machine.conditionalJump(instruction.operand1.labelLineNumberData, CFR::F_GREATER_EQUAL);
                 instructionFinished = true;
             }
             else error = true;
@@ -364,7 +364,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::CALL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.call(instruction.operand1.labelLineNumberData());
+                machine.call(instruction.operand1.labelLineNumberData);
                 instructionFinished = true;
             }
             else error = true;
@@ -373,7 +373,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::EXTL:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.loadExtension(instruction.operand1.labelData());
+                machine.loadExtension(instruction.operand1.labelData);
                 instructionFinished = true;
             }
             else error = true;
@@ -382,7 +382,7 @@ void Interpreter::execute(const Instruction & instruction)
         case Opcodes::EXTC:
             if (firstOperandIsLabel(instruction, operand2Block))
             {
-                machine.extensionCall(instruction.operand1.labelData());
+                machine.extensionCall(instruction.operand1.labelData);
                 instructionFinished = true;
             }
             else error = true;
@@ -401,7 +401,7 @@ void Interpreter::execute(const Instruction & instruction)
 
     if (instructionFinished) return;
 
-    switch (instruction.opcode.opcodeData())
+    switch (instruction.opcode.opcodeData)
     {
     case Opcodes::CLR:  machine.clear(*operand1Block); break;
     case Opcodes::SET:  machine.set(*operand1Block, *operand2Block); break;
@@ -466,8 +466,8 @@ Block * Interpreter::getBlockFromToken(const Token & token, bool & isLabel, shor
 {
     static Block block[2];
 
-    if (token.type() == Token::T_OPERAND_STATIC_LOCATION) return token.locationData();
-    else if (token.type() == Token::T_LABEL)
+    if (token.type == Token::T_OPERAND_STATIC_LOCATION) return token.locationData;
+    else if (token.type == Token::T_LABEL)
     {
         isLabel = true;
         return NULL;
@@ -476,15 +476,15 @@ Block * Interpreter::getBlockFromToken(const Token & token, bool & isLabel, shor
     isLabel = false;
     if (token.isNull() || (operandNumber < 1) || (operandNumber > 2)) return NULL;
     --operandNumber;
-    switch (token.type())
+    switch (token.type)
     {
-    case Token::T_OPERAND_CONST_INT:            block[operandNumber].setToInteger(token.integerData()); break;
-    case Token::T_OPERAND_CONST_REAL:           block[operandNumber].setToReal(token.realData()); break;
-    case Token::T_OPERAND_CONST_CHAR:           block[operandNumber].setToChar(token.charData()); break;
-    case Token::T_OPERAND_CONST_BOOL:           block[operandNumber].setToBoolean(token.booleanData()); break;
-    case Token::T_OPERAND_STACK_TOP:            return &machine.stack().fromTop(token.stackPositionData());
-    case Token::T_OPERAND_STACK_BOTTOM:         return &machine.stack().at(token.stackPositionData());
-    case Token::T_OPERAND_STACK_NEGATIVE:       return &machine.stack().fromTopBelow(token.stackPositionData());
+    case Token::T_OPERAND_CONST_INT:            block[operandNumber].setToInteger(token.integerData); break;
+    case Token::T_OPERAND_CONST_REAL:           block[operandNumber].setToReal(token.realData); break;
+    case Token::T_OPERAND_CONST_CHAR:           block[operandNumber].setToChar(token.charData); break;
+    case Token::T_OPERAND_CONST_BOOL:           block[operandNumber].setToBoolean(token.booleanData); break;
+    case Token::T_OPERAND_STACK_TOP:            return &machine.stack().fromTop(token.stackPositionData);
+    case Token::T_OPERAND_STACK_BOTTOM:         return &machine.stack().at(token.stackPositionData);
+    case Token::T_OPERAND_STACK_NEGATIVE:       return &machine.stack().fromTopBelow(token.stackPositionData);
     default: return NULL;
     }
 
