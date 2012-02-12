@@ -10,9 +10,6 @@
 
 #include <iostream>
 
-class Instruction;
-class Token;
-
 /* BNF for plain text instructions
  *
  * <instruction> ::= { <label> } { <instruction-part> }
@@ -50,13 +47,17 @@ class Token;
  * No need to explain <letter>, <digit> or <character>
  */
 
+class Instruction;
+class Token;
+class Machine;
+
 namespace Lexer
 {
 
-const Instruction & tokenize(const std::string & instruction);
+const Instruction & tokenize(const std::string & instruction, Machine & machine);
 
 Token getOpcodeToken(const std::string & str);
-Token getOperandToken(const std::string & str);
+Token getOperandToken(const std::string & str, Machine & machine);
 
 }
 

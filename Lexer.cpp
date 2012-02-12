@@ -12,6 +12,7 @@
 #include "Lexer.hpp"
 #include "Instruction.hpp"
 #include "Opcodes.hpp"
+#include "Machine.hpp"
 
 inline std::string removeWhitespace(const std::string & str)
 {
@@ -21,7 +22,7 @@ inline std::string removeWhitespace(const std::string & str)
     return str.substr(start, (end - start) + 1);
 }
 
-const Instruction & Lexer::tokenize(const std::string & instruction)
+const Instruction & Lexer::tokenize(const std::string & instruction, Machine & machine)
 {
     static Instruction tokens;
 
@@ -61,20 +62,20 @@ const Instruction & Lexer::tokenize(const std::string & instruction)
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
-        tokens.operand1 = getOperandToken(cleanString);
+        tokens.operand1 = getOperandToken(cleanString, machine);
         return tokens;
     }
-    tokens.operand1 = getOperandToken(cleanString.substr(0, spacePos));
+    tokens.operand1 = getOperandToken(cleanString.substr(0, spacePos), machine);
 
     cleanString = removeWhitespace(cleanString.substr(spacePos, cleanString.size() - spacePos));
     if (cleanString.size() == 0) return tokens;
     spacePos = cleanString.find_first_of(' ');
     if (spacePos == std::string::npos)
     {
-        tokens.operand2 = getOperandToken(cleanString);
+        tokens.operand2 = getOperandToken(cleanString, machine);
         return tokens;
     }
-    tokens.operand2 = getOperandToken(cleanString.substr(0, spacePos));
+    tokens.operand2 = getOperandToken(cleanString.substr(0, spacePos), machine);
 
     return tokens;
 }
@@ -201,12 +202,6 @@ void getStackLocation(const std::string & str, const unsigned stringStart, Token
     default: throw(std::runtime_error("Lexer::getStackLocation: Stack location not specified"));
     }
 
-    if (str.size() == stringStart + 1)
-    {
-        token.stackPositionData() = 0;
-        return;
-    }
-
     unsigned position = 0, previousPosition = 0;
     for (unsigned i = stringStart + 1; i < str.size(); ++i)
     {
@@ -221,21 +216,21 @@ void getStackLocation(const std::string & str, const unsigned stringStart, Token
         if (position < previousPosition)
             throw(std::runtime_error("Lexer::getStackLocation: Stack position specified is too large"));
     }
-
     token.stackPositionData() = position;
 }
 
-void getRegister(const std::string & str, const unsigned stringStart, Token & token)
+void getRegister(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
     switch (str[stringStart])
     {
-    case 'P': token.type() = Token::T_OPERAND_PRIMARY_REGISTER; break;
-    case 'M': token.type() = Token::T_OPERAND_MANAGED_OUT_REGISTER; break;
+    case 'P': token.locationData() = &machine.primaryRegister(); break;
+    case 'M': token.locationData() = &machine.managedOutRegister(); break;
     default: throw(std::runtime_error("Lexer::getRegister: Register not specified"));
     }
+    token.type() = Token::T_OPERAND_STATIC_LOCATION;
 }
 
-void getHeapLocation(const std::string & str, const unsigned stringStart, Token & token)
+void getHeapLocation(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
     unsigned location = 0, previousLocation = 0;
     for (unsigned i = stringStart; i < str.size(); ++i)
@@ -252,8 +247,8 @@ void getHeapLocation(const std::string & str, const unsigned stringStart, Token 
             throw(std::runtime_error("Lexer::getHeapLocation: Heap location specified is too large"));
     }
 
-    token.type() = Token::T_OPERAND_HEAP_LOCATION;
-    token.heapLocationData() = location;
+    token.locationData() = &machine.unmanagedHeap().blockAt(location);
+    token.type() = Token::T_OPERAND_STATIC_LOCATION;
 }
 
 void getLabel(const std::string & str, const unsigned stringStart, Token & token)
@@ -268,23 +263,23 @@ void getLabel(const std::string & str, const unsigned stringStart, Token & token
     token.labelData()[i] = '\0';
 }
 
-void getLocation(const std::string & str, const unsigned stringStart, Token & token)
+void getLocation(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
     switch (str[stringStart])
     {
     case 'S': getStackLocation(str, stringStart + 1, token); break;
-    case 'R': getRegister(str, stringStart + 1, token); break;
+    case 'R': getRegister(str, stringStart + 1, token, machine); break;
     default:
-        if (isdigit(str[stringStart])) getHeapLocation(str, stringStart, token);
+        if (isdigit(str[stringStart])) getHeapLocation(str, stringStart, token, machine);
         else if (isalpha(str[stringStart])) getLabel(str, stringStart, token);
         else throw(std::runtime_error("Lexer::getLocation: Invalid keyword given"));
         break;
     }
 }
 
-void getPointer(const std::string & str, const unsigned stringStart, Token & token)
+void getPointer(const std::string & str, const unsigned stringStart, Token & token, Machine & machine)
 {
-    getLocation(str, stringStart, token);
+    getLocation(str, stringStart, token, machine);
     token.isPointer() = true;
 }
 
@@ -342,19 +337,19 @@ void getComparisonFlagId(const std::string & str, const unsigned stringStart, To
     }
 }
 
-Token Lexer::getOperandToken(const std::string & str)
+Token Lexer::getOperandToken(const std::string & str, Machine & machine)
 {
     Token returnToken;
     if (str.size() < 2)
     {
-        if (isdigit(str[0])) getHeapLocation(str, 0, returnToken);
+        if (isdigit(str[0])) getHeapLocation(str, 0, returnToken, machine);
         else if (isalpha(str[0])) getLabel(str, 0, returnToken);
         return returnToken;
     }
     switch (str[0])
     {
     case '#': getConstant(str, 1, returnToken); break;
-    case '@': getPointer(str, 1, returnToken); break;
+    case '@': getPointer(str, 1, returnToken, machine); break;
     case '$': getDataType(str, 1, returnToken); break;
     case '?': getComparisonFlagId(str, 1, returnToken); break;
     case 'n':
@@ -363,7 +358,7 @@ Token Lexer::getOperandToken(const std::string & str)
             returnToken.type() = Token::T_OPERAND_NIL;
             break;
         } // else fall into default
-    default:  getLocation(str, 0, returnToken);
+    default:  getLocation(str, 0, returnToken, machine);
     }
     return returnToken;
 }

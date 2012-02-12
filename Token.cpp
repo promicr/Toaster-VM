@@ -12,57 +12,10 @@
 #include "TypeWrappers.hpp"
 
 Token::Token()
-    : type_(T_NULL), isPointer_(false), isOptimisedLabel_(false) {}
+    : type_(T_NULL), isPointer_(false) {}
 
-Token::Token(const unsigned char value)
-    : type_(T_OPCODE), isPointer_(false), isOptimisedLabel_(false), opcodeData_(value) {}
-
-Token::Token(const Integer value)
-    : type_(T_OPERAND_CONST_INT), isPointer_(false), isOptimisedLabel_(false), integerData_(value) {}
-
-Token::Token(const Real value)
-    : type_(T_OPERAND_CONST_REAL), isPointer_(false), isOptimisedLabel_(false), realData_(value) {}
-
-Token::Token(const Char value)
-    : type_(T_OPERAND_CONST_CHAR), isPointer_(false), isOptimisedLabel_(false), charData_(value) {}
-
-Token::Token(const Boolean value)
-    : type_(T_OPERAND_CONST_BOOL), isPointer_(false), isOptimisedLabel_(false), booleanData_(value) {}
-
-Token::Token(const Block::DataType value)
-    : type_(T_OPERAND_DATA_TYPE), isPointer_(false), isOptimisedLabel_(false), dataTypeData_(value) {}
-
-Token::Token(const unsigned value, const bool ftos, const bool isPointer)
-    : type_(ftos ? T_OPERAND_STACK_TOP : T_OPERAND_STACK_BOTTOM), isPointer_(isPointer), isOptimisedLabel_(false),
-      stackPositionData_(value) {}
-
-Token::Token(const unsigned value, const bool isPointer)
-    : type_(T_OPERAND_HEAP_LOCATION), isPointer_(isPointer), isOptimisedLabel_(false), heapLocationData_(value) {}
-
-Token::Token(const RegisterId registerId, const bool isPointer)
-    : isPointer_(isPointer), isOptimisedLabel_(false)
-{
-    switch (registerId)
-    {
-    case R_PRIMARY:     type_ = T_OPERAND_PRIMARY_REGISTER; break;
-    case R_MANAGED_OUT: type_ = T_OPERAND_MANAGED_OUT_REGISTER; break;
-    default: throw(std::runtime_error("Token::Token: Unknown register ID given"));
-    }
-}
-
-Token::Token(const CFR::ComparisonFlagId value)
-    : type_(T_OPERAND_COMPARISON_FLAG_ID), isPointer_(false), isOptimisedLabel_(false), comparisonFlagData_(value) {}
-
-Token::Token(const char * value)
-    : type_(T_LABEL), isPointer_(false), isOptimisedLabel_(false)
-{
-    if (value == NULL)
-    {
-        strcpy(labelData_, "");
-        return;
-    }
-    strncpy(labelData_, value, 12);
-}
+Token::Token(const unsigned char opcode)
+    : type_(T_OPCODE), isPointer_(false), opcodeData_(opcode) {}
 
 Token::Type & Token::type()
 {
@@ -92,16 +45,6 @@ bool & Token::isOptimisedLabel()
 bool Token::isOptimisedLabel() const
 {
     return isOptimisedLabel_;
-}
-
-bool & Token::isOptimisedLocation()
-{
-    return isOptimisedLocation_;
-}
-
-bool Token::isOptimisedLocation() const
-{
-    return isOptimisedLocation_;
 }
 
 unsigned char & Token::opcodeData()
@@ -172,16 +115,6 @@ unsigned & Token::stackPositionData()
 unsigned Token::stackPositionData() const
 {
     return stackPositionData_;
-}
-
-unsigned & Token::heapLocationData()
-{
-    return heapLocationData_;
-}
-
-unsigned Token::heapLocationData() const
-{
-    return heapLocationData_;
 }
 
 unsigned & Token::labelLineNumberData()

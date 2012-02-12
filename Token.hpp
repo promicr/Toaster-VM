@@ -27,37 +27,18 @@ public:
         T_OPERAND_CONST_CHAR,
         T_OPERAND_CONST_BOOL,
         T_OPERAND_DATA_TYPE,
+        T_OPERAND_STATIC_LOCATION,
         T_OPERAND_STACK_TOP,
         T_OPERAND_STACK_BOTTOM,
-        T_OPERAND_STACK_NEGATIVE, // to get items from stack under stack frame pointer, i.e. arguments to function
-        T_OPERAND_HEAP_LOCATION,
-        T_OPERAND_PRIMARY_REGISTER,
-        T_OPERAND_MANAGED_OUT_REGISTER,
+        T_OPERAND_STACK_NEGATIVE,
         T_OPERAND_COMPARISON_FLAG_ID,
         T_OPERAND_NIL,
         T_LABEL,
         T_NULL
     };
 
-    enum RegisterId
-    {
-        R_PRIMARY,
-        R_MANAGED_OUT
-    };
-
     Token();
-
-    Token(unsigned char value);
-    Token(Integer value);
-    Token(Real value);
-    Token(Char value);
-    Token(Boolean value);
-    Token(Block::DataType value);
-    Token(unsigned value, bool fromTopOfStack, bool isPointer);
-    Token(unsigned value, bool isPointer);
-    Token(RegisterId registerId, bool isPointer);
-    Token(CFR::ComparisonFlagId value);
-    Token(const char * value);
+    Token(const unsigned char opcode);
 
     Type & type();
     Type type() const;
@@ -66,8 +47,6 @@ public:
     bool isPointer() const;
     bool & isOptimisedLabel();
     bool isOptimisedLabel() const;
-    bool & isOptimisedLocation();
-    bool isOptimisedLocation() const;
 
     unsigned char & opcodeData();
     unsigned char opcodeData() const;
@@ -83,8 +62,6 @@ public:
     Block::DataType dataTypeData() const;
     unsigned & stackPositionData();
     unsigned stackPositionData() const;
-    unsigned & heapLocationData();
-    unsigned heapLocationData() const;
     unsigned & labelLineNumberData();
     unsigned labelLineNumberData() const;
     CFR::ComparisonFlagId & comparisonFlagData();
@@ -101,10 +78,9 @@ public:
 private:
     Type type_;
 
-    bool isPointer_;
     union
     {
-        bool isOptimisedLabel_, isOptimisedLocation_;
+        bool isPointer_, isOptimisedLabel_;
     };
 
     union
@@ -115,7 +91,7 @@ private:
         char charData_;
         bool booleanData_;
         Block::DataType dataTypeData_;
-        unsigned stackPositionData_, heapLocationData_, labelLineNumberData_;
+        unsigned stackPositionData_, labelLineNumberData_;
         CFR::ComparisonFlagId comparisonFlagData_;
         char labelData_[Label::length + 1];
         Block * locationData_;

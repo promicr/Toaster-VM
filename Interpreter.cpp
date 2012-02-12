@@ -97,7 +97,7 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
 
 void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, const unsigned line)
 {
-    const Instruction * i = &Lexer::tokenize(instruction); // Instruction returned is static, so using pointer is fine
+    const Instruction * i = &Lexer::tokenize(instruction, machine); // Return value is static, so using pointer is fine
 
     if (!i->label.isNull()) machine.addLabel(i->label.labelData(), line);
     instructions.push_back(*i); // Even though the Instruction might contain nothing, we still need
@@ -120,30 +120,6 @@ inline void preOptimiseOperand(Token & operand, Machine & machine)
     {
     case Token::T_LABEL:
         preOptimiseLabel(operand, machine);
-        break;
-    case Token::T_OPERAND_STACK_TOP:
-        operand.locationData() = &machine.stack().fromTop(operand.stackPositionData());
-        operand.isOptimisedLocation() = true;
-        break;
-    case Token::T_OPERAND_STACK_BOTTOM:
-        operand.locationData() = &machine.stack().at(operand.stackPositionData());
-        operand.isOptimisedLocation() = true;
-        break;
-    case Token::T_OPERAND_STACK_NEGATIVE:
-        operand.locationData() = &machine.stack().fromTopBelow(operand.stackPositionData());
-        operand.isOptimisedLocation() = true;
-        break;
-    case Token::T_OPERAND_HEAP_LOCATION:
-        operand.locationData() = &machine.unmanagedHeap().blockAt(operand.heapLocationData());
-        operand.isOptimisedLocation() = true;
-        break;
-    case Token::T_OPERAND_PRIMARY_REGISTER:
-        operand.locationData() = &machine.primaryRegister();
-        operand.isOptimisedLocation() = true;
-        break;
-    case Token::T_OPERAND_MANAGED_OUT_REGISTER:
-        operand.locationData() = &machine.managedOutRegister();
-        operand.isOptimisedLocation() = true;
         break;
     default: break;
     }
@@ -212,11 +188,10 @@ std::string typeString(const Token::Type type)
     case Token::T_OPERAND_CONST_CHAR:           return "const-char";
     case Token::T_OPERAND_CONST_BOOL:           return "const-bool";
     case Token::T_OPERAND_DATA_TYPE:            return "data-type";
+    case Token::T_OPERAND_STATIC_LOCATION:      return "static-location";
     case Token::T_OPERAND_STACK_TOP:            return "stack-top";
     case Token::T_OPERAND_STACK_BOTTOM:         return "stack-bottom";
-    case Token::T_OPERAND_HEAP_LOCATION:        return "heap-location";
-    case Token::T_OPERAND_PRIMARY_REGISTER:     return "primary-register";
-    case Token::T_OPERAND_MANAGED_OUT_REGISTER: return "managed-register";
+    case Token::T_OPERAND_STACK_NEGATIVE:       return "stack-negative";
     case Token::T_OPERAND_NIL:                  return "operand-nil";
     case Token::T_LABEL:                        return "label";
     case Token::T_NULL:                         return "null";
@@ -235,11 +210,10 @@ std::string valueString(const Token & token)
     case Token::T_OPERAND_CONST_CHAR:           stream << token.charData(); break;
     case Token::T_OPERAND_CONST_BOOL:           stream << (token.booleanData() ? "true" : "false"); break;
     case Token::T_OPERAND_DATA_TYPE:            stream << (token.dataTypeData()); break;
-    case Token::T_OPERAND_STACK_TOP:            stream << token.stackPositionData(); break;
-    case Token::T_OPERAND_STACK_BOTTOM:         stream << token.stackPositionData(); break;
-    case Token::T_OPERAND_HEAP_LOCATION:        stream << token.heapLocationData(); break;
-    case Token::T_OPERAND_PRIMARY_REGISTER:     stream << "primary-register"; break;
-    case Token::T_OPERAND_MANAGED_OUT_REGISTER: stream << "managed-register"; break;
+    case Token::T_OPERAND_STATIC_LOCATION:      stream << token.locationData(); break;
+    case Token::T_OPERAND_STACK_TOP:
+    case Token::T_OPERAND_STACK_BOTTOM:
+    case Token::T_OPERAND_STACK_NEGATIVE:       stream << token.stackPositionData(); break;
     case Token::T_OPERAND_NIL:                  stream << "operand-nil"; break;
     case Token::T_LABEL:                        stream << token.labelData(); break;
     case Token::T_NULL:                         stream << "null"; break;
@@ -250,7 +224,7 @@ std::string valueString(const Token & token)
 
 void Interpreter::outputTokenData(const std::string & instruction)
 {
-    const Instruction & i = Lexer::tokenize(instruction);
+    const Instruction & i = Lexer::tokenize(instruction, machine);
     std::cout << (i.label.isNull() ? "" : typeString(i.label.type()) + " ")
               << typeString(i.opcode.type()) << " "
               << (i.operand1.isPointer() ? "@" : "") + typeString(i.operand1.type()) << " "
@@ -492,14 +466,11 @@ Block * Interpreter::getBlockFromToken(const Token & token, bool & isLabel, shor
 {
     static Block block[2];
 
-    if (token.isOptimisedLocation())
+    if (token.type() == Token::T_OPERAND_STATIC_LOCATION) return token.locationData();
+    else if (token.type() == Token::T_LABEL)
     {
-        if (token.type() != Token::T_LABEL) return token.locationData();
-        else
-        {
-            isLabel = true;
-            return NULL;
-        }
+        isLabel = true;
+        return NULL;
     }
 
     isLabel = false;
@@ -514,10 +485,6 @@ Block * Interpreter::getBlockFromToken(const Token & token, bool & isLabel, shor
     case Token::T_OPERAND_STACK_TOP:            return &machine.stack().fromTop(token.stackPositionData());
     case Token::T_OPERAND_STACK_BOTTOM:         return &machine.stack().at(token.stackPositionData());
     case Token::T_OPERAND_STACK_NEGATIVE:       return &machine.stack().fromTopBelow(token.stackPositionData());
-    case Token::T_OPERAND_HEAP_LOCATION:        return &machine.unmanagedHeap().blockAt(token.heapLocationData());
-    case Token::T_OPERAND_PRIMARY_REGISTER:     return &machine.primaryRegister(); break;
-    case Token::T_OPERAND_MANAGED_OUT_REGISTER: return &machine.managedOutRegister(); break;
-    case Token::T_LABEL:                        isLabel = true; return NULL;
     default: return NULL;
     }
 
