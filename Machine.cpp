@@ -129,7 +129,7 @@ void Machine::_readString(Block * destBlock)
     if (length == 0)
     {
         char c;
-        if (scanf("%c", &c) != 0) data->charData() = c;
+        if (scanf("%c", &c) != 0) data->setCharData(c);
     }
     else
     {
@@ -140,14 +140,14 @@ void Machine::_readString(Block * destBlock)
             {
                 if ((c == '\n') || (c == '\r') || (c == '\0'))
                 {
-                    destBlock->pointerArrayElementAt(i)->charData() = '\0';
+                    destBlock->pointerArrayElementAt(i)->setCharData('\0');
                     break;
                 }
-                else destBlock->pointerArrayElementAt(i)->charData() = c;
+                else destBlock->pointerArrayElementAt(i)->setCharData(c);
             }
             else
             {
-                destBlock->pointerArrayElementAt(i)->charData() = '\0';
+                destBlock->pointerArrayElementAt(i)->setCharData('\0');
                 break;
             }
         }
@@ -210,9 +210,9 @@ void Machine::_increment(Block * destBlock)
     if (destBlock == NULL) throw(std::runtime_error("Machine::_increment: Invalid destination given"));
     switch (destBlock->dataType())
     {
-    case Block::DT_INTEGER: ++destBlock->integerData(); break;
-    case Block::DT_REAL:    ++destBlock->realData(); break;
-    case Block::DT_CHAR:    ++destBlock->charData(); break;
+    case Block::DT_INTEGER: destBlock->addToIntegerData(1); break;
+    case Block::DT_REAL:    destBlock->addToRealData(1.0); break;
+    case Block::DT_CHAR:    destBlock->addToCharData(1); break;
     case Block::DT_POINTER: throw(std::runtime_error("Machine:_increment: Pointers cannot be incremented"));
     default: throw(std::runtime_error("Machine::_increment: Destination data type is invalid"));
     }
@@ -223,9 +223,9 @@ void Machine::_decrement(Block * destBlock)
     if (destBlock == NULL) throw(std::runtime_error("Machine::_decrement: Invalid destination given"));
     switch (destBlock->dataType())
     {
-    case Block::DT_INTEGER: --destBlock->integerData(); break;
-    case Block::DT_REAL:    --destBlock->realData(); break;
-    case Block::DT_CHAR:    --destBlock->charData(); break;
+    case Block::DT_INTEGER: destBlock->addToIntegerData(-1); break;
+    case Block::DT_REAL:    destBlock->addToRealData(-1.0); break;
+    case Block::DT_CHAR:    destBlock->addToCharData(-1); break;
     case Block::DT_POINTER: throw(std::runtime_error("Machine:_decrement: Pointers cannot be decremented"));
     default: throw(std::runtime_error("Machine::_decrement: Destination data type is invalid"));
     }
@@ -236,8 +236,8 @@ void Machine::_negate(Block * destBlock)
     if (destBlock == NULL) throw(std::runtime_error("Machine::_negate: Invalid destination given"));
     switch (destBlock->dataType())
     {
-    case Block::DT_INTEGER: destBlock->integerData() = -destBlock->integerData(); break;
-    case Block::DT_REAL:    destBlock->realData() = -destBlock->realData(); break;
+    case Block::DT_INTEGER: destBlock->negateIntegerData(); break;
+    case Block::DT_REAL:    destBlock->negateRealData(); break;
     default: throw(std::runtime_error("Machine::_negate: Destination data type is invalid (expected integer or real)"));
     }
 }
@@ -247,8 +247,8 @@ void Machine::_absolute(Block * destBlock)
     if (destBlock == NULL) throw(std::runtime_error("Machine::_absolute: Invalid destination given"));
     switch (destBlock->dataType())
     {
-    case Block::DT_INTEGER: destBlock->integerData() = std::abs(destBlock->integerData()); break;
-    case Block::DT_REAL:    destBlock->realData() = fabs(destBlock->realData()); break;
+    case Block::DT_INTEGER: destBlock->setIntegerData(std::abs(destBlock->integerData())); break;
+    case Block::DT_REAL:    destBlock->setRealData(fabs(destBlock->realData())); break;
     default:
         throw(std::runtime_error("Machine::_absolute: Destination data type is invalid (expected integer or real)"));
     }
@@ -263,15 +263,11 @@ void Machine::_add(Block * destBlock, const Block * sourceBlock)
 
     switch (sourceBlock->dataType())
     {
-    case Block::DT_INTEGER:
-        destBlock->integerData() += sourceBlock->integerData();
-        break;
-
-    case Block::DT_REAL:
-        destBlock->realData() += sourceBlock->realData();
-        break;
-
-    default: throw(std::runtime_error("Machine::_add: Data types of operands are invalid (expected integer or real)"));
+    case Block::DT_INTEGER: destBlock->addToIntegerData(sourceBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->addToRealData(sourceBlock->realData()); break;
+    case Block::DT_CHAR:    destBlock->addToCharData(sourceBlock->charData()); break;
+    default: throw(std::runtime_error("Machine::_add: Data types of operands are invalid "
+                                      "(expected integer, real or character)"));
     }
 }
 
@@ -284,16 +280,11 @@ void Machine::_subtract(Block * destBlock, const Block * sourceBlock)
 
     switch (sourceBlock->dataType())
     {
-    case Block::DT_INTEGER:
-        destBlock->integerData() -= sourceBlock->integerData();
-        break;
-
-    case Block::DT_REAL:
-        destBlock->realData() -= sourceBlock->realData();
-        break;
-
-    default:
-        throw(std::runtime_error("Machine::_subtract: Data types of operands are invalid (expected integer or real)"));
+    case Block::DT_INTEGER: destBlock->addToIntegerData(-sourceBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->addToRealData(-sourceBlock->realData()); break;
+    case Block::DT_CHAR:    destBlock->addToCharData(-sourceBlock->charData()); break;
+    default: throw(std::runtime_error("Machine::_subtract: Data types of operands are invalid "
+                                      "(expected integer, real or character)"));
     }
 }
 
@@ -306,16 +297,11 @@ void Machine::_multiply(Block * destBlock, const Block * sourceBlock)
 
     switch (sourceBlock->dataType())
     {
-    case Block::DT_INTEGER:
-        destBlock->integerData() *= sourceBlock->integerData();
-        break;
-
-    case Block::DT_REAL:
-        destBlock->realData() *= sourceBlock->realData();
-        break;
-
-    default:
-        throw(std::runtime_error("Machine::_multiply: Data types of operands are invalid (expected integer or real)"));
+    case Block::DT_INTEGER: destBlock->multiplyIntegerData(sourceBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->multiplyRealData(sourceBlock->realData()); break;
+    case Block::DT_CHAR:    destBlock->multiplyCharData(sourceBlock->charData()); break;
+    default: throw(std::runtime_error("Machine::_multiply: Data types of operands are invalid "
+                                      "(expected integer, real or character)"));
     }
 }
 
@@ -328,16 +314,11 @@ void Machine::_divide(Block * destBlock, const Block * sourceBlock)
 
     switch (sourceBlock->dataType())
     {
-    case Block::DT_INTEGER:
-        destBlock->integerData() /= sourceBlock->integerData();
-        break;
-
-    case Block::DT_REAL:
-        destBlock->realData() /= sourceBlock->realData();
-        break;
-
-    default:
-        throw(std::runtime_error("Machine::_divide: Data types of operands are invalid (expected integer or real)"));
+    case Block::DT_INTEGER: destBlock->divideIntegerData(sourceBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->divideRealData(sourceBlock->realData()); break;
+    case Block::DT_CHAR:    destBlock->divideCharData(sourceBlock->charData()); break;
+    default: throw(std::runtime_error("Machine::_divide: Data types of operands are invalid "
+                                      "(expected integer, real or character)"));
     }
 }
 
@@ -350,16 +331,11 @@ void Machine::_modlulo(Block * destBlock, const Block * sourceBlock)
 
     switch (sourceBlock->dataType())
     {
-    case Block::DT_INTEGER:
-        destBlock->integerData() = destBlock->integerData() % sourceBlock->integerData();
-        break;
-
-    case Block::DT_REAL:
-        destBlock->realData() = fmod(destBlock->realData(), sourceBlock->realData());
-        break;
-
-    default:
-        throw(std::runtime_error("Machine::_modlulo: Data types of operands are invalid (expected integer or real)"));
+    case Block::DT_INTEGER: destBlock->modIntegerData(sourceBlock->integerData()); break;
+    case Block::DT_REAL:    destBlock->modRealData(sourceBlock->realData()); break;
+    case Block::DT_CHAR:    destBlock->modCharData(sourceBlock->charData()); break;
+    default: throw(std::runtime_error("Machine::_modlulo: Data types of operands are invalid "
+                                      "(expected integer, real or character)"));
     }
 }
 

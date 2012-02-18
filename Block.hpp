@@ -44,19 +44,33 @@ public:
     DataType dataType() const;
 
     long integerData() const;
-    long & integerData();
+    void setIntegerData(long data);
+    void addToIntegerData(long amount);
+    void multiplyIntegerData(long amount);
+    void divideIntegerData(long amount);
+    void modIntegerData(long amount);
+    void negateIntegerData();
 
     double realData() const;
-    double & realData();
+    void setRealData(double data);
+    void addToRealData(double amount);
+    void multiplyRealData(double amount);
+    void divideRealData(double amount);
+    void modRealData(double amount);
+    void negateRealData();
 
     char charData() const;
-    char & charData();
+    void setCharData(char data);
+    void multiplyCharData(char amount);
+    void divideCharData(char amount);
+    void modCharData(char amount);
+    void addToCharData(char amount);
 
     bool booleanData() const;
-    bool & booleanData();
+    void setBooleanData(bool data);
 
     int pointerAddress() const;
-    int & pointerAddress();
+    void setPointerAddress(int data);
 
     Heap * pointerHeap() const;
     bool pointerIsNull() const;

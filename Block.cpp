@@ -61,9 +61,34 @@ long Block::integerData() const
     return integerData_;
 }
 
-long & Block::integerData()
+void Block::setIntegerData(const long data)
 {
-    return integerData_;
+    integerData_ = data;
+}
+
+void Block::addToIntegerData(const long amount)
+{
+    integerData_ += amount;
+}
+
+void Block::multiplyIntegerData(const long amount)
+{
+    integerData_ *= amount;
+}
+
+void Block::divideIntegerData(const long amount)
+{
+    integerData_ /= amount;
+}
+
+void Block::modIntegerData(const long amount)
+{
+    integerData_ %= amount;
+}
+
+void Block::negateIntegerData()
+{
+    integerData_ = -integerData_;
 }
 
 double Block::realData() const
@@ -71,9 +96,34 @@ double Block::realData() const
     return realData_;
 }
 
-double & Block::realData()
+void Block::setRealData(const double data)
 {
-    return realData_;
+    realData_ = data;
+}
+
+void Block::addToRealData(const double amount)
+{
+    realData_ += amount;
+}
+
+void Block::multiplyRealData(const double amount)
+{
+    realData_ *= amount;
+}
+
+void Block::divideRealData(const double amount)
+{
+    realData_ /= amount;
+}
+
+void Block::modRealData(const double amount)
+{
+    realData_ = fmod(realData_, amount);
+}
+
+void Block::negateRealData()
+{
+    realData_ = -realData_;
 }
 
 char Block::charData() const
@@ -81,9 +131,29 @@ char Block::charData() const
     return charData_;
 }
 
-char & Block::charData()
+void Block::setCharData(const char data)
 {
-    return charData_;
+    charData_ = data;
+}
+
+void Block::addToCharData(const char amount)
+{
+    charData_ += amount;
+}
+
+void Block::multiplyCharData(const char amount)
+{
+    charData_ *= amount;
+}
+
+void Block::divideCharData(const char amount)
+{
+    charData_ /= amount;
+}
+
+void Block::modCharData(const char amount)
+{
+    charData_ %= amount;
 }
 
 bool Block::booleanData() const
@@ -91,9 +161,9 @@ bool Block::booleanData() const
     return booleanData_;
 }
 
-bool & Block::booleanData()
+void Block::setBooleanData(const bool data)
 {
-    return booleanData_;
+    booleanData_ = data;
 }
 
 int Block::pointerAddress() const
@@ -101,9 +171,9 @@ int Block::pointerAddress() const
     return pointerData.address;
 }
 
-int & Block::pointerAddress()
+void Block::setPointerAddress(const int data)
 {
-    return pointerData.address;
+    pointerData.address = data;
 }
 
 Heap * Block::pointerHeap() const

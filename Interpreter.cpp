@@ -163,7 +163,11 @@ void Interpreter::run()
                 useconds = end.tv_usec - start.tv_usec,
                 milliseconds = (seconds * 1000) + (useconds / 1000);
         std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
+
+        return;
     }
+
+    runWithoutOptions();
 }
 
 void Interpreter::runWithoutOptions()
