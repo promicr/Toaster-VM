@@ -687,7 +687,7 @@ void Machine::jump(const char * labelName)
 {
     for (unsigned i = 0; i < labels_.size(); ++i)
     {
-        if (strcmp(labels_[i].name, labelName) == 0)
+        if (strcmp(labels_[i].value, labelName) == 0)
         {
             programCounter_ = labels_[i].line;
             return;
@@ -791,7 +791,7 @@ unsigned Machine::labelLineNumber(const char * labelName) const
 {
     for (unsigned i = 0; i < labels_.size(); ++i)
     {
-        if (strcmp(labels_[i].name, labelName) == 0) return labels_[i].line;
+        if (strcmp(labels_[i].value, labelName) == 0) return labels_[i].line;
     }
     throw(std::runtime_error("Machine::labelLineNumber: Label '" + std::string(labelName) + "' could not be found"));
 }

@@ -21,22 +21,6 @@ public:
     typedef std::vector<Label> LabelList;
     typedef std::vector<unsigned> ReturnAddressStack;
 
-    struct StackLocation
-    {
-        unsigned value;
-        explicit StackLocation(const unsigned value) : value(value) {}
-        operator unsigned() const { return value; }
-        StackLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
-    };
-
-    struct HeapLocation
-    {
-        unsigned value;
-        explicit HeapLocation(const unsigned value) : value(value) {}
-        operator unsigned() const { return value; }
-        HeapLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
-    };
-
     enum locationId
     {
         L_STACK,

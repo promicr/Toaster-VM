@@ -33,7 +33,6 @@ void Token::clear()
 {
     type = T_NULL;
     isPointer = false;
-    isOptimisedLabel = false;
 }
 
 bool Token::isNull() const

@@ -14,32 +14,32 @@
 
 struct Integer
 {
-    explicit Integer(const long value) : value(value) {}
     long value;
+    explicit Integer(const long value) : value(value) {}
     operator long() const { return value; }
     Integer & operator =(const long other) { value = other; return *this; }
 };
 
 struct Real
 {
-    explicit Real(const double value) : value(value) {}
     double value;
+    explicit Real(const double value) : value(value) {}
     operator double() const { return value; }
     Real & operator =(const double other) { value = other; return *this; }
 };
 
 struct Char
 {
-    explicit Char(const char value) : value(value) {}
     char value;
+    explicit Char(const char value) : value(value) {}
     operator char() const { return value; }
     Char & operator =(const char other) { value = other; return *this; }
 };
 
 struct Boolean
 {
-    explicit Boolean(const bool value) : value(value) {}
     bool value;
+    explicit Boolean(const bool value) : value(value) {}
     operator bool() const { return value; }
     Boolean & operator =(const bool other) { value = other; return *this; }
 };
@@ -48,9 +48,25 @@ struct Label
 {
     static const unsigned length = 12;
 
-    explicit Label(const char * name_, const unsigned line) : line(line) { strncpy(name, name_, length); }
-    char name[length + 1];
+    char value[length + 1];
     unsigned line;
+    explicit Label(const char * value_, const unsigned line) : line(line) { strncpy(value, value_, length); }
+};
+
+struct StackLocation
+{
+    unsigned value;
+    explicit StackLocation(const unsigned value) : value(value) {}
+    operator unsigned() const { return value; }
+    StackLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
+};
+
+struct HeapLocation
+{
+    unsigned value;
+    explicit HeapLocation(const unsigned value) : value(value) {}
+    operator unsigned() const { return value; }
+    HeapLocation & operator =(const unsigned rhs) { value = rhs; return *this; }
 };
 
 #endif // TYPEWRAPPERS_HPP
