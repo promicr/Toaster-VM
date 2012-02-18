@@ -20,9 +20,11 @@
 
 const unsigned Interpreter::instructionReservation;
 
-Interpreter::Interpreter(Machine & machine)
+Interpreter::Interpreter(Machine & machine, const unsigned optionCount, const Option * const options)
     : machine(machine)
 {
+    parseOptions(optionCount, options);
+
     unsigned line = 0;
     std::string buffer;
     buffer.reserve(128);
@@ -54,9 +56,12 @@ Interpreter::Interpreter(Machine & machine)
     preOptimise();
 }
 
-Interpreter::Interpreter(Machine & machine, const char * fileName)
+Interpreter::Interpreter(Machine & machine, const char * fileName, const unsigned optionCount,
+                         const Option * const options)
     : machine(machine)
 {
+    parseOptions(optionCount, options);
+
     if ((fileName == NULL) || (strlen(fileName) == 0))
         throw(std::runtime_error("Parser::Parser: Invalid file name given"));
 
@@ -93,6 +98,16 @@ Interpreter::Interpreter(Machine & machine, const char * fileName)
     else throw(std::runtime_error("Parser::Parser: File could not be opened"));
 
     preOptimise();
+}
+
+void Interpreter::parseOptions(const unsigned optionCount, const Option * const options)
+{
+    for (unsigned i = 0; i < OPTION_COUNT; ++i) optionEnabled[i] = false;
+    for (unsigned i = 0; i < optionCount; ++i)
+    {
+        if ((options[i] < 0) || (options[i] >= OPTION_COUNT)) continue;
+        optionEnabled[options[i]] = true;
+    }
 }
 
 void Interpreter::tokenizeAndAddInstruction(const std::string & instruction, const unsigned line)
@@ -134,24 +149,25 @@ void Interpreter::preOptimise()
     }
 }
 
-void Interpreter::run(const bool timeExecution)
+void Interpreter::run()
 {
-    if (timeExecution)
+    if (optionEnabled[O_TIME_EXECUTION])
     {
         timeval start, end;
         gettimeofday(&start, NULL);
 
-        run(false);
+        runWithoutOptions();
 
         gettimeofday(&end, NULL);
         long seconds = end.tv_sec  - start.tv_sec,
                 useconds = end.tv_usec - start.tv_usec,
                 milliseconds = (seconds * 1000) + (useconds / 1000);
         std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
-
-        return;
     }
+}
 
+void Interpreter::runWithoutOptions()
+{
     try { machine.jump("main"); }
     catch (const std::exception & e)
     {
@@ -161,7 +177,7 @@ void Interpreter::run(const bool timeExecution)
         return;
     }
 
-    unsigned programCounter = machine.programCounter();
+    unsigned programCounter = machine.programCounter(), & machineProgramCounter = machine.programCounter();
     while (programCounter < instructions.size())
     {
         try { execute(instructions[programCounter]); }
@@ -173,8 +189,8 @@ void Interpreter::run(const bool timeExecution)
             return;
         }
 
-        if (programCounter == machine.programCounter()) ++machine.programCounter(); // i.e. if there were no jumps
-        programCounter = machine.programCounter();
+        if (programCounter == machineProgramCounter) ++machineProgramCounter; // i.e. if there were no jumps
+        programCounter = machineProgramCounter;
     }
 }
 

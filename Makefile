@@ -12,6 +12,9 @@ LIBRARY = $(BUILD_PATH)lib$(TARGET).so$(foreach v,$(LIBRARY_VERSION),.$(v))
 
 all: $(BUILD_PATH) $(EXECUTABLE)
 
+standalone: $(BUILD_PATH)
+	$(CC) $(CFLAGS) -o$(EXECUTABLE) $(EXESOURCE) $(SOURCES) $(LIBS)
+
 $(EXECUTABLE): $(LIBRARY)
 	$(CC) $(CFLAGS) -o$(EXECUTABLE) $(EXESOURCE) -L$(BUILD_PATH) -lToasterVM
 

@@ -8,7 +8,7 @@
 #ifndef COMPARISONFLAGREGISTER_HPP
 #define COMPARISONFLAGREGISTER_HPP
 
-// A class sotring flags which are used for storing the results of comparison operations
+// A class storing flags which are used for storing the results of comparison operations
 
 typedef class ComparisonFlagRegister
 {

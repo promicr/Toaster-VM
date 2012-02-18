@@ -69,7 +69,7 @@ enum Id
     SMUL,    // Multiplies the value below the top of the stack by the value at the top
     SDIV,    // Divides the value below the top of the stack by the value at the top
     SMOD,    // Replaces the value below the top of the stack by below mod top
-    ALLC,   // Allocates array type A, length B in managed heap. Pointer to array is put into managed out register
+    ALLC,    // Allocates array type A, length B in managed heap. Pointer to array is put into managed out register
     PLA,     // Allows the array pointed to by A to be populated with values, starting with index B
     FNA,     // Finishes array population started by PLA
     ATOA,    // Adds B to the array that is currently being populated

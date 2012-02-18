@@ -138,7 +138,7 @@ void Machine::_readString(Block * destBlock)
         {
             if (scanf("%c", &c) != 0)
             {
-                if ((c == '\n') || (c == '\r') || (c== '\0'))
+                if ((c == '\n') || (c == '\r') || (c == '\0'))
                 {
                     destBlock->pointerArrayElementAt(i)->charData() = '\0';
                     break;

@@ -52,7 +52,7 @@ public:
     Machine(unsigned stackSize = 0, unsigned unmanagedHeapSize = 0, unsigned managedHeapSize = 0);
     ~Machine();
 
-    void flush();
+    void flush(); // Clears out all of the data in the machine
 
     // Member functions relating to the bytecode
     template <typename T>
@@ -242,7 +242,7 @@ public:
     void returnFromCall(const T & returnValue);
 
     void loadExtension(const char * fileName);
-    // returnFromCall is called in this function, so stack frame and parameters must already be pushed before calling!
+    // returnFromCall is called in this function, so stack frame and arguments must already be pushed before calling!
     void extensionCall(const char * functionName);
 
     Stack & stack();
