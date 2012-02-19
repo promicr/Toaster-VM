@@ -64,19 +64,19 @@ Block & Stack::fromTop(const unsigned index)
     return data[combinedFramePointer + pointer - 1 - index];
 }
 
-const Block & Stack::fromTop(unsigned index) const
+const Block & Stack::fromTop(const unsigned index) const
 {
     if (index >= pointer) throw(std::out_of_range("Stack::fromTop: Stack block index out of range"));
     return data[combinedFramePointer + pointer - 1 - index];
 }
 
-Block & Stack::fromTopBelow(unsigned index)
+Block & Stack::fromTopBelow(const unsigned index)
 {
     if (index >= combinedFramePointer)
         throw(std::out_of_range("Stack::fromTopBelow: Stack block index out of range"));
     return data[combinedFramePointer - 1 - index];
 }
-const Block & Stack::fromTopBelow(unsigned index) const
+const Block & Stack::fromTopBelow(const unsigned index) const
 {
     if (index >= combinedFramePointer)
         throw(std::out_of_range("Stack::fromTopBelow: Stack block index out of range"));
@@ -92,7 +92,7 @@ void Stack::pushFrame()
 
 void Stack::popFrame(const Block * returnValue)
 {
-    if (framePointerStack.size() == 0) throw(std::runtime_error("Stack::popFrame: Stack frame underflow"));
+    if (framePointerStack.empty()) throw(std::runtime_error("Stack::popFrame: Stack frame underflow"));
 
     unsigned oldPointer = pointer;
     pointer = framePointerStack.back();

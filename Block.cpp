@@ -216,32 +216,32 @@ void Block::nullifyPointerData(const bool decReference)
     pointerData.heap = NULL;
 }
 
-void Block::setToInteger(const long data_)
+void Block::setToInteger(const long data)
 {
     nullifyPointerData();
     dataType_ = DT_INTEGER;
-    integerData_ = data_;
+    integerData_ = data;
 }
 
-void Block::setToReal(const double data_)
+void Block::setToReal(const double data)
 {
     nullifyPointerData();
     dataType_ = DT_REAL;
-    realData_ = data_;
+    realData_ = data;
 }
 
-void Block::setToChar(const char data_)
+void Block::setToChar(const char data)
 {
     nullifyPointerData();
     dataType_ = DT_CHAR;
-    charData_ = data_;
+    charData_ = data;
 }
 
-void Block::setToBoolean(const bool data_)
+void Block::setToBoolean(const bool data)
 {
     nullifyPointerData();
     dataType_ = DT_BOOLEAN;
-    booleanData_ = data_;
+    booleanData_ = data;
 }
 
 void Block::setToPointer(const int address, Heap & heap)
@@ -304,7 +304,7 @@ bool Block::operator ==(const Block & rhs) const
         return (pointerData.address == rhs.pointerData.address) && (pointerData.heap == rhs.pointerData.heap);
 
     default:
-        std::cout << "Unknown type handled in assignment" << std::endl;
+        std::cout << "Block::operator ==: Unknown type handled in comparison" << std::endl;
         return false;
     }
 }
