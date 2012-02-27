@@ -1,0 +1,144 @@
+charToInt:
+    move RP SN1
+    cnvi RP RP
+    push RP
+    set RP #'0'
+    cnvi RP RP
+    sub ST RP
+    ret ST
+
+nullChar:
+		set RP #0
+		cnvc RP RP
+		ret RP
+
+getElement:
+; get element and return the char as it is if it's an operator
+		ael SN1 SN2
+		cmp RM #'+'
+		je returnEl
+		cmp RM #'-'
+		je returnEl
+		cmp RM #'*'
+		je returnEl
+		cmp RM #'/'
+		je returnEl
+
+; convert the char to an int and return it
+		push RM
+		call charToInt
+		pop RM
+	returnEl:
+		ret RM
+
+getPres:
+; get presedence of an operator
+		cmp SN1 #'*'
+		jne checkDiv
+		ret #1
+	checkDiv:
+		cmp SN1 #'/'
+		jne retLowPres
+		ret #1
+	retLowPres:
+		ret #0
+
+shuntYard:
+; SB0 - length of string
+		alen RP SN1
+		push RP
+; SB1 - counter
+		push #0
+; SB2 - result
+		push #0
+; SB3 - output stack pointer
+		push #-1
+; SB4 - operator stack pointer
+		push #49
+; if counter >= length jump to endwhile
+	while:
+		cmp SB1 SB0
+		jge endwhile
+	; compare element to null char, break if equal
+		ael SN1 SB1
+		cnvi RM RM
+		cmp RM #0
+		je endwhile
+
+; get the properly converted element at the counter
+		push SB1
+		push SN1
+		call getElement
+		cmpt ST #0
+		jne notInt
+		inc SB3
+		move @SB3 ST
+		jmp nextWhile
+
+; if it's not an int, compare presedence of operators
+	notInt:
+		call getPres
+		pop RP
+		cmp SB4 #50
+		jl pushOperat
+		push @SB4
+		call getPres
+		cmp RP ST
+		pop nil
+		pop nil ; back to original ST
+		jge pushOperat
+
+		; put operator stack on output stack
+		whileSt:
+			cmp SB4 #49
+			je endWhileSt
+			inc SB3
+			move @SB3 @SB4
+			dec SB4
+			jmp whileSt 
+		endWhileSt:
+
+		pushOperat:
+		inc SB4
+		move @SB4 ST
+
+	nextWhile:
+		pop nil
+		pop nil
+		pop nil
+		inc SB1
+		jmp while
+
+	endwhile:
+
+		whileSte:
+			cmp SB4 #49
+			je endSte
+			inc SB3
+			move @SB3 @SB4
+			dec SB4
+			jmp whileSte
+		endSte:
+		ret SB2
+
+main:
+		allc $c #128
+		ins RM
+		push RM
+		call shuntYard
+		pop nil
+		set RP #0
+
+	loop:
+		cmp RP #128
+		je endLoop
+	; compare element to null char, break if equal
+		ael ST RP
+		cnvi RM RM
+		cmp RM #0
+		je endLoop
+
+		out @RP
+		inc RP
+		jmp loop
+	endLoop:

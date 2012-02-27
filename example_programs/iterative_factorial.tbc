@@ -1,0 +1,27 @@
+charToInt:
+    move RP SN1
+    cnvi RP RP
+    push RP
+    set RP #'0'
+    cnvi RP RP
+    sub ST RP
+    ret ST
+
+factorial:
+    move RP SN1
+    push SN1
+  while:
+    cmp ST #1
+    jle endwhile
+    dec ST
+    mul RP ST
+    jmp while
+  endwhile:
+    ret RP
+
+main:
+    in RP
+    push RP
+    call charToInt
+    call factorial
+    out ST

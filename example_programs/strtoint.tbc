@@ -1,0 +1,67 @@
+charToInt:
+    move RP SN1
+    cnvi RP RP
+    push RP
+    set RP #'0'
+    cnvi RP RP
+    sub ST RP
+    ret ST
+
+strToInt:
+    alen RP SN1
+    push RP
+    push #0
+    push #0
+    push #F
+  while:
+    cmp SB1 SB0
+    jge endwhile
+    ael SN1 SB1
+    cmp RM #'-'
+    jne noNeg
+    cmp SB3 #T
+    je negError
+    cmp SB1 #0
+    jg negError
+    set SB3 #T
+    jmp next
+  noNeg:
+    set RP #0
+    cnvc RP RP
+    cmp RM RP
+    je endwhile
+    push RM
+    call charToInt
+    pop RP
+    pop nil
+    mul SB2 #10
+    add SB2 RP
+  next:
+    inc SB1
+    jmp while
+  endwhile:
+    cmp SB3 #T
+    jne finish
+    neg SB2
+  finish:
+    ret SB2
+  negError:
+    outs 0
+    ret #0
+    
+main:
+    allc $c #5
+
+    pla RM #0
+    atoa #'E'
+    atoa #'R'
+    atoa #'R'
+    atoa #'O'
+    atoa #'R'
+    fna
+    move 0 RM
+    allc $c #128
+    ins RM
+    push RM
+    call strToInt
+    out ST
